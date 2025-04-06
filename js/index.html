@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Models Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Banner -->
+    <div class="banner">
+        <i class="fas fa-gift"></i>
+        Special offer: Get 20% off on all 3D models this week!
+        <button class="banner-btn">Claim Now</button>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <i class="fas fa-cube"></i>
+                    3D Model Store
+                </a>
+                <nav class="nav-links">
+                    <a href="#">Home</a>
+                    <a href="#">Categories</a>
+                    <a href="#">Featured</a>
+                    <a href="#">Artists</a>
+                    <a href="#">About</a>
+                </nav>
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search models...">
+                    </div>
+                    <button class="cart-btn" id="cart-button">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Premium 3D Models</h1>
+            <p>Discover thousands of high-quality 3D models for games, VR/AR, architecture, and more</p>
+            <button class="hero-btn" id="store-button">
+                <i class="fas fa-store"></i>
+                Browse Store
+            </button>
+        </section>
+
+        <!-- Featured Model -->
+        <section class="featured-model">
+            <div class="featured-image">
+                <img src="/api/placeholder/800/500" alt="Featured 3D Model">
+            </div>
+            <div class="featured-info">
+                <span class="featured-label">Featured</span>
+                <h3 class="featured-name">Sci-Fi Spaceship Explorer</h3>
+                <p class="featured-desc">High-quality sci-fi spaceship with detailed interior, perfect for games and VR experiences.</p>
+                <div class="featured-price">$59.99</div>
+                <div class="featured-actions">
+                    <button class="hero-btn view-model-btn" data-model-id="default-model-id">
+                        <i class="fas fa-eye"></i>
+                        View in 3D
+                    </button>
+                    <button class="add-to-cart">
+                        <i class="fas fa-cart-plus"></i>
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories -->
+        <div class="categories">
+            <div class="category active">All</div>
+            <div class="category">Characters</div>
+            <div class="category">Vehicles</div>
+            <div class="category">Architecture</div>
+            <div class="category">Nature</div>
+            <div class="category">Sci-Fi</div>
+            <div class="category">Fantasy</div>
+            <div class="category">Industrial</div>
+            <div class="category">Weapons</div>
+            <div class="category">Furniture</div>
+            <div class="category">Animals</div>
+        </div>
+
+        <!-- Models Section -->
+        <section>
+            <div class="models-header">
+                <h2>Popular Models</h2>
+                <select class="sort-select">
+                    <option value="popular">Most Popular</option>
+                    <option value="newest">Newest</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="free">Free First</option>
+                </select>
+            </div>
+            <div class="models-grid" id="models-grid">
+                <!-- Models will be loaded here via JavaScript -->
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            <div class="pagination">
+                <button class="page-btn disabled">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="footer-title">3D Model Store</h3>
+                    <p>Your one-stop destination for high-quality 3D models for games, VR/AR, architecture, and more.</p>
+                </div>
+                <div class="footer-section">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <div class="footer-links">
+                        <a href="#">Home</a>
+                        <a href="#">Categories</a>
+                        <a href="#">Featured</a>
+                        <a href="#">Pricing</a>
+                        <a href="#">Artists</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3 class="footer-title">Support</h3>
+                    <div class="footer-links">
+                        <a href="#">Help Center</a>
+                        <a href="#">Terms of Service</a>
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Contact Us</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3 class="footer-title">Connect</h3>
+                    <div class="footer-links">
+                        <a href="#">Twitter</a>
+                        <a href="#">Facebook</a>
+                        <a href="#">Instagram</a>
+                        <a href="#">Discord</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 3D Model Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Store Modal -->
+    <div class="store-modal" id="store-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2>Explore Our 3D Collection</h2>
+                <p>Discover premium and free 3D models from talented artists worldwide</p>
+                <div class="modal-filters">
+                    <input type="text" placeholder="Search in store..." class="modal-search">
+                    <select class="modal-sort">
+                        <option value="popular">Most Popular</option>
+                        <option value="newest">Newest</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="free">Free First</option>
+                    </select>
+                </div>
+            </div>
+            <div id="modal-models-container">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            <!-- Existing pagination -->
+        </div>
+    </div>
+
+    <div class="viewer-modal" id="viewer-modal">
+        <div class="viewer-content">
+            <button class="viewer-close" id="viewer-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="sketchfab-viewer" class="viewer-container"></div>
+        </div>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-header">
+            <h3>Your Cart</h3>
+            <button class="cart-close" id="cart-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Your cart is empty</p>
+                <button class="cart-continue">Continue Shopping</button>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span>$0.00</span>
+            </div>
+            <button class="checkout-btn">Checkout</button>
+        </div>
+    </div>
+
+    <!-- Backdrop -->
+    <div class="backdrop" id="backdrop"></div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">Item added to cart</span>
+    </div>
+<script src="script.js"></script>
+</body>
