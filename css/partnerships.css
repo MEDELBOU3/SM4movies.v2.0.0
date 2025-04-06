@@ -66,7 +66,10 @@ a {
 a:hover {
     color: var(--secondary-accent);
 }
-
+.navbar-page.scrolled {
+    background: rgba(var(--bg-primary-rgb), 0.95);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+}
 /* --- Utility Classes --- */
 .text-gradient {
     background: var(--gradient-text);
