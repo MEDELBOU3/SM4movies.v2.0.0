@@ -1,1 +1,91 @@
 
+  .community-hero {
+            /* Use a different gradient or a community/connection focused background */
+            background: linear-gradient(rgba(var(--bg-primary-rgb), 0.8), rgba(var(--bg-primary-rgb), 0.95)), url('YOUR_COMMUNITY_HERO_BG.jpg') center center/cover no-repeat; /* !! REPLACE BG !! */
+             /* Placeholder gradient */
+             background: linear-gradient(135deg, rgba(var(--primary-accent-rgb), 0.2), rgba(var(--bg-primary-rgb), 0.9)), var(--bg-primary);
+             min-height: 60vh;
+             /* Add the community SVG logo */
+             /* background-image: url('aurastream-community-logo.svg'), linear-gradient(...); */ /* Layer SVG if desired */
+             /* background-position: right bottom, center center; */
+             /* background-repeat: no-repeat, no-repeat; */
+             /* background-size: 20%, cover; */
+
+        }
+         .feature-card {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+             height: 100%;
+             display: flex;
+             flex-direction: column;
+             justify-content: center; /* Center content vertically */
+             transition: all 0.3s ease;
+        }
+         .feature-card:hover {
+             transform: translateY(-5px);
+             box-shadow: 0 8px 25px rgba(0,0,0, 0.2);
+             border-color: var(--primary-accent);
+         }
+         .feature-icon {
+             font-size: 2.5rem;
+             color: var(--secondary-accent);
+             margin-bottom: 1rem;
+         }
+        .feature-card h4 {
+             font-size: 1.2rem;
+             margin-bottom: 0.5rem;
+        }
+         .activity-feed-section { background-color: var(--bg-secondary); }
+         .activity-item {
+             background-color: var(--surface-color);
+             padding: 1.5rem;
+             border-radius: var(--radius-lg);
+             margin-bottom: 1.5rem;
+             border-left: 4px solid var(--tertiary-accent); /* Example Accent */
+         }
+         .activity-item blockquote {
+            font-size: 1rem;
+            font-style: italic;
+            color: var(--text-light);
+             margin-bottom: 0.5rem;
+             border: none; padding: 0;
+         }
+        .activity-item .meta {
+             font-size: 0.9rem;
+             color: var(--text-medium);
+         }
+        .activity-item .meta img { /* Avatar */
+            width: 30px; height: 30px; border-radius: 50%; margin-right: 0.5rem; vertical-align: middle;
+         }
+        .activity-item .meta a { color: var(--primary-accent); font-weight: 500; }
+
+         .community-guidelines {
+             background-color: var(--surface-color);
+             padding: 2rem;
+             border-radius: var(--radius-lg);
+         }
+        .community-guidelines ul li { margin-bottom: 0.5rem; }
+        .community-guidelines i { color: var(--secondary-accent); margin-right: 0.5rem; }
+
+         .join-cta-section {
+             background: var(--gradient-secondary);
+             text-align: center;
+             color: #fff;
+         }
+         .join-cta-section h2 { color: #fff; }
+         .join-cta-section p { color: rgba(255,255,255,0.9); }
+         .join-cta-section .btn-light-outline {
+             border: 2px solid rgba(255,255,255,0.7);
+             color: #fff;
+             background: rgba(255,255,255,0.1);
+             font-weight: 600;
+             padding: 0.8rem 2rem;
+             border-radius: var(--radius-lg);
+         }
+        .join-cta-section .btn-light-outline:hover {
+            background-color: rgba(255,255,255,0.2);
+            border-color: #fff;
+         }
