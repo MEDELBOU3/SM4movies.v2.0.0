@@ -153,7 +153,7 @@ a:hover {
 
 /* --- Community Hero --- */
 .page-hero.community-hero {
-    min-height: 80vh;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     background: var(--gradient-background);
