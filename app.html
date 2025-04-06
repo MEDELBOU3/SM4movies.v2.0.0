@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraStream - Person View Build</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    </head>
+<body>
+
+    <!-- Navbar -->
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#home">AuraStream</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#watchlist">Watchlist</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#music">Music</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="genreDropdownLink" role="button" data-bs-toggle="dropdown" aria-expanded="false"> Movies/TV Genres </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" id="genre-dropdown-menu" aria-labelledby="genreDropdownLink">
+                                <li><span class="dropdown-item disabled">Loading...</span></li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                        <li class="nav-item dropdown">
+                           <a class="nav-link dropdown-toggle" href="#" id="themeDropdownLink" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Change Theme">
+                               <i class="bi bi-palette-fill"></i> <span class="d-lg-none ms-1">Theme</span>
+                           </a>
+                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="themeDropdownLink" id="theme-selector-menu">
+                               <li><button class="dropdown-item theme-select-btn" data-theme="default"><i class="bi bi-circle-fill me-2" style="color:#a855f7;"></i> Aura (Default)</button></li>
+                               <li><button class="dropdown-item theme-select-btn" data-theme="midnight"><i class="bi bi-circle-fill me-2" style="color:#38bdf8;"></i> Midnight</button></li>
+                               <li><button class="dropdown-item theme-select-btn" data-theme="forest"><i class="bi bi-circle-fill me-2" style="color:#34d399;"></i> Forest</button></li>
+                               <li><button class="dropdown-item theme-select-btn" data-theme="crimson"><i class="bi bi-circle-fill me-2" style="color:#f43f5e;"></i> Crimson</button></li>
+                               <li><button class="dropdown-item theme-select-btn" data-theme="nebula"><i class="bi bi-circle-fill me-2" style="color:#ec4899;"></i> Nebula Glow</button></li>
+                               <li><hr class="dropdown-divider"></li>
+                               <li><button class="dropdown-item theme-select-btn" data-theme="light"> Light Mode</button></li> 
+                           </ul>
+                       </li>
+                   </ul>
+                    <!-- TMDB Search -->
+                    <form class="d-flex me-lg-3 my-2 my-lg-0" role="search" id="tmdb-search-form">
+                        <input class="form-control me-2" type="search" id="tmdb-search-input" placeholder="Search Movies & TV..." aria-label="Search TMDB">
+                        <button class="btn btn-outline-light btn-icon flex-shrink-0" type="submit" title="Search Movies/TV"><i class="bi bi-search"></i></button>
+                    </form>
+                    <!-- Separator -->
+                    <div class="d-none d-lg-flex align-items-center mx-2" style="border-left: 1px solid var(--border-color); height: 30px;"></div>
+                    <!-- Spotify Status -->
+                    <div id="spotify-status-nav" class="d-flex align-items-center my-2 my-lg-0 text-muted small">
+                       <i class="bi bi-spotify me-2" style="color: var(--spotify-green); font-size: 1.2rem;"></i>
+                       <span id="spotify-auth-nav-message">Checking Spotify...</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div id="view-container">
+
+            <!-- HERO VIEW -->
+            <section id="hero-view" class="view active">
+                 <!-- Hero content loaded dynamically -->
+                 <div class="loading-spinner vh-100"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
+            </section>
+
+            <!-- DISCOVER VIEW (Home Content) -->
+            <section id="discover-view" class="view content-wrapper">
+                <div class="container">
+                    <!-- Search Results (Initially Hidden) -->
+                    <section id="tmdb-search-results-container" class="content-section d-none">
+                         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                            <h2 id="tmdb-search-results-title" class="section-title mb-2 mb-sm-0 me-3">Results</h2>
+                            <button id="clear-tmdb-search-results" class="btn btn-sm btn-outline-light back-button"><i class="bi bi-x-lg me-1"></i> Clear</button>
+                         </div>
+                         <div id="tmdb-search-results-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                            <!-- Search results loaded here -->
+                            <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+                         </div>
+                    </section>
+
+                    <!-- Home Content Sections Wrapper (Visible when not searching) -->
+                    <div id="home-content-wrapper">
+                        <!-- Browse by Network Section with Buttons -->
+                        <section id="browse-by-network-section" class="mb-5">
+                             <h2 class="section-title">Browse by Network</h2>
+                             <div class="network-carousel-wrapper position-relative">
+                                 <button id="network-prev-btn" class="btn btn-sm btn-outline-light btn-icon network-scroll-btn prev disabled" aria-label="Previous Networks">
+                                     <i class="bi bi-chevron-left"></i>
+                                 </button>
+                                 <div id="network-logos-container" class="network-logos-container">
+                                     <!-- Logos loaded here -->
+                                     <div class="loading-spinner p-0"><div class="spinner-border text-secondary" role="status"></div></div>
+                                 </div>
+                                 <button id="network-next-btn" class="btn btn-sm btn-outline-light btn-icon network-scroll-btn next disabled" aria-label="Next Networks">
+                                     <i class="bi bi-chevron-right"></i>
+                                 </button>
+                             </div>
+                        </section>
+
+                        <!-- Existing Home Sections (Trending, Popular etc.) -->
+                        <div id="home-content-sections">
+                             <!-- Home sections loaded here -->
+                            <div class="loading-spinner"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DETAILS VIEW (TMDB) -->
+            <section id="details-view" class="view">
+                <div id="details-content-wrapper">
+                    <!-- Details loaded here -->
+                    <div class="loading-spinner vh-100"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
+                </div>
+            </section>
+
+            <!-- GENRE RESULTS VIEW -->
+            <section id="genre-results-view" class="view content-wrapper">
+                <div class="container">
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                    <h1 id="genre-results-title" class="mb-4 display-5">Genre</h1>
+                    <div id="genre-results-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                        <!-- Genre results loaded here -->
+                        <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+                    </div>
+                    <div class="text-center mt-5">
+                        <button id="load-more-genre-btn" class="btn btn-primary btn-lg d-none" data-page="1">Load More</button>
+                        <div id="genre-loading-more-spinner" class="spinner-border text-primary d-none" role="status"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NETWORK RESULTS VIEW -->
+            <section id="network-results-view" class="view content-wrapper">
+                 <div class="container">
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                    <h1 id="network-results-title" class="mb-4 display-5">Network Content</h1>
+                    <div id="network-results-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                         <!-- Network results loaded here -->
+                        <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+                    </div>
+                    <div class="text-center mt-5">
+                        <button id="load-more-network-btn" class="btn btn-primary btn-lg d-none" data-page="1">Load More</button>
+                        <div id="network-loading-more-spinner" class="spinner-border text-primary d-none" role="status"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="watchlist-view" class="view content-wrapper">
+                <div class="container">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                         <h1 id="text-white" class="display-5 mb-0">My Watchlist</h1>
+                         <button id="clear-watchlist-btn" class="btn btn-sm btn-outline-danger d-none">
+                            <i class="bi bi-trash3 me-1"></i> Clear All
+                         </button>
+                    </div>
+
+                    <div id="watchlist-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                        <!-- Watchlist items loaded here -->
+                        <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PERSON (ACTOR/CREW) VIEW -->
+            <section id="person-view" class="view content-wrapper">
+                <div class="container">
+                     <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                     <div id="person-content-wrapper">
+                         <!-- Person details loaded here -->
+                        <div class="loading-spinner vh-50"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MOVIE/TV PLAYER VIEW -->
+            <section id="player-view" class="view content-wrapper">
+                 <div class="container">
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                    <h1 id="player-title" class="mb-4 display-6">Loading Player...</h1>
+
+                    <!-- Episode Selector for TV Shows -->
+                    <div id="episode-selector-container" class="mb-4 d-none">
+                        </div>
+
+                    <!-- Streaming Source Buttons -->
+                    <div id="stream-source-buttons" class="mb-3">
+                        <p class="text-muted small">Select streaming source:</p>
+                        <!-- Source buttons loaded here -->
+                    </div>
+
+                    <!-- Iframe Container -->
+                    <div class="ratio ratio-16x9 mb-4">
+                        <div id="iframe-placeholder" class="d-flex align-items-center justify-content-center">
+                            <span class="text-muted">Select a source to start streaming</span>
+                        </div>
+                        <iframe id="streaming-iframe" class="d-none" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+                    </div>
+
+                    <div class="alert alert-warning small" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Streaming sources are provided by external sites. We do not host any content. Use at your own discretion. Ad blockers recommended.
+                    </div>
+                </div>
+            </section>
+
+            <!-- MUSIC VIEW (Spotify) -->
+            <section id="music-view" class="view content-wrapper">
+                <div class="container">
+                     <h1 id="text-white"  class="display-5 mb-4">Music & Soundtracks</h1>
+
+                    <!-- Spotify Auth Status -->
+                    <div id="spotify-status-area" class="alert alert-info d-flex align-items-center" role="alert">
+                        <div class="spinner-border spinner-border-sm me-2" role="status" id="spotify-status-spinner"></div>
+                        <div id="spotify-status-text" style="color: var(--spotify-green);">Checking Spotify authorization...</div>
+                    </div>
+
+                    <!-- Spotify Search -->
+                    <div id="spotify-search-area">
+                        <h3 id="text-white" class="mb-3">Search Spotify Tracks</h3>
+                        <form id="spotify-search-form" class="mb-4">
+                             <div class="input-group">
+                                <input type="search" id="spotify-search-input" class="form-control form-control-lg" placeholder="Search for tracks, artists, albums..." required>
+                                <button type="submit" class="btn btn-primary btn-lg" id="spotify-search-button">
+                                    <i class="bi bi-search me-1"></i> Search
+                                </button>
+                            </div>
+                        </form>
+                        <div id="spotify-search-loading" class="loading-spinner d-none">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                        <div id="spotify-search-results" class="list-group list-group-flush">
+                            <!-- Search results will appear here -->
+                        </div>
+                    </div>
+
+                     <!-- Music Visualizer -->
+                    <div id="music-visualizer-container">
+                        <h3 class="section-title">Audio Visualizer</h3>
+                        <canvas id="music-visualizer-canvas"></canvas>
+                         <div id="visualizer-demo-controls" class="mt-3">
+                            <p class="text-muted small mb-2">Play sample audio to test visualizer:</p>
+                            <audio id="demo-audio" controls src="https://cdn.pixabay.com/download/audio/2022/11/17/audio_7064c14067.mp3?filename=abstract-technology-126873.mp3"></audio>
+                            <button id="start-visualizer-button" class="btn btn-sm btn-outline-secondary mt-2 ms-2">Start Visualizer with Demo</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div> <!-- End View Container -->
+    </main>
+
+    <!-- Trailer Modal -->
+    <div class="modal fade" id="trailerModal" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-transparent border-0">
+                 <div class="modal-header">
+                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                 </div>
+                <div class="modal-body">
+                    <iframe id="trailerModalIframe" height="450" src="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-5 mt-5 border-top border-secondary border-opacity-25">
+        <div class="container text-center text-muted small">
+            <p>&copy; 2024 AuraStream Concept. All movie/TV data from <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDb</a>. Music data from <a href="https://spotify.com" target="_blank" rel="noopener noreferrer">Spotify</a>.</p>
+            <p>This site does not host any streamable content. Streaming links are placeholders or point to third-party services.</p>
+        </div>
+     </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
