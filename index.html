@@ -1,1 +1,897 @@
-hello world
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraStream - Your Unified Universe for Movies, TV & Community</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- AOS Animate On Scroll Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        /* --- Enhanced Landing Page Styles --- */
+        :root {
+            --bg-primary: #050609; /* Even darker */
+            --bg-secondary: #0d0f13; /* Subtly different secondary */
+            --surface-color: #14171d; /* Slightly lighter surface */
+            --bg-primary-rgb: 5, 6, 9;
+            --bg-secondary-rgb: 13, 15, 19;
+            --surface-rgb: 20, 23, 29;
+            --primary-accent: #a855f7; /* Vibrant Purple */
+            --primary-accent-rgb: 168, 85, 247;
+            --secondary-accent: #22d3ee; /* Bright Cyan */
+            --secondary-accent-rgb: 34, 211, 238;
+            --tertiary-accent: #f43f5e; /* Rose accent */
+            --tertiary-accent-rgb: 244, 63, 94;
+            --text-light: #f8fafc; /* Brighter white */
+            --text-medium: #94a3b8; /* Slightly muted medium */
+            --text-dark: #1e293b;
+            --border-color: #2d3748; /* Slightly lighter border */
+            --font-family-base: 'Inter', 'Poppins', sans-serif; /* Inter preferred for UI text */
+            --font-family-headings: 'Poppins', sans-serif;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1.25rem; /* Slightly larger XL radius */
+            --shadow-glow-primary: 0 0 45px rgba(var(--primary-accent-rgb), 0.35);
+            --shadow-glow-secondary: 0 0 40px rgba(var(--secondary-accent-rgb), 0.25);
+            --gradient-primary: linear-gradient(125deg, var(--primary-accent), var(--secondary-accent));
+            --gradient-secondary: linear-gradient(125deg, var(--primary-accent), var(--tertiary-accent));
+            --gradient-text: linear-gradient(125deg, var(--primary-accent), var(--secondary-accent));
+            --gradient-background: linear-gradient(160deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            --glass-bg: rgba(var(--surface-rgb), 0.7);
+            --glass-blur: 15px;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        ::selection { background-color: rgba(var(--primary-accent-rgb), 0.4); color: #fff;}
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--bg-primary);
+            color: var(--text-light);
+            font-weight: 400; line-height: 1.7; overflow-x: hidden;
+            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4, h5, h6 { font-family: var(--font-family-headings); font-weight: 700; color: #fff; letter-spacing: -0.03em; margin-bottom: 0.75rem; }
+        h1 { font-weight: 800; line-height: 1.15; letter-spacing: -0.04em; }
+        h2 { font-size: clamp(2rem, 5vw, 3rem); }
+        h3 { font-size: clamp(1.5rem, 4vw, 1.9rem); font-weight: 600; }
+        p { color: var(--text-medium); font-size: 1.05rem; margin-bottom: 1rem; }
+        a { color: var(--primary-accent); text-decoration: none; transition: all 0.25s ease; }
+        a:hover { color: var(--secondary-accent); filter: brightness(1.1); }
+
+        .section { padding: 6rem 1.5rem; overflow: hidden; position: relative; } /* Default padding */
+        .section-lg { padding: 8rem 1.5rem; }
+        .section-xl { padding: 10rem 1.5rem; }
+        .section-darker { background-color: var(--bg-secondary); }
+        .section-gradient { background: var(--gradient-background); }
+        .text-gradient { background: var(--gradient-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; display: inline-block; }
+        .lead { font-size: 1.25rem; font-weight: 400; color: var(--text-light); opacity: 0.9; max-width: 750px; margin-left: auto; margin-right: auto; }
+        .subheading { font-size: 1.1rem; color: var(--text-medium); font-weight: 500; margin-bottom: 3rem; letter-spacing: 0.05em; text-transform: uppercase; }
+
+        /* --- Utility --- */
+        .icon-lg { font-size: 3rem; }
+        .icon-xl { font-size: 4rem; }
+        .glow-icon { color: var(--primary-accent); text-shadow: 0 0 20px rgba(var(--primary-accent-rgb), 0.5); }
+
+        /* --- Navbar --- */
+        .navbar-landing {
+            padding: 0.75rem 0; background-color: transparent; position: fixed; top: 0; left: 0; right: 0; z-index: 1030; transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, padding 0.3s ease-in-out;
+        }
+        .navbar-landing.scrolled {
+            background-color: rgba(var(--bg-primary-rgb), 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); box-shadow: 0 5px 20px rgba(0,0,0,0.4); border-bottom: 1px solid rgba(var(--border-color), 0.5); padding: 0.5rem 0;
+        }
+        .navbar-brand-landing {
+            font-weight: 700; font-size: 1.8rem; color: #fff !important; letter-spacing: -0.04em; transition: transform 0.2s ease;
+        }
+        .navbar-brand-landing:hover { transform: scale(1.03); }
+        .navbar-brand-landing i { color: var(--primary-accent); }
+        .navbar-nav .nav-link { color: var(--text-medium); font-weight: 500; padding: 0.5rem 1rem; position: relative; transition: color 0.25s ease; }
+        .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active { color: #fff; }
+        .navbar-nav .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 1rem; right: 1rem; height: 2px; background: var(--gradient-primary); transform: scaleX(0); transform-origin: center; transition: transform 0.3s ease; }
+        .navbar-nav .nav-link:hover::after, .navbar-nav .nav-link.active::after { transform: scaleX(1); }
+
+        /* --- Buttons --- */
+        .btn { transition: all 0.25s ease; letter-spacing: 0.02em; font-weight: 600; }
+        .btn-landing { border-radius: var(--radius-lg); padding: 0.9rem 2.2rem; font-size: 1rem; line-height: 1.5; text-transform: uppercase; border: none; }
+        .btn-landing-primary { background: var(--gradient-primary); color: #fff; box-shadow: var(--shadow-glow-primary), 0 4px 15px rgba(0,0,0,0.2); }
+        .btn-landing-primary:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 12px 30px -6px rgba(var(--primary-accent-rgb), 0.5), 0 8px 20px rgba(0,0,0,0.3); filter: brightness(1.1); color: #fff; }
+        .btn-landing-secondary { border: 2px solid var(--border-color); color: var(--text-light); font-weight: 500; background: transparent; padding: 0.8rem 2rem; }
+        .btn-landing-secondary:hover { background-color: var(--surface-color); border-color: var(--primary-accent); color: var(--primary-accent); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(var(--primary-accent-rgb), 0.1); }
+        .btn-launch-nav { /* Button in Navbar */
+            background: var(--gradient-primary); color: #fff; padding: 0.5rem 1.2rem; font-size: 0.9rem; border-radius: var(--radius-md); text-transform: none; box-shadow: 0 2px 8px rgba(var(--primary-accent-rgb), 0.3);
+        }
+        .btn-launch-nav:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(var(--primary-accent-rgb), 0.4); filter: brightness(1.1); color: #fff; }
+        .btn-link-arrow { color: var(--primary-accent); font-weight: 600; }
+        .btn-link-arrow i { transition: transform 0.2s ease; display: inline-block; margin-left: 0.25rem; }
+        .btn-link-arrow:hover { color: var(--secondary-accent); }
+        .btn-link-arrow:hover i { transform: translateX(4px); }
+
+        /* --- Hero Section --- */
+        #hero {
+            min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden;
+            /* !! REPLACE Background !! Consider a subtle animated gradient, abstract particle effect, or high-quality cinematic background video/image */
+            background: var(--gradient-background); /* Fallback */
+            background: url('https://images.unsplash.com/photo-1536440136628-849c17781e66?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920&h=1080') no-repeat center center; /* Example Image - REPLACE */
+            background-size: cover; background-attachment: fixed;
+            padding: 150px 1.5rem 80px 1.5rem; text-align: center;
+        }
+        #hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(var(--bg-primary-rgb), 0.4) 0%, rgba(var(--bg-primary-rgb), 0.95) 80%, var(--bg-primary) 100%); z-index: 1; }
+        .hero-content { position: relative; z-index: 2; max-width: 1000px; margin: 0 auto;}
+        .hero-content h1 { font-size: clamp(3.5rem, 9vw, 7rem); margin-bottom: 1.5rem; line-height: 1.1; text-shadow: 0 6px 30px rgba(0,0,0,0.7); }
+        .hero-content .lead { font-size: 1.6rem; margin-bottom: 2.5rem; max-width: 800px; }
+        .hero-cta-buttons { display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .hero-subtext { font-size: 0.95rem; color: var(--text-medium); margin-top: 3.5rem; opacity: 0.9; letter-spacing: 0.02em; }
+        .hero-subtext i { color: var(--secondary-accent); vertical-align: middle; margin-right: 0.3em; font-size: 1.1em;}
+
+         /* --- How It Works Section --- */
+        #how-it-works { background-color: var(--bg-primary); }
+        .step-card { text-align: center; padding: 2rem; position: relative; }
+        .step-number {
+            font-size: 4rem; font-weight: 800; position: absolute; top: -1.5rem; left: 50%; transform: translateX(-50%);
+            color: rgba(var(--primary-accent-rgb), 0.1); /* Subtle number background */
+             z-index: 1;
+        }
+        .step-content { position: relative; z-index: 2; }
+        .step-icon { font-size: 3rem; margin-bottom: 1.5rem; display: inline-block; color: var(--primary-accent); }
+        .step-card h3 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+        .step-card p { font-size: 1rem; color: var(--text-medium); }
+
+        /* --- Feature Showcase (Tabs) --- */
+        #feature-showcase { background: var(--gradient-background); }
+        .feature-tabs .nav-link {
+            background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: var(--glass-border); border-bottom: none; color: var(--text-medium);
+            border-radius: var(--radius-md) var(--radius-md) 0 0; padding: 1rem 1.5rem; margin: 0 0.25rem;
+            font-weight: 600; transition: background-color 0.3s ease, color 0.3s ease; opacity: 0.7;
+        }
+        .feature-tabs .nav-link.active {
+             background: rgba(var(--primary-accent-rgb), 0.2); color: #fff; opacity: 1;
+             border: 1px solid rgba(var(--primary-accent-rgb), 0.4); border-bottom: none;
+         }
+        .feature-tabs .tab-content {
+             background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+             border: var(--glass-border); border-top: none; border-radius: 0 var(--radius-xl) var(--radius-xl) var(--radius-xl); /* Adjusted radius */
+             padding: 3rem; min-height: 450px; /* Ensure consistent height */
+             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35);
+             display: flex; /* Use flex for alignment */
+            align-items: center; /* Center content vertically */
+        }
+        .feature-tab-pane { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .feature-image { /* Style the image container */
+             border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 500px; /* Adjust as needed */
+         }
+        .feature-image img { max-width: 100%; height: auto; display: block; }
+
+        /* --- AI Spotlight Section --- */
+        #ai-spotlight { background-color: var(--bg-secondary); }
+        .ai-feature-item { display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 2rem; }
+        .ai-feature-icon { font-size: 2rem; color: var(--secondary-accent); padding-top: 0.25rem; }
+        .ai-feature-text h4 { margin-bottom: 0.25rem; font-size: 1.25rem; font-weight: 600; }
+        .ai-feature-text p { margin-bottom: 0; font-size: 1rem; color: var(--text-medium); }
+        .ai-image-container { /* Container for the cool AI visual */
+             display: flex; align-items: center; justify-content: center;
+             /* !! REPLACE Image !! Add an abstract AI network graphic or related illustration */
+             background: url('https://via.placeholder.com/500x500/0d0f13/22d3ee?text=AI+Visualization') center center no-repeat;
+             background-size: contain; min-height: 300px; border-radius: var(--radius-xl); padding: 2rem;
+        }
+
+
+         /* --- Community Hub Section --- */
+         #community-hub { background-color: var(--bg-primary); }
+         .community-card {
+             background: var(--surface-color); border-radius: var(--radius-lg);
+             padding: 2rem; border: 1px solid var(--border-color);
+             text-align: center; height: 100%;
+             transition: transform 0.3s ease, box-shadow 0.3s ease;
+         }
+         .community-card:hover { transform: translateY(-8px); box-shadow: 0 12px 35px rgba(0,0,0,0.2); }
+         .community-icon { font-size: 3rem; margin-bottom: 1rem; color: var(--tertiary-accent); }
+         .community-card h4 { font-size: 1.3rem; color: var(--text-light); margin-bottom: 0.5rem; }
+         .community-card p { font-size: 0.95rem; color: var(--text-medium); }
+         .avatar-stack { display: flex; justify-content: center; margin-top: 1rem; }
+         .avatar-stack img { width: 40px; height: 40px; background-color: var(--text-light); border-radius: 50%; border: 2px solid var(--bg-primary); margin-left: -10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+         .avatar-stack img:first-child { margin-left: 0; }
+
+        /* --- Testimonials Refined --- */
+        #testimonials { background: var(--gradient-background); }
+        .testimonial-card { background: rgba(var(--surface-rgb), 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(var(--border-color), 0.5); border-radius: var(--radius-lg); padding: 2.5rem; height: 100%; display: flex; flex-direction: column; box-shadow: 0 8px 30px rgba(0,0,0,0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .testimonial-card:hover { transform: translateY(-8px); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .testimonial-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .testimonial-header img { width: 50px; background-color: var(--text-light); height: 50px; border-radius: 50%; object-fit: cover; }
+        .testimonial-info strong { display: block; color: var(--text-light); font-weight: 600; }
+        .testimonial-info span { font-size: 0.9rem; color: var(--text-medium); }
+        .testimonial-card blockquote { font-size: 1.05rem; font-style: normal; color: var(--text-light); border-left: 3px solid var(--primary-accent); padding-left: 1.5rem; margin: 0; flex-grow: 1; line-height: 1.7; font-weight: 400; }
+        /* Stars can be added back if desired */
+
+         /* --- For Business / Partners Section --- */
+        #for-business { background-color: var(--bg-secondary); }
+        .business-content {
+             background: var(--surface-color); border: 1px solid var(--border-color);
+             border-radius: var(--radius-xl); padding: 3rem; display: flex; flex-wrap: wrap; align-items: center; gap: 2rem;
+         }
+        .business-text { flex: 1 1 300px; } /* Allow text to wrap */
+        .business-text h3 { color: var(--secondary-accent); }
+        .business-logos { flex: 1 1 250px; text-align: center; }
+         /* Style logos if provided */
+         .business-logos img { max-height: 40px; margin: 0.5rem 1rem; filter: grayscale(80%) contrast(0.8) brightness(1.5); transition: filter 0.3s ease; }
+         .business-logos img:hover { filter: none; }
+
+         /* --- FAQ Section --- */
+         #faq { background-color: var(--bg-primary); }
+         .faq-accordion .accordion-item {
+             background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-md) !important; margin-bottom: 1rem; overflow: hidden;
+         }
+         .faq-accordion .accordion-header { /* Remove default button styling */ }
+         .faq-accordion .accordion-button {
+            background-color: var(--surface-color); color: var(--text-light); font-weight: 600; font-size: 1.1rem;
+            border: none; box-shadow: none; padding: 1.25rem 1.5rem;
+         }
+         .faq-accordion .accordion-button:not(.collapsed) {
+             background: rgba(var(--primary-accent-rgb), 0.1); color: #fff; box-shadow: none;
+             border-bottom: 1px solid var(--border-color); /* Add separator */
+         }
+         .faq-accordion .accordion-button:focus { box-shadow: none; }
+         .faq-accordion .accordion-body { background-color: var(--surface-color); color: var(--text-medium); padding: 1.5rem; font-size: 1rem; }
+         .faq-accordion .accordion-button::after { /* Custom icon */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23a0aec0'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+             transition: transform .2s ease-in-out;
+         }
+         .faq-accordion .accordion-button:not(.collapsed)::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e"); /* White icon when open */
+            transform: rotate(-180deg);
+         }
+
+         /* --- Data Sources - Simplified --- */
+         #data-sources { background: var(--bg-secondary); padding: 3rem 1.5rem; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+         .source-logos-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem 2.5rem; }
+         .source-logo {
+            max-height: 80px; width: auto; 
+            filter: grayscale(40%) brightness(1);
+            opacity: 0.75; transition: filter 0.3s ease, opacity 0.3s ease;
+            background-color: rgba(var(--bg-primary-rgb), 0.4);
+            padding: 8px;
+            border-radius: 8px;
+         }
+         .source-logo:hover { filter: grayscale(0%) brightness(1); opacity: 1; }
+         .source-logo-spotify { max-height: 40px; filter: none !important; opacity: 0.9; } /* Keep spotify color */
+         .source-logo-spotify:hover { opacity: 1; }
+
+        /* --- Final CTA Refined --- */
+        #final-cta { background: var(--gradient-secondary); text-align: center; color: #fff; } /* Use secondary gradient */
+        #final-cta h2 { color: #fff; font-size: clamp(2.2rem, 6vw, 3.8rem); text-shadow: 0 3px 10px rgba(0,0,0,0.25); }
+        #final-cta p { color: rgba(255,255,255,0.95); max-width: 700px; margin: 1rem auto 3rem auto; font-size: 1.2rem; }
+        #final-cta .btn-cta-final { /* Slightly different style for final button */
+            background: #fff; color: var(--primary-accent); font-size: 1.1rem; padding: 1rem 2.5rem; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        #final-cta .btn-cta-final:hover { background: var(--text-light); color: var(--primary-accent); transform: translateY(-3px) scale(1.03); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        /* --- Footer Expanded --- */
+        footer {
+            padding: 4rem 1.5rem 2rem 1.5rem; background-color: var(--bg-primary); font-size: 0.95rem; color: var(--text-medium); border-top: 1px solid var(--border-color);
+        }
+        .footer-content { max-width: 1140px; margin: 0 auto; }
+        .footer-logo { display: block; text-align: center; margin-bottom: 2rem; }
+        .footer-logo a { color: #fff; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; }
+        .footer-logo i { color: var(--primary-accent); }
+        .footer-links { text-align: center; margin-bottom: 2rem; }
+        .footer-links a { color: var(--text-medium); margin: 0 0.75rem; transition: color 0.2s ease; }
+        .footer-links a:hover { color: #fff; }
+        .footer-social { text-align: center; margin-bottom: 2rem; }
+        .footer-social a { font-size: 1.4rem; color: var(--text-medium); margin: 0 0.75rem; transition: color 0.2s ease, transform 0.2s ease; display: inline-block; }
+        .footer-social a:hover { color: var(--primary-accent); transform: scale(1.1); }
+        .footer-legal { font-size: 0.85rem; text-align: center; border-top: 1px solid var(--border-color); padding-top: 2rem; opacity: 0.8; }
+        .footer-legal a { color: var(--text-medium); }
+        .footer-legal a:hover { color: #fff; text-decoration: underline; }
+
+        /* --- AOS Customization --- */
+        [data-aos="fade-up"] { transition-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1); } /* Smooth fade up */
+
+        /* Responsive Adjustments */
+        @media (max-width: 991px) {
+             h1 { font-size: clamp(3rem, 10vw, 5rem); }
+             .hero-content .lead { font-size: 1.3rem; }
+             .feature-tabs .tab-content { padding: 2rem; min-height: auto; flex-direction: column; text-align: center; }
+             .feature-content { order: 1; margin-top: 1.5rem; }
+             .feature-image { order: 0; margin-left: auto; margin-right: auto; max-width: 80%;}
+             #ai-spotlight .row > div { text-align: center; }
+             #ai-spotlight .ai-feature-item { justify-content: center; }
+             .business-content { flex-direction: column; text-align: center; }
+        }
+        @media (max-width: 767px) {
+             .section { padding: 4rem 1rem; }
+             .section-lg { padding: 5rem 1rem; }
+             .section-xl { padding: 6rem 1rem; }
+             h2 { font-size: clamp(1.8rem, 6vw, 2.5rem); }
+             .navbar-landing { padding: 0.5rem 0;}
+             .navbar-nav { margin-top: 1rem; background: rgba(var(--bg-secondary-rgb), 0.95); padding: 1rem; border-radius: var(--radius-md); backdrop-filter: blur(5px);}
+             .hero-cta-buttons { flex-direction: column; gap: 1rem; }
+             .footer-links, .footer-social { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1rem; }
+             .footer-links a, .footer-social a { margin: 0; }
+             .step-card { padding: 1.5rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-landing fixed-top navbar-dark">
+            <div class="container">
+                <a class="navbar-brand-landing" href="#">
+                    <i class="bi bi-activity"></i> AuraStream
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link" href="#feature-showcase">Features</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#ai-spotlight">AI Insights</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#community-hub">Community</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
+                        <!-- <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li> -->
+                        <li class="nav-item"><a class="nav-link" href="#for-business">Partners</a></li>
+                    </ul>
+                </div>
+                 <a href="msc.html" class="btn btn-launch-nav d-none d-lg-inline-block">Launch App</a>
+                 <!-- Optional: Add Sign In/Sign Up buttons here if applicable -->
+                 <!-- <a href="#signin" class="btn btn-link text-light d-none d-lg-inline-block ms-2">Sign In</a> -->
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="hero">
+            <div class="container hero-content">
+                <h1 data-aos="fade-up" data-aos-delay="100">
+                    Your <span class="text-gradient">Entertainment Universe</span>, Unified.
+                </h1>
+                <p class="lead" data-aos="fade-up" data-aos-delay="200">
+                    Stop juggling apps. AuraStream brings movie & TV discovery, watchlist management, personalized recommendations, community connection, and music discovery into one seamless, intelligent experience.
+                </p>
+                <div class="hero-cta-buttons" data-aos="fade-up" data-aos-delay="300">
+                    <a href="msc.html" class="btn btn-landing btn-landing-primary btn-lg">
+                       Enter AuraStream <i class="bi bi-stars ms-2"></i>
+                    </a>
+                     <a href="#feature-showcase" class="btn btn-landing btn-landing-secondary btn-lg">
+                        Explore Features <i class="bi bi-arrow-down-circle ms-2"></i>
+                     </a>
+                </div>
+                 <p class="hero-subtext" data-aos="fade-up" data-aos-delay="400">
+                     <i class="bi bi-check-circle-fill"></i> Universal Search <i class="bi bi-dot mx-1"></i> Smart Watchlist <i class="bi bi-dot mx-1"></i> AI Recommendations <i class="bi bi-dot mx-1"></i> Community Hub <i class="bi bi-dot mx-1"></i> Music Integration
+                 </p>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+         <section id="how-it-works" class="section section-darker">
+             <div class="container">
+                 <h2 class="text-center mb-5" data-aos="fade-up">Get Started in <span class="text-gradient">Seconds</span></h2>
+                 <div class="row text-center g-5">
+                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                         <div class="step-card">
+                             <div class="step-number">01</div>
+                             <div class="step-content">
+                                <i class="bi bi-search step-icon"></i>
+                                 <h3>Discover Effortlessly</h3>
+                                 <p>Search, browse genres, filter by network, or explore curated lists to find your next watch.</p>
+                             </div>
+                         </div>
+                     </div>
+                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                          <div class="step-card">
+                             <div class="step-number">02</div>
+                             <div class="step-content">
+                                 <i class="bi bi-bookmark-plus-fill step-icon"></i>
+                                 <h3>Organize & Track</h3>
+                                 <p>Add movies/shows to your universal watchlist, track progress, and see playback history.</p>
+                            </div>
+                         </div>
+                     </div>
+                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                         <div class="step-card">
+                             <div class="step-number">03</div>
+                             <div class="step-content">
+                                 <i class="bi bi-link-45deg step-icon"></i>
+                                 <h3>Connect & Experience</h3>
+                                 <p>Launch content (via available sources), dive into actor details, explore music, and join community discussions.</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </section>
+
+         <!-- Feature Showcase (Tabs) -->
+        <section id="feature-showcase" class="section section-gradient section-lg">
+            <div class="container">
+                <h2 class="text-center mb-3" data-aos="fade-up">All Your Entertainment Needs, <span class="text-gradient">Met</span></h2>
+                <p class="lead text-center mb-5" data-aos="fade-up" data-aos-delay="100">Explore the core pillars of the AuraStream experience.</p>
+
+                <div class="feature-tabs" data-aos="fade-up" data-aos-delay="200">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs justify-content-center border-0 mb-4" id="featureTab" role="tablist">
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="discover-tab" data-bs-toggle="tab" data-bs-target="#discover-pane" type="button" role="tab" aria-controls="discover-pane" aria-selected="true">
+                            <i class="bi bi-compass-fill me-2"></i>Discovery Engine
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="organize-tab" data-bs-toggle="tab" data-bs-target="#organize-pane" type="button" role="tab" aria-controls="organize-pane" aria-selected="false">
+                            <i class="bi bi-list-task me-2"></i>Smart Organization
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="connect-tab" data-bs-toggle="tab" data-bs-target="#connect-pane" type="button" role="tab" aria-controls="connect-pane" aria-selected="false">
+                             <i class="bi bi-people-fill me-2"></i>Connect & Share
+                         </button>
+                      </li>
+                       <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="music-tab" data-bs-toggle="tab" data-bs-target="#music-pane" type="button" role="tab" aria-controls="music-pane" aria-selected="false">
+                            <i class="bi bi-music-note-beamed me-2"></i>Music Integration
+                        </button>
+                      </li>
+                    </ul>
+
+                    <!-- Tab panes -->
+                    <div class="tab-content" id="featureTabContent">
+                      <div class="tab-pane fade show active feature-tab-pane" id="discover-pane" role="tabpanel" aria-labelledby="discover-tab" tabindex="0">
+                         <div class="row align-items-center g-4">
+                            <div class="col-lg-6 feature-content" data-aos="fade-right" data-aos-delay="300">
+                                <h3>Find Your Next Obsession</h3>
+                                <p>Go beyond basic search. Explore trending titles, dive deep into genres, discover hidden gems by network or studio, and get AI-powered suggestions tailored just for you.</p>
+                                <ul class="list-unstyled mt-3">
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Comprehensive Movie & TV Database</li>
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Actor/Director Deep Dives</li>
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Personalized AI Recommendations</li>
+                                </ul>
+                            </div>
+                            <div class="col-lg-6 feature-image" data-aos="fade-left" data-aos-delay="300">
+                                <!-- !! REPLACE IMAGE !! Mockup of Discovery/Search interface -->
+                                <img src="images/interface.png" alt="AuraStream Discovery Interface" class="img-fluid rounded shadow-lg">
+                            </div>
+                         </div>
+                      </div>
+                      <div class="tab-pane fade feature-tab-pane" id="organize-pane" role="tabpanel" aria-labelledby="organize-tab" tabindex="0">
+                         <div class="row align-items-center g-4">
+                             <div class="col-lg-6 feature-content" data-aos="fade-right" data-aos-delay="300">
+                                <h3>Your Personal Command Center</h3>
+                                <p>Never lose track of what to watch again. Build your ultimate watchlist, see where everything is available to stream, track your viewing history, and pick up right where you left off.</p>
+                                <ul class="list-unstyled mt-3">
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Universal Watchlist (Movies & TV)</li>
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> "Where to Watch" Integration</li>
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Viewing History & Progress Tracking</li>
+                                </ul>
+                            </div>
+                            <div class="col-lg-6 feature-image" data-aos="fade-left" data-aos-delay="300">
+                                <!-- !! REPLACE IMAGE !! Mockup of Watchlist or Details page showing tracking -->
+                                <img src="images/watchlist.png" alt="AuraStream Watchlist Management" class="img-fluid rounded shadow-lg">
+                            </div>
+                         </div>
+                      </div>
+                      <div class="tab-pane fade feature-tab-pane" id="connect-pane" role="tabpanel" aria-labelledby="connect-tab" tabindex="0">
+                          <div class="row align-items-center g-4">
+                             <div class="col-lg-6 feature-content" data-aos="fade-right" data-aos-delay="300">
+                                <h3>Engage with Your Passion</h3>
+                                <p>AuraStream is more than just tracking; it's about connection. Share your thoughts, see what friends are watching, join discussions, and rate content within a vibrant community.</p>
+                                <ul class="list-unstyled mt-3">
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> User Profiles & Reviews</li>
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Community Forums & Discussions</li>
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Activity Feeds & Social Sharing (Optional)</li>
+                                </ul>
+                            </div>
+                             <div class="col-lg-6 feature-image" data-aos="fade-left" data-aos-delay="300">
+                                <!-- !! REPLACE IMAGE !! Mockup of Community Profile or Discussion -->
+                                <img src="images/community.svg" alt="AuraStream Community Hub" class="img-fluid rounded shadow-lg">
+                             </div>
+                          </div>
+                      </div>
+                       <div class="tab-pane fade feature-tab-pane" id="music-pane" role="tabpanel" aria-labelledby="music-tab" tabindex="0">
+                          <div class="row align-items-center g-4">
+                             <div class="col-lg-6 feature-content" data-aos="fade-right" data-aos-delay="300">
+                                <h3>Feel the Soundtrack</h3>
+                                <p>Dive deeper into the auditory world of your favorite films and shows. Discover official soundtracks and related music directly within AuraStream, powered by Spotify integration.</p>
+                                <ul class="list-unstyled mt-3">
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Integrated Spotify Search</li>
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Discover Official Soundtracks</li>
+                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Explore Themed Playlists & Related Artists</li>
+                                </ul>
+                            </div>
+                             <div class="col-lg-6 feature-image" data-aos="fade-left" data-aos-delay="300">
+                                <!-- !! REPLACE IMAGE !! Mockup of Music/Spotify integration tab -->
+                                <img src="https://via.placeholder.com/500x350/14171d/10b981?text=Music+Integration+Mockup" alt="AuraStream Spotify Integration" class="img-fluid rounded shadow-lg">
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Spotlight Section -->
+        <section id="ai-spotlight" class="section section-darker">
+            <div class="container">
+                 <div class="row align-items-center g-5">
+                    <div class="col-lg-6" data-aos="fade-right">
+                        <span class="subheading text-gradient">INTELLIGENT FEATURES</span>
+                         <h2 class="mb-4">Beyond the Algorithm: <br><span class="text-gradient">AI-Enhanced Experience</span></h2>
+                        <p class="lead mb-4" style="font-size: 1.2rem;">AuraStream leverages Google's Gemini AI not just for recommendations, but for deeper understanding and context.</p>
+
+                        <div class="ai-feature-item">
+                             <i class="bi bi-stars ai-feature-icon"></i>
+                             <div class="ai-feature-text">
+                                <h4>Contextual Insights</h4>
+                                <p>Get AI-generated summaries of complex plots, thematic analysis, or explanations of why you might like a specific title based on your history.</p>
+                            </div>
+                         </div>
+                        <div class="ai-feature-item">
+                            <i class="bi bi-search-heart ai-feature-icon"></i>
+                             <div class="ai-feature-text">
+                                <h4>Smarter Discovery</h4>
+                                <p>Move beyond simple genre matching. AI helps uncover connections between films, directors, and actors you might have missed.</p>
+                            </div>
+                         </div>
+                         <div class="ai-feature-item">
+                            <i class="bi bi-graph-up-arrow ai-feature-icon"></i>
+                            <div class="ai-feature-text">
+                                <h4>Personalized Mood Matching</h4>
+                                <p>(Future Concept) Find content based on your current mood or desired vibe, powered by AI analysis of themes and tone.</p>
+                             </div>
+                         </div>
+                     </div>
+                     <div class="col-lg-6" data-aos="fade-left" data-aos-delay="100">
+                         <div class="ai-image-container">
+                             <!-- Placeholder for a visual representing AI/Neural Network -->
+                         </div>
+                     </div>
+                 </div>
+             </div>
+        </section>
+
+        <!-- Community Hub Section -->
+        <section id="community-hub" class="section section-primary">
+            <div class="container">
+                <h2 class="text-center mb-3" data-aos="fade-up">Join the <span class="text-gradient">Conversation</span></h2>
+                <p class="lead text-center mb-5" data-aos="fade-up" data-aos-delay="100">Connect with fellow movie buffs and TV fanatics.</p>
+                 <div class="row g-4 justify-content-center">
+                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="150">
+                        <div class="community-card">
+                             <i class="bi bi-chat-square-quote-fill community-icon"></i>
+                            <h4>Discuss & Debate</h4>
+                            <p>Dive into spoiler-filled (or safe!) discussions for every movie and episode. Share your theories and hot takes.</p>
+                             <div class="avatar-stack">
+                                <!-- !! REPLACE AVATARS !! -->
+                                 <img src="https://img.icons8.com/fluency/50/user-male-circle.png" alt="User Avatar">
+                                 <img src="https://img.icons8.com/color/48/circled-user-male-skin-type-6--v1.png" alt="User Avatar">
+                                 <img src="https://img.icons8.com/color/48/user-female-skin-type-1-2.png" alt="User Avatar">
+                            </div>
+                         </div>
+                    </div>
+                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="250">
+                         <div class="community-card">
+                             <i class="bi bi-star-fill community-icon" style="color: var(--secondary-accent);"></i>
+                            <h4>Rate & Review</h4>
+                            <p>Contribute your own ratings and detailed reviews. Help others discover great content and see community consensus.</p>
+                             <div class="avatar-stack">
+                                 <img src="https://img.icons8.com/color/48/circled-user-male-skin-type-4--v1.png" alt="User Avatar">
+                                 <img src="https://img.icons8.com/ios-filled/50/user-male-circle.png" alt="User Avatar">
+                             </div>
+                         </div>
+                    </div>
+                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="350">
+                        <div class="community-card">
+                             <i class="bi bi-person-plus-fill community-icon"></i>
+                            <h4>Follow & Connect</h4>
+                            <p>Follow friends or cinephiles you admire. See their activity, share recommendations, and build your network.</p>
+                            <div class="avatar-stack">
+                                <img src="https://img.icons8.com/color/48/gender-neutral-user.png" alt="User Avatar">
+                                <img src="https://img.icons8.com/metro/26/gender-neutral-user.png" alt="User Avatar">
+                                <img src="https://img.icons8.com/windows/32/gender-neutral-user.png" alt="User Avatar">
+                                <img src="https://img.icons8.com/glyph-neue/64/gender-neutral-user.png" alt="User Avatar">
+                            </div>
+                         </div>
+                    </div>
+                 </div>
+                <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="400">
+                    <a href="#community-signup" class="btn btn-landing btn-landing-secondary">Explore the Community <i class="bi bi-arrow-right ms-2"></i></a>
+                    <!-- Link to actual community page/feature or sign up -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="section section-gradient">
+            <div class="container">
+                <h2 class="text-center mb-5" data-aos="fade-up">Trusted by <span class="text-gradient">Enthusiasts</span> Like You</h2>
+                <div class="row g-4">
+                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="testimonial-card">
+                            <div class="testimonial-header">
+                                <!-- !! REPLACE IMAGE !! -->
+                                <img src="https://img.icons8.com/officel/80/circled-user-female-skin-type-3.png" alt="Sarah L">
+                                <div class="testimonial-info">
+                                     <strong>Sarah L.</strong>
+                                     <span>Film Blogger</span>
+                                 </div>
+                             </div>
+                             <blockquote>"AuraStream finally solved my 'too many lists' problem! Having watchlist, history, AND community reviews in one place is a game-changer. The AI insights are surprisingly accurate too."</blockquote>
+                        </div>
+                    </div>
+                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                         <div class="testimonial-card">
+                             <div class="testimonial-header">
+                                <!-- !! REPLACE IMAGE !! -->
+                                 <img src="https://img.icons8.com/officel/80/circled-user-male-skin-type-4.png" alt="David M">
+                                 <div class="testimonial-info">
+                                    <strong>David M.</strong>
+                                    <span>Casual Viewer</span>
+                                </div>
+                             </div>
+                            <blockquote>"Love how easy it is to see *where* I can actually watch something. The Spotify integration for soundtracks is a brilliant touch I didn't know I needed."</blockquote>
+                        </div>
+                    </div>
+                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="testimonial-card">
+                            <div class="testimonial-header">
+                                <!-- !! REPLACE IMAGE !! -->
+                                <img src="https://img.icons8.com/puffy-filled/32/gender-neutral-user.png" alt="Aisha B">
+                                <div class="testimonial-info">
+                                     <strong>Aisha B.</strong>
+                                    <span>Software Developer</span>
+                                </div>
+                             </div>
+                             <blockquote>"Clean UI, responsive, and integrates data sources effectively. Appreciate the transparency from the developer. Excited to see how the community features grow!"</blockquote>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- For Business / Partners Section -->
+        <section id="for-business" class="section section-darker">
+            <div class="container">
+                <h2 class="text-center mb-5" data-aos="fade-up">Partner with <span class="text-gradient">AuraStream</span></h2>
+                <div class="business-content" data-aos="fade-up" data-aos-delay="100">
+                     <div class="business-text">
+                        <h3>Unlock Opportunities</h3>
+                        <p class="text-medium">AuraStream offers unique partnership possibilities for content creators, distributors, advertisers, and data analysts. Leverage our engaged community and rich dataset.</p>
+                        <ul class="list-unstyled mt-3">
+                            <li><i class="bi bi-graph-up text-secondary-accent me-2"></i> Audience Insights & Analytics</li>
+                            <li><i class="bi bi-megaphone-fill text-secondary-accent me-2"></i> Targeted Content Promotion</li>
+                            <li><i class="bi bi-hdd-stack-fill text-secondary-accent me-2"></i> Data Licensing & API Access</li>
+                            <!-- <li><i class="bi bi-palette-fill text-secondary-accent me-2"></i> White-Label Solutions</li> -->
+                        </ul>
+                         <a href="#contact-partners" class="btn-link-arrow mt-3 d-inline-block">Learn More About Partnerships <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                     <div class="business-logos">
+                         <p class="text-light mb-3 fw-bold">Potential Use Cases For:</p>
+                         <!-- !! REPLACE LOGOS !! Examples - replace with relevant hypothetical or real partner types -->
+                         <img src="sm.svg" alt="Studio logo" class="source-logo">
+                         <img src="https://vidsrc.domains/vidsrc-logo-light.svg?t=1688251159" alt="Streaming Service Logo" class="source-logo">
+                         <img src="analytics.svg" alt="Analytics Firm Logo" class="source-logo">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+         <section id="faq" class="section section-primary">
+             <div class="container" style="max-width: 900px;">
+                 <h2 class="text-center mb-5" data-aos="fade-up">Frequently Asked <span class="text-gradient">Questions</span></h2>
+                 <div class="accordion faq-accordion" id="faqAccordion" data-aos="fade-up" data-aos-delay="100">
+                     <div class="accordion-item">
+                         <h2 class="accordion-header" id="headingOne">
+                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                Is AuraStream free to use?
+                             </button>
+                         </h2>
+                         <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                             <div class="accordion-body">
+                                Yes, the core features of AuraStream, including discovery, watchlist management, basic community interaction, and music search, are currently planned to be free. Advanced features or premium tiers might be considered in the future.
+                            </div>
+                         </div>
+                     </div>
+                     <div class="accordion-item">
+                         <h2 class="accordion-header" id="headingTwo">
+                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Does AuraStream host movies or TV shows?
+                             </button>
+                         </h2>
+                         <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                             <div class="accordion-body">
+                                No, AuraStream does not host any streamable content itself. It acts as a central hub to discover content and find where it's legally available to watch on various third-party streaming services. We provide links and embedded players where possible via official APIs.
+                            </div>
+                         </div>
+                     </div>
+                     <div class="accordion-item">
+                         <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                What data sources does AuraStream use?
+                            </button>
+                        </h2>
+                         <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                             <div class="accordion-body">
+                                AuraStream primarily utilizes APIs from The Movie Database (TMDb) for movie/TV show information, Spotify for music integration, Google's Gemini for AI insights, and aggregates "where to watch" data from various provider APIs (like JustWatch, subject to availability and terms).
+                            </div>
+                        </div>
+                     </div>
+                    <div class="accordion-item">
+                         <h2 class="accordion-header" id="headingFour">
+                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                How does the Community feature work?
+                            </button>
+                         </h2>
+                         <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                             <div class="accordion-body">
+                                Users can create profiles, rate and review content, participate in discussion forums tied to specific movies/shows, follow other users, and see activity feeds. Community features require user registration.
+                             </div>
+                         </div>
+                     </div>
+                     <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFive">
+                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                Who developed AuraStream?
+                            </button>
+                         </h2>
+                         <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+                             <div class="accordion-body">
+                                AuraStream is a concept project developed by Mohamed El-bouanani, a Computer Science student, as a portfolio piece showcasing full-stack web development skills and integration of various technologies and APIs.
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+             </div>
+        </section>
+
+
+        <!-- Data Sources Strip -->
+        <section id="data-sources">
+            <div class="container text-center">
+                <p class="small text-light mb-3" data-aos="fade-up">Powered by Leading Data Sources & APIs</p>
+                 <div class="source-logos-container" data-aos="fade-up" data-aos-delay="100">
+                     <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" title="The Movie Database (TMDb)">
+                        <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="TMDb Logo" class="source-logo">
+                     </a>
+                     <a href="https://developer.spotify.com/" target="_blank" rel="noopener noreferrer" title="Spotify API">
+                         <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_White.png" alt="Spotify Logo" class="source-logo source-logo-spotify">
+                     </a>
+                      <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" title="Google AI - Gemini API">
+                         <!-- !! Find a better Gemini/Google AI Logo if available, prefer SVG -->
+                         <img src="https://seeklogo.com/images/G/google-ai-logo-996E85F6FD-seeklogo.com.png" alt="Google AI Logo" class="source-logo" style="max-height: 45px;">
+                     </a>
+                     <span class="source-logo text-light" style="font-size: 0.9rem; filter: grayscale(50%) brightness(1.3); opacity: 0.75;">
+                          JustWatch (Data)
+                     </span>
+                      <span class="source-logo text-light" style="font-size: 0.9rem; filter: grayscale(50%) brightness(1.3); opacity: 0.75;">
+                         + More Providers
+                     </span>
+                 </div>
+             </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section id="final-cta" class="section section-xl">
+            <div class="container" data-aos="zoom-in-up">
+                <h2>Ready to Unify Your Entertainment?</h2>
+                <p>
+                    Experience the seamless flow of discovery, organization, and connection. Launch AuraStream now and rediscover the joy of movies and TV.
+                </p>
+                 <a href="msc.html" class="btn btn-landing btn-cta-final btn-lg">
+                   Launch AuraStream App <i class="bi bi-box-arrow-in-right ms-2"></i>
+                 </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-logo" data-aos="fade-up">
+                 <a class="navbar-brand-landing" href="#">
+                    <i class="bi bi-activity"></i> AuraStream
+                </a>
+            </div>
+            <div class="footer-links" data-aos="fade-up" data-aos-delay="100">
+                 <a href="#feature-showcase">Features</a>
+                 <a href="#ai-spotlight">AI Insights</a>
+                 <a href="#community-hub">Community</a>
+                 <a href="#faq">FAQ</a>
+                 <a href="#for-business">Partners</a>
+                 <a href="#">Blog</a> <!-- Example -->
+                 <a href="#">About Us</a> <!-- Example -->
+                 <a href="#">Contact</a> <!-- Example -->
+            </div>
+            <div class="footer-social" data-aos="fade-up" data-aos-delay="200">
+                <!-- !! Replace # with actual social media links !! -->
+                 <a href="#" title="Twitter / X"><i class="bi bi-twitter-x"></i></a>
+                 <a href="#" title="GitHub"><i class="bi bi-github"></i></a>
+                 <a href="#" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                 <a href="#" title="Discord"><i class="bi bi-discord"></i></a>
+            </div>
+            <div class="footer-legal text-center text-muted" data-aos="fade-up" data-aos-delay="300">
+                <p>© 2024 AuraStream Concept by Mohamed El-bouanani. All rights reserved (Concept Work).</p>
+                <p>Data sourced from TMDb, Spotify, Google Gemini, and other providers under their respective terms. AuraStream does not claim ownership of third-party content or data.</p>
+                <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a> | <a href="#hero">Back to Top</a></p>
+            </div>
+        </div>
+     </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <!-- Landing Page JS -->
+    <script>
+        // Navbar Scroll Effect
+        const navbar = document.querySelector('.navbar-landing');
+        if (navbar) {
+            const handleScroll = () => {
+                navbar.classList.toggle('scrolled', window.scrollY > 50);
+            }
+            // Run on load in case the page loads already scrolled
+            handleScroll();
+            window.addEventListener('scroll', handleScroll, { passive: true });
+
+             // Close mobile navbar on link click
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            const bsCollapse = new bootstrap.Collapse(document.getElementById('navbarNav'), { toggle: false });
+            navLinks.forEach(link => {
+                 link.addEventListener('click', () => {
+                    // Check if the navbar collapse is shown (mobile view)
+                    if (document.getElementById('navbarNav').classList.contains('show')) {
+                        bsCollapse.hide();
+                    }
+                });
+            });
+        }
+
+        // Initialize AOS
+        AOS.init({
+            duration: 700,    // values from 0 to 3000, with step 50ms
+            once: true,       // whether animation should happen only once - while scrolling down
+            offset: 100,      // offset (in px) from the original trigger point
+            easing: 'ease-out-quad', // default easing for AOS animations
+        });
+
+        // Optional: Smooth Scroll for internal links (can be enhanced)
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('href');
+                // Ensure it's a real internal link, not just '#' or '#!'
+                 if (targetId && targetId.length > 1 && targetId.startsWith('#')) {
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                         e.preventDefault();
+                         // Consider navbar height offset if navbar is fixed
+                         const navbarHeight = document.querySelector('.navbar-landing')?.offsetHeight || 0;
+                         const elementPosition = targetElement.getBoundingClientRect().top;
+                         const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+
+                         window.scrollTo({
+                             top: offsetPosition,
+                             behavior: "smooth"
+                         });
+                    }
+                }
+             });
+        });
+
+    </script>
+
+</body>
+</html>
