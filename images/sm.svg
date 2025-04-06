@@ -1,0 +1,47 @@
+<svg width="250" height="70" viewBox="0 0 250 70" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .text-inside {
+      font-family: 'Oswald', 'Impact', sans-serif; /* Condensed, strong font */
+      font-size: 24px;
+      font-weight: 500;
+      fill: #FFFFFF; /* White text inside */
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+    .studio-text {
+      font-family: 'Roboto', sans-serif; /* Clean supporting font */
+      font-size: 20px;
+      font-weight: 500;
+      fill: #333; /* Dark Gray */
+      dominant-baseline: central;
+       letter-spacing: 0.5px;
+    }
+    .aperture-segment {
+       fill: #4A5568; /* Dark Slate Gray */
+       transition: fill 0.2s ease;
+    }
+     .aperture-segment:hover { /* Optional subtle hover */
+       fill: #63B3ED; /* Blue */
+    }
+     .aperture-center { fill: #2D3748; } /* Darker center */
+
+  </style>
+
+  <!-- Aperture Mark -->
+  <g transform="translate(35, 35)"> <!-- Center the mark -->
+    <circle class="aperture-center" cx="0" cy="0" r="18"/>
+    <!-- Segments - rotated -->
+    <path class="aperture-segment" d="M0,-30 A30,30 0 0,1 26,-15 L15.6,-9 A18,18 0 0,0 0,-18 Z"/>
+    <path class="aperture-segment" d="M0,-30 A30,30 0 0,1 26,-15 L15.6,-9 A18,18 0 0,0 0,-18 Z" transform="rotate(60)"/>
+    <path class="aperture-segment" d="M0,-30 A30,30 0 0,1 26,-15 L15.6,-9 A18,18 0 0,0 0,-18 Z" transform="rotate(120)"/>
+    <path class="aperture-segment" d="M0,-30 A30,30 0 0,1 26,-15 L15.6,-9 A18,18 0 0,0 0,-18 Z" transform="rotate(180)"/>
+    <path class="aperture-segment" d="M0,-30 A30,30 0 0,1 26,-15 L15.6,-9 A18,18 0 0,0 0,-18 Z" transform="rotate(240)"/>
+    <path class="aperture-segment" d="M0,-30 A30,30 0 0,1 26,-15 L15.6,-9 A18,18 0 0,0 0,-18 Z" transform="rotate(300)"/>
+    <!-- Initials inside -->
+    <text x="0" y="0" class="text-inside">SM</text>
+  </g>
+
+  <!-- Studio Text -->
+   <text x="85" y="35" class="studio-text">.studio</text>
+
+</svg>

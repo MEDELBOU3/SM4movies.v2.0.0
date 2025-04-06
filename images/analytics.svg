@@ -1,0 +1,61 @@
+<svg width="300" height="80" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="synapseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5; stop-opacity:1" /> <!-- Indigo -->
+      <stop offset="100%" style="stop-color:#22D3EE; stop-opacity:1" /> <!-- Cyan -->
+    </linearGradient>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+       <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+       <feMerge>
+           <feMergeNode in="coloredBlur"/>
+           <feMergeNode in="SourceGraphic"/>
+       </feMerge>
+    </filter>
+  </defs>
+  <style>
+    .firm-name {
+      font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 26px;
+      font-weight: 600; /* Semi-bold */
+      fill: #1F2937; /* Dark Gray */
+      dominant-baseline: central;
+    }
+    .tagline { /* Optional tagline */
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 400;
+      fill: #6B7280; /* Medium Gray */
+      letter-spacing: 0.5px;
+      dominant-baseline: central;
+    }
+    .node-core { fill: url(#synapseGradient); filter: url(#softGlow); }
+    .node-connection { stroke: #9CA3AF; stroke-width: 1; opacity: 0.7; } /* Light Gray connections */
+    .node-highlight { stroke: #A78BFA; stroke-width: 1.5; opacity: 0.9; } /* Violet highlight */
+  </style>
+
+  <!-- Abstract Synapse Mark -->
+  <g transform="translate(45, 40)"> <!-- Center Mark Vertically -->
+    <!-- Connections (Background) -->
+    <line class="node-connection" x1="-35" y1="-15" x2="-10" y2="0" />
+    <line class="node-connection" x1="-30" y1="20" x2="-10" y2="5" />
+    <line class="node-connection" x1="5" y1="-25" x2="0" y2="-5" />
+    <line class="node-connection" x1="25" y1="-18" x2="5" y2="-5" />
+    <line class="node-connection" x1="35" y1="5" x2="8" y2="0" />
+    <line class="node-connection" x1="20" y1="28" x2="5" y2="8" />
+
+    <!-- Central Node Structure -->
+    <circle class="node-core" cx="0" cy="0" r="12" />
+    <circle style="fill:none; stroke:url(#synapseGradient); stroke-width:2; opacity:0.5;" cx="0" cy="0" r="18"/>
+    <circle style="fill:none; stroke:#E0E7FF; stroke-width:1; opacity:0.6;" cx="0" cy="0" r="23"/>
+
+     <!-- Highlight Connection -->
+     <line class="node-highlight" x1="-38" y1="5" x2="-12" y2="1" />
+     <line class="node-highlight" x1="28" y1="-8" x2="8" y2="-2" />
+  </g>
+
+  <!-- Logotype -->
+  <text x="100" y="35" class="firm-name">FirmName Analytics</text>
+  <!-- Optional Tagline -->
+   <text x="100" y="55" class="tagline">ADVANCING DATA INTELLIGENCE</text>
+
+</svg>
