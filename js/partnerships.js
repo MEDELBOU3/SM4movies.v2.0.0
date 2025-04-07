@@ -1,102 +1,136 @@
-// Initialize AOS
-AOS.init({
-    duration: 800,
-    once: true,
-    offset: 50,
-});
+   document.addEventListener('DOMContentLoaded', () => {
 
-// Navbar Scroll Effect
-const navbar = document.querySelector('.navbar-page');
-if (navbar) {
-    window.addEventListener('scroll', () => {
-        navbar.classList.toggle('scrolled', window.scrollY > 50);
-    }, { passive: true });
-}
+            // Initialize AOS
+            AOS.init({
+                duration: 700, // Slightly faster duration
+                once: true,
+                offset: 80, // Trigger sooner
+                easing: 'ease-out-cubic', // Smoother easing
+            });
 
-// Button Ripple Effect Enhancement
-const buttons = document.querySelectorAll('.btn');
-buttons.forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        const ripple = document.createElement('span');
-        ripple.classList.add('ripple');
-        const rect = btn.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        ripple.style.width = ripple.style.height = `${size}px`;
-        ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
-        ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
-        btn.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
-    });
-});
+            // Navbar Scroll Effect
+            const navbar = document.querySelector('.navbar-page');
+            if (navbar) {
+                 // Set initial state in case page loads already scrolled
+                navbar.classList.toggle('scrolled', window.scrollY > 30);
+                 // Add scroll listener
+                window.addEventListener('scroll', () => {
+                    navbar.classList.toggle('scrolled', window.scrollY > 30);
+                }, { passive: true });
+            }
 
-// Partnership Form Submission
-const partnershipForm = document.querySelector('#contact-form form');
-if (partnershipForm) {
-    partnershipForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const formData = new FormData(partnershipForm);
-        const data = {
-            name: formData.get('name'),
-            company: formData.get('company'),
-            email: formData.get('email'),
-            interest: formData.get('interest'),
-            message: formData.get('message')
-        };
+            // Button Ripple Effect
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    // Remove existing ripples first
+                    const existingRipple = btn.querySelector('.ripple');
+                    if(existingRipple) existingRipple.remove();
 
-        // Simulate form submission (replace with actual API call)
-        console.log('Partnership Inquiry Submitted:', data);
-        
-        // Mock success feedback
-        const submitButton = partnershipForm.querySelector('button[type="submit"]');
-        submitButton.disabled = true;
-        submitButton.textContent = 'Submitting...';
-        setTimeout(() => {
-            submitButton.textContent = 'Inquiry Sent!';
-            submitButton.classList.add('btn-success');
-            partnershipForm.reset();
-            setTimeout(() => {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Submit Inquiry';
-                submitButton.classList.remove('btn-success');
-            }, 2000);
-        }, 1000);
-    });
-}
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    const rect = btn.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height) * 1.5; // Make ripple larger
+                    ripple.style.width = ripple.style.height = `${size}px`;
 
-// Partner Logos Interaction
-const partnerLogos = document.querySelectorAll('.partner-logos img');
-partnerLogos.forEach(logo => {
-    logo.addEventListener('mouseover', () => {
-        logo.style.transform = 'scale(1.1)';
-        logo.style.filter = 'grayscale(0%) opacity(1)';
-    });
-    logo.addEventListener('mouseout', () =>ీ
+                    // Calculate position relative to button, centering the ripple effect
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
 
-        logo.style.transform = 'scale(1)';
-        logo.style.filter = 'grayscale(100%) opacity(0.7)';
-    });
-});
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
 
-// CSS for Ripple Effect and Success State (Add this to partnerships.css if not present)
-const style = document.createElement('style');
-style.textContent = `
-    .ripple {
-        position: absolute;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        transform: scale(0);
-        animation: ripple 0.6s linear;
-        pointer-events: none;
-    }
-    @keyframes ripple {
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
-    .btn-success {
-        background: var(--secondary-accent);
-        box-shadow: var(--shadow-glow-secondary);
-    }
-`;
-document.head.appendChild(style);
+                    // Using `this` refers to the button clicked
+                    this.appendChild(ripple);
+
+                    // Clean up the ripple element after animation
+                    ripple.addEventListener('animationend', () => {
+                         ripple.remove();
+                     });
+                });
+            });
+
+            // Bootstrap Form Validation Initialization
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+
+
+            // Enhanced (Simulated) Partnership Form Submission Feedback
+            const partnershipForm = document.querySelector('#contact-form form');
+            if (partnershipForm) {
+                partnershipForm.addEventListener('submit', (e) => {
+                    // Prevent default ONLY if validation passes for simulation
+                     if (!partnershipForm.checkValidity()) {
+                        // Bootstrap validation will handle visual feedback
+                        return;
+                    }
+                     // Prevent actual submission for this demo
+                    e.preventDefault();
+
+                    const formData = new FormData(partnershipForm);
+                    const data = Object.fromEntries(formData.entries()); // More modern way
+
+                    console.log('Simulating Partnership Inquiry Submission:', data);
+
+                    const submitButton = partnershipForm.querySelector('button[type="submit"]');
+                    const originalButtonText = submitButton.textContent;
+                    const originalButtonClasses = submitButton.className; // Store original classes
+
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = `
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Submitting...`;
+
+                    // Simulate network delay
+                    setTimeout(() => {
+                        submitButton.textContent = 'Inquiry Sent Successfully!';
+                        // Temporarily add a success class (ensure this class is defined in CSS)
+                        submitButton.className = originalButtonClasses.replace('btn-primary-gradient', 'btn-success'); // Swap classes
+
+
+                        // Reset form after showing success
+                         partnershipForm.reset();
+                         partnershipForm.classList.remove('was-validated'); // Remove validation states
+
+
+                        // Revert button back after a delay
+                        setTimeout(() => {
+                             submitButton.disabled = false;
+                             submitButton.textContent = originalButtonText;
+                             submitButton.className = originalButtonClasses; // Restore original classes
+
+                        }, 2500); // Time success message is shown
+
+                    }, 1500); // Simulate 1.5 second submission time
+                });
+             }
+
+             // Smooth scroll for internal links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                     const targetId = this.getAttribute('href');
+                     if (targetId && targetId.length > 1 && targetId.startsWith('#')) {
+                        const targetElement = document.querySelector(targetId);
+                         if (targetElement) {
+                            e.preventDefault();
+                             const navbarHeight = document.querySelector('.navbar-page')?.offsetHeight || 70; // Get dynamic height or fallback
+                             const elementPosition = targetElement.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition + window.pageYOffset - navbarHeight - 15; // Add slight offset below navbar
+
+                             window.scrollTo({
+                                top: offsetPosition,
+                                 behavior: "smooth"
+                            });
+                         }
+                     }
+                });
+            });
+
+        }); // End DOMContentLoaded
