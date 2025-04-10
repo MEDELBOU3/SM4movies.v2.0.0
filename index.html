@@ -3,18 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraStream - Your Unified Universe for Movies, TV & Community</title>
+    <meta name="google-signin-client_id" content="886921214537-35pg2kb0qjfnd807cpjbk1bgi41dfhf5.apps.googleusercontent.com">
+    <meta name="description" content="AuraStream: Your unified universe for discovering, organizing, and connecting around movies, TV shows, and music. Powered by AI insights.">
 
-    <!-- Fonts & Icons -->
+    <title>AuraStream - Unified Entertainment Universe</title>
+
+    <!-- Preconnect for Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://unpkg.com">
+
+    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- AOS Animate On Scroll Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+
+    <!-- Enhanced Styles -->
+    <style>
+        /* --- Root Variables --- */
+        :root {
+            --bg-primary: #040508; /* Slightly darker primary */
+            --bg-secondary: #0a0c10; /* Dark secondary */
+            --surface-color: #111319; /* Interactive surface */
+            --bg-primary-rgb: 4, 5, 8;
+            --bg-secondary-rgb: 10, 12, 16;
+            --surface-rgb: 17, 19, 25;
+
+            --primary-accent: #a855f7; /* Vibrant Purple */
+            --primary-accent-rgb: 168, 85, 247;
+            --secondary-accent: #22d3ee; /* Bright Cyan */
+            --secondary-accent-rgb: 34, 211, 238;
+            --tertiary-accent: #f43f5e; /* Rose accent */
+            --tertiary-accent-rgb: 244, 63, 94;
+
+            --text-light: #f0f3f7; /* Slightly softer white */
+            --text-medium: #a0aec0; /* Adjusted medium grey */
+            --text-dark: #1e293b;
+
+            --border-color: #2a3343; /* Muted border */
+            --border-color-light: rgba(var(--primary-accent-rgb), 0.3); /* Accent border */
+
+            --font-family-base: 'Inter', 'Poppins', sans-serif;
+            --font-family-headings: 'Poppins', sans-serif;
+
+            --radius-sm: 0.375rem;
+            --radius-md: 0.625rem; /* Slightly larger medium */
+            --radius-lg: 0.875rem;
+            --radius-xl: 1.5rem; /* Larger XL radius */
+            --radius-pill: 50px;
+
+            --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.4);
+            --shadow-glow-primary: 0 0 35px rgba(var(--primary-accent-rgb), 0.4);
+            --shadow-glow-secondary: 0 0 30px rgba(var(--secondary-accent-rgb), 0.3);
+            --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+
+            --gradient-primary: linear-gradient(125deg, var(--primary-accent) 0%, var(--secondary-accent) 100%);
+            --gradient-secondary: linear-gradient(125deg, var(--primary-accent) 0%, var(--tertiary-accent) 100%);
+            --gradient-background: linear-gradient(170deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            --gradient-text: linear-gradient(125deg, var(--primary-accent), var(--secondary-accent), #6366f1); /* Added indigo */
+            --gradient-border: linear-gradient(125deg, var(--primary-accent), var(--secondary-accent));
+
+            --glass-bg: rgba(var(--surface-rgb), 0.65);
+            --glass-blur: 18px;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+
+            --transition-fast: 0.2s ease-out;
+            --transition-medium: 0.3s ease-in-out;
+            --transition-slow: 0.5s ease;
+        }
+
+        /* --- Base & Typography --- */
+        ::selection { background-color: rgba(var(--primary-accent-rgb), 0.5); color: #fff; }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--bg-primary);
+            color: var(--text-light);
+            font-weight: 400; line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4, h5, h6 { font-family: var(--font-family-headings); font-weight: 700; color: #fff; letter-spacing: -0.03em; margin-bottom: 0.8rem; }
+        h1 { font-weight: 800; line-height: 1.15; letter-spacing: -0.04em; }
+        h2 { font-size: clamp(2.2rem, 5.5vw, 3.2rem); }
+        h3 { font-size: clamp(1.6rem, 4.5vw, 2rem); font-weight: 600; }
+        p { color: var(--text-medium); font-size: 1.05rem; margin-bottom: 1rem; }
+        a { color: var(--primary-accent); text-decoration: none; transition: all var(--transition-fast); }
+        a:hover { color: var(--secondary-accent); filter: brightness(1.15); }
+        a:focus-visible { /* Enhanced focus state */
+            outline: 2px solid var(--secondary-accent);
+            outline-offset: 3px;
+            border-radius: var(--radius-sm);
+        }
+        *:focus-visible { /* General focus visibility */
+             outline: 2px solid var(--secondary-accent) !important;
+             outline-offset: 2px !important;
+             box-shadow: 0 0 0 4px rgba(var(--secondary-accent-rgb), 0.3) !important;
+        }
+
+        /* --- Layout & Sections --- */
+        .section { padding: 6rem 1.5rem; overflow: hidden; position: relative; border-bottom: 1px solid rgba(var(--border-color), 0.3); }
+        .section:last-of-type { border-bottom: none; }
+        .section-lg { padding: 8rem 1.5rem; }
+        .section-xl { padding: 10rem 1.5rem; }
+        .section-darker { background-color: var(--bg-secondary); }
+        .section-gradient { background: var(--gradient-background); }
+        .text-gradient {
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            display: inline-block;
+            background-size: 200% auto; /* For animation */
+            animation: gradientShift 12s linear infinite alternate; /* Slow, alternating shift */
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        .lead { font-size: clamp(1.1rem, 2.5vw, 1.3rem); font-weight: 400; color: var(--text-light); opacity: 0.9; max-width: 750px; margin-left: auto; margin-right: auto; }
+        .subheading { font-size: 1rem; color: var(--text-medium); font-weight: 600; margin-bottom: 3rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+        /* --- Buttons --- */
+        .btn {
+            transition: all var(--transition-medium);
+            letter-spacing: 0.03em; font-weight: 600;
+            border-radius: var(--radius-pill); /* Pill shape */
+            padding: 0.8rem 1.8rem; /* Adjusted padding */
+            border: none;
+            position: relative; overflow: hidden; /* For potential ripple effects */
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-lg { padding: 1rem 2.5rem; font-size: 1.1rem; }
+
+        .btn-landing-primary {
+            background: var(--gradient-primary); color: #fff;
+            box-shadow: var(--shadow-glow-primary), var(--shadow-md);
+        }
+        .btn-landing-primary:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 14px 28px rgba(var(--primary-accent-rgb), 0.25), 0 10px 10px rgba(0,0,0,0.22);
+            filter: brightness(1.1); color: #fff;
+        }
+
+        .btn-landing-secondary {
+            border: 2px solid var(--border-color); color: var(--text-light);
+            font-weight: 500; background: transparent;
+            padding: calc(0.8rem - 2px) calc(1.8rem - 2px); /* Adjust padding for border */
+        }
+        .btn-landing-secondary:hover {
+            background-color: rgba(var(--primary-accent-rgb), 0.1);
+            border-color: var(--border-color-light);
+            color: var(--primary-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(var(--primary-accent-rgb), 0.1);
+        }
+
+        .btn-launch-nav {
+            background: var(--gradient-primary); color: #fff;
+            padding: 0.5rem 1.2rem; font-size: 0.9rem;
+            border-radius: var(--radius-md); text-transform: none;
+            box-shadow: 0 3px 10px rgba(var(--primary-accent-rgb), 0.3);
+        }
+        .btn-launch-nav:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 15px rgba(var(--primary-accent-rgb), 0.4);
+            filter: brightness(1.1); color: #fff;
+        }
+        .btn-link-arrow { color: var(--primary-accent); font-weight: 600; }
+        .btn-link-arrow i { transition: transform var(--transition-fast); display: inline-block; margin-left: 0.35rem; }
+        .btn-link-arrow:hover { color: var(--secondary-accent); }
+        .btn-link-arrow:hover i { transform: translateX(5px); }
+
+        /* --- Navbar --- */
+        .navbar-landing {
+            padding: 1rem 0; /* Increased padding */
+            background-color: transparent; position: fixed; top: 0; left: 0; right: 0;
+            z-index: 1030; transition: background-color var(--transition-medium), box-shadow var(--transition-medium), padding var(--transition-medium);
+        }
+        .navbar-landing.scrolled {
+            background-color: rgba(var(--bg-secondary-rgb), 0.85);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            box-shadow: var(--shadow-md);
+            border-bottom: 1px solid rgba(var(--border-color), 0.5);
+            padding: 0.6rem 0;
+        }
+        .navbar-brand-landing { font-weight: 700; font-size: 1.8rem; color: #fff !important; letter-spacing: -0.04em; transition: transform var(--transition-fast); }
+        .navbar-brand-landing:hover { transform: scale(1.03); }
+        .navbar-brand-landing i { color: var(--primary-accent); transition: transform 0.5s ease; }
+        .navbar-brand-landing:hover i { transform: rotate(360deg); }
+
+        .navbar-nav .nav-link { color: var(--text-medium); font-weight: 500; padding: 0.6rem 1.1rem; position: relative; transition: color var(--transition-fast); border-radius: var(--radius-sm); }
+        .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active { color: #fff; background-color: rgba(255, 255, 255, 0.05); }
+        .navbar-nav .nav-link::after { display: none; /* Remove underline effect for cleaner look */ }
+
+        /* --- Navbar Auth Enhancements --- */
+        .navbar-landing .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .navbar-landing .navbar-collapse { flex-grow: 0; }
+        .navbar-right-section { display: flex; align-items: center; gap: 0.8rem; }
+        .auth-hidden { opacity: 0; transform: translateY(-5px) scale(0.95); pointer-events: none; display: none !important; }
+        #googleSignInButtonContainer, #userInfo,
+        #googleSignInButtonContainerMobile, #userInfoMobile {
+            transition: opacity var(--transition-medium), transform var(--transition-medium);
+        }
+        #googleSignInButtonContainer { display: inline-block; vertical-align: middle; }
+        #userInfo, #userInfoMobile { display: flex; align-items: center; gap: 0.8rem; background: rgba(var(--surface-rgb), 0.5); padding: 0.3rem 0.8rem; border-radius: var(--radius-pill); border: 1px solid var(--border-color-light); box-shadow: var(--shadow-inner), 0 0 15px rgba(var(--primary-accent-rgb), 0.2); }
+        #userInfo img, #userInfoMobile img { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--primary-accent); background-color: var(--surface-color); transition: transform var(--transition-fast); }
+        #userInfo:hover img, #userInfoMobile:hover img { transform: scale(1.1); }
+        #userName, #userNameMobile { color: var(--text-light); font-weight: 500; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+        #signOutButton, #signOutButtonMobile { font-size: 0.8rem; padding: 0.3rem 0.8rem; background-color: rgba(var(--tertiary-accent-rgb), 0.15); border: 1px solid rgba(var(--tertiary-accent-rgb), 0.5); color: var(--tertiary-accent); border-radius: var(--radius-pill); transition: all var(--transition-fast); white-space: nowrap; }
+        #signOutButton:hover, #signOutButtonMobile:hover { background-color: rgba(var(--tertiary-accent-rgb), 0.3); color: #fff; transform: scale(1.05); box-shadow: 0 0 10px rgba(var(--tertiary-accent-rgb), 0.4); }
+        .navbar-auth-mobile { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 1rem; padding: 1rem 0; border-top: 1px solid var(--border-color); }
+        #googleSignInButtonContainerMobile > div { margin: 0 auto; }
+
+        /* --- Hero Section --- */
+        #hero {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; text-align: center;
+            padding: 160px 1.5rem 100px 1.5rem;
+            /* Keep your background image */
+            background: url('https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+            background-size: cover;
+        }
+        #hero::before { /* Overlay */
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(var(--bg-primary-rgb), 0.6) 0%, rgba(var(--bg-primary-rgb), 0.95) 75%, var(--bg-primary) 100%);
+            z-index: 1;
+        }
+        #hero::after { /* Subtle bottom glow */
+             content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 150px;
+             background: radial-gradient(ellipse at bottom, rgba(var(--primary-accent-rgb), 0.15) 0%, transparent 70%);
+             z-index: 1; pointer-events: none;
+        }
+        .hero-content { position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; }
+        .hero-content h1 { font-size: clamp(3.8rem, 9vw, 6.5rem); margin-bottom: 1.5rem; line-height: 1.1; text-shadow: 0 8px 35px rgba(0,0,0,0.8); }
+        .hero-content .lead { font-size: clamp(1.2rem, 3vw, 1.6rem); margin-bottom: 3rem; max-width: 800px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .hero-cta-buttons { display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        .hero-subtext { font-size: 0.95rem; color: var(--text-medium); margin-top: 4rem; opacity: 0.9; letter-spacing: 0.02em; }
+        .hero-subtext i { color: var(--secondary-accent); vertical-align: middle; margin-right: 0.3em; font-size: 1.1em; animation: subtleBounce 2s infinite ease-in-out; }
+        @keyframes subtleBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+        /* --- How It Works Section --- */
+        #how-it-works { background-color: var(--bg-primary); }
+        .step-card { text-align: center; padding: 2.5rem 2rem; position: relative; background-color: var(--surface-color); border-radius: var(--radius-lg); border: 1px solid var(--border-color); transition: transform var(--transition-medium), box-shadow var(--transition-medium); height: 100%; box-shadow: var(--shadow-md); }
+        .step-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg), 0 0 20px rgba(var(--primary-accent-rgb), 0.1); border-color: var(--border-color-light); }
+        .step-number { font-size: 4.5rem; font-weight: 800; position: absolute; top: -1.8rem; left: 50%; transform: translateX(-50%); color: rgba(var(--primary-accent-rgb), 0.08); z-index: 1; pointer-events: none; }
+        .step-content { position: relative; z-index: 2; }
+        .step-icon { font-size: 3.5rem; margin-bottom: 1.8rem; display: inline-block; color: var(--primary-accent); transition: transform var(--transition-medium); }
+        .step-card:hover .step-icon { transform: scale(1.1) rotate(-5deg); }
+        .step-card h3 { font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--text-light); }
+        .step-card p { font-size: 1rem; color: var(--text-medium); }
+
+        /* --- Feature Showcase (Tabs) --- */
+        #feature-showcase { background: var(--gradient-background); padding: 8rem 1.5rem; }
+        .feature-tabs .nav-link {
+            background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: var(--glass-border); border-bottom: none; color: var(--text-medium);
+            border-radius: var(--radius-md) var(--radius-md) 0 0; padding: 1.1rem 1.8rem; margin: 0 0.3rem;
+            font-weight: 600; transition: all var(--transition-medium); opacity: 0.75; position: relative; bottom: 0; /* For hover effect */
+        }
+         .feature-tabs .nav-link:hover { opacity: 1; background: rgba(var(--surface-rgb), 0.8); bottom: -2px; }
+        .feature-tabs .nav-link.active {
+             background: rgba(var(--primary-accent-rgb), 0.25); color: #fff; opacity: 1;
+             border: 1px solid var(--border-color-light); border-bottom: none;
+             box-shadow: 0 -5px 15px rgba(var(--primary-accent-rgb), 0.1);
+             bottom: -1px; /* Visually lift active tab */
+         }
+        .feature-tabs .tab-content {
+             background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+             border: var(--glass-border); border-top: none;
+             border-radius: 0 var(--radius-xl) var(--radius-xl) var(--radius-xl);
+             padding: 3.5rem; min-height: 480px;
+             box-shadow: var(--shadow-lg);
+             display: flex; align-items: center;
+        }
+        .feature-tab-pane { animation: fadeInScale 0.6s ease-out forwards; }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .feature-image { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); max-width: 500px; }
+        .feature-image img { max-width: 100%; height: auto; display: block; }
+        .feature-content ul li i { transition: transform var(--transition-fast); }
+        .feature-content ul li:hover i { transform: scale(1.2); }
+
+        /* --- AI Spotlight Section --- */
+        #ai-spotlight { background-color: var(--bg-secondary); }
+        .ai-feature-item { display: flex; align-items: flex-start; gap: 1.8rem; margin-bottom: 2.5rem; }
+        .ai-feature-icon { font-size: 2.2rem; color: var(--secondary-accent); padding-top: 0.3rem; transition: transform var(--transition-medium); }
+        .ai-feature-item:hover .ai-feature-icon { transform: scale(1.15); }
+        .ai-feature-text h4 { margin-bottom: 0.3rem; font-size: 1.3rem; font-weight: 600; color: var(--text-light); }
+        .ai-feature-text p { margin-bottom: 0; font-size: 1rem; color: var(--text-medium); line-height: 1.6; }
+        .ai-image-container {
+             display: flex; align-items: center; justify-content: center;
+             min-height: 350px; border-radius: var(--radius-xl); padding: 2rem;
+             background: radial-gradient(circle at center, rgba(var(--surface-rgb),0.8) 0%, transparent 70%), var(--surface-color); /* Added radial */
+             box-shadow: var(--shadow-inner);
+        }
+        /* SVG Animation - Subtle pulse on highlighted nodes */
+        #ai-spotlight svg .ai-node-highlight, #ai-spotlight svg .ai-core {
+            animation: pulseNode 3s infinite ease-in-out alternate;
+        }
+        @keyframes pulseNode {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        #ai-spotlight svg .ai-connection-highlight {
+             animation: pulseLine 4s infinite ease-in-out alternate;
+        }
+         @keyframes pulseLine {
+            0% { stroke-width: 1.5; }
+            100% { stroke-width: 2.5; }
+        }
+
+
+        /* --- Community Hub Section --- */
+         #community-hub { background-color: var(--bg-primary); }
+         .community-card {
+             background: var(--surface-color); border-radius: var(--radius-lg);
+             padding: 2.5rem; border: 1px solid var(--border-color);
+             text-align: center; height: 100%;
+             transition: transform var(--transition-medium), box-shadow var(--transition-medium), border-color var(--transition-medium);
+             position: relative; overflow: hidden; /* For pseudo-element */
+             box-shadow: var(--shadow-md);
+         }
+         .community-card::before { /* Subtle background glow on hover */
+             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+             background: radial-gradient(ellipse at center, rgba(var(--primary-accent-rgb), 0.1) 0%, transparent 80%);
+             opacity: 0; transition: opacity var(--transition-medium); z-index: 0;
+         }
+         .community-card:hover {
+             transform: translateY(-10px);
+             box-shadow: var(--shadow-lg), 0 0 30px rgba(var(--primary-accent-rgb), 0.15);
+             border-color: var(--border-color-light);
+         }
+         .community-card:hover::before { opacity: 1; }
+         .community-content { position: relative; z-index: 1; } /* Content above pseudo-element */
+         .community-icon { font-size: 3.5rem; margin-bottom: 1.5rem; color: var(--tertiary-accent); transition: transform var(--transition-medium); }
+         .community-card:hover .community-icon { transform: scale(1.1); }
+         .community-card h4 { font-size: 1.4rem; color: var(--text-light); margin-bottom: 0.75rem; }
+         .community-card p { font-size: 0.95rem; color: var(--text-medium); }
+         .avatar-stack { display: flex; justify-content: center; margin-top: 1.5rem;}
+         .avatar-stack img { width: 42px; height: 42px; background-color: var(--primary-accent); border-radius: 50%; border: 3px solid var(--bg-primary); margin-left: -12px; box-shadow: 0 3px 8px rgba(0,0,0,0.4); transition: transform var(--transition-fast); }
+         .avatar-stack img:hover { transform: scale(1.15) translateY(-2px); z-index: 10; }
+         .avatar-stack img:first-child { margin-left: 0; }
+
+        /* --- Testimonials Refined --- */
+        #testimonials { background: var(--gradient-background); }
+        .testimonial-card {
+            background: rgba(var(--surface-rgb), 0.85);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(var(--border-color), 0.6);
+            border-radius: var(--radius-lg); padding: 2.8rem; height: 100%;
+            display: flex; flex-direction: column;
+            box-shadow: var(--shadow-md);
+            transition: transform var(--transition-medium), box-shadow var(--transition-medium), border-color var(--transition-medium);
+            position: relative;
+        }
+        .testimonial-card::before { /* Subtle quote icon */
+             content: '\f6d0'; /* Bootstrap Icons quote */
+             font-family: 'bootstrap-icons';
+             position: absolute; top: 1rem; right: 1.5rem;
+             font-size: 4rem; color: var(--primary-accent);
+             opacity: 0.08; z-index: 0;
+             transform: rotate(-10deg);
+        }
+        .testimonial-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg), 0 0 25px rgba(var(--primary-accent-rgb), 0.1);
+            border-color: var(--border-color-light);
+        }
+        .testimonial-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem; position: relative; z-index: 1; }
+        .testimonial-header img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-accent); }
+        .testimonial-info strong { display: block; color: var(--text-light); font-weight: 600; font-size: 1.1rem; }
+        .testimonial-info span { font-size: 0.9rem; color: var(--text-medium); }
+        .testimonial-card blockquote { font-size: 1.05rem; font-style: italic; color: var(--text-light); border-left: 4px solid var(--primary-accent); padding-left: 1.8rem; margin: 0; flex-grow: 1; line-height: 1.75; font-weight: 400; position: relative; z-index: 1; }
+
+        /* --- For Business / Partners Section --- */
+        #for-business { background-color: var(--bg-secondary); }
+        .business-content {
+             background: var(--surface-color); border: 1px solid var(--border-color);
+             border-radius: var(--radius-xl); padding: 4rem; display: flex; flex-wrap: wrap; align-items: center; gap: 3rem;
+             box-shadow: var(--shadow-md);
+         }
+        .business-text { flex: 1 1 320px; }
+        .business-text h3 { color: var(--secondary-accent); margin-bottom: 1rem; }
+        .business-text ul li { margin-bottom: 0.5rem; }
+        .business-text ul li i { color: var(--secondary-accent); transition: transform var(--transition-fast); }
+        .business-text ul li:hover i { transform: translateX(3px); }
+        .business-logos { flex: 1 1 280px; text-align: center; }
+        .business-logos img { max-height: 45px; margin: 0.8rem 1.2rem; filter: grayscale(85%) contrast(0.7) brightness(1.6); transition: all var(--transition-medium); opacity: 0.8; }
+        .business-logos img:hover { filter: none; opacity: 1; transform: scale(1.1); }
+
+        /* --- FAQ Section --- */
+         #faq { background-color: var(--bg-primary); }
+         .faq-accordion .accordion-item {
+             background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-md) !important; margin-bottom: 1rem; overflow: hidden; transition: border-color var(--transition-medium);
+         }
+         .faq-accordion .accordion-item:hover { border-color: var(--border-color-light); }
+         .faq-accordion .accordion-header { }
+         .faq-accordion .accordion-button {
+            background-color: var(--surface-color); color: var(--text-light); font-weight: 600; font-size: 1.15rem;
+            border: none; box-shadow: none; padding: 1.4rem 1.8rem;
+            transition: background-color var(--transition-medium), color var(--transition-medium);
+         }
+         .faq-accordion .accordion-button:not(.collapsed) {
+             background: rgba(var(--primary-accent-rgb), 0.15); color: #fff; box-shadow: none;
+             border-bottom: 1px solid var(--border-color-light); /* Add separator */
+         }
+         .faq-accordion .accordion-button:focus { box-shadow: none; /* Handled by global focus */ }
+         .faq-accordion .accordion-body { background-color: var(--surface-color); color: var(--text-medium); padding: 1.8rem; font-size: 1rem; border-top: 1px solid var(--border-color); }
+         /* Keep existing icon styles, they work well */
+         .faq-accordion .accordion-button::after { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23a0aec0'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e"); transition: transform .3s ease-in-out; }
+         .faq-accordion .accordion-button:not(.collapsed)::after { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e"); transform: rotate(-180deg); }
+
+         /* --- Data Sources Strip --- */
+         #data-sources { background: var(--bg-secondary); padding: 3.5rem 1.5rem; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+         .source-logos-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.5rem 3rem; }
+         .source-logo {
+            max-height: 45px; /* Reduced default height */
+            width: auto;
+            filter: grayscale(50%) brightness(1.2); /* Adjusted filter */
+            opacity: 0.8; transition: all var(--transition-medium);
+            padding: 10px; border-radius: var(--radius-md);
+             background-color: rgba(var(--surface-rgb), 0.5);
+             vertical-align: middle; /* Align text and image logos */
+             display: inline-block; /* Needed for text spans */
+         }
+         .source-logo img { display: block; max-height: 100%; } /* Ensure img respects container height */
+         .source-logo:hover { filter: grayscale(0%) brightness(1); opacity: 1; transform: scale(1.1); background-color: rgba(var(--surface-rgb), 0.8); }
+         .source-logo-spotify { max-height: 40px; filter: none !important; opacity: 0.95; }
+         .source-logo-spotify:hover { opacity: 1; }
+         .source-logo.text-light { /* Styles for text-based logos */
+             font-size: 1rem; padding: 10px 15px; font-weight: 500;
+         }
+
+
+        /* --- Final CTA Refined --- */
+        #final-cta { background: var(--gradient-secondary); text-align: center; color: #fff; padding: 10rem 1.5rem; border: none; }
+        #final-cta h2 { color: #fff; font-size: clamp(2.5rem, 7vw, 4rem); text-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        #final-cta p { color: rgba(255,255,255,0.95); max-width: 700px; margin: 1.5rem auto 3.5rem auto; font-size: 1.25rem; }
+        #final-cta .btn-cta-final {
+            background: #fff; color: var(--primary-accent); font-size: 1.15rem; padding: 1.1rem 2.8rem; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+        }
+        #final-cta .btn-cta-final:hover { background: var(--text-light); color: var(--primary-accent); transform: translateY(-5px) scale(1.05); box-shadow: 0 12px 35px rgba(0,0,0,0.35); }
+
+        /* --- Footer Expanded --- */
+        footer {
+            padding: 5rem 1.5rem 2.5rem 1.5rem; background-color: var(--bg-primary); font-size: 0.95rem; color: var(--text-medium); border-top: 1px solid var(--border-color);
+        }
+        .footer-content { max-width: 1140px; margin: 0 auto; }
+        .footer-logo { display: block; text-align: center; margin-bottom: 2.5rem; }
+        .footer-logo a { color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; }
+        .footer-logo i { color: var(--primary-accent); }
+        .footer-links { text-align: center; margin-bottom: 2.5rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1.5rem; }
+        .footer-links a { color: var(--text-medium); transition: color var(--transition-fast); font-weight: 500; }
+        .footer-links a:hover { color: #fff; }
+        .footer-social { text-align: center; margin-bottom: 2.5rem; }
+        .footer-social a { font-size: 1.5rem; color: var(--text-medium); margin: 0 0.9rem; transition: all var(--transition-fast); display: inline-block; }
+        .footer-social a:hover { color: var(--primary-accent); transform: scale(1.2) translateY(-2px); text-shadow: 0 0 15px rgba(var(--primary-accent-rgb), 0.5); }
+        .footer-legal { font-size: 0.85rem; text-align: center; border-top: 1px solid var(--border-color); padding-top: 2.5rem; opacity: 0.7; }
+        .footer-legal a { color: var(--text-medium); }
+        .footer-legal a:hover { color: #fff; text-decoration: underline; }
+
+        /* --- AOS Customization --- */
+        [data-aos="fade-up"] { transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); } /* Smoother fade */
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 991px) {
+             h1 { font-size: clamp(3rem, 10vw, 5rem); }
+             .hero-content .lead { font-size: 1.3rem; }
+             .feature-tabs .tab-content { padding: 2.5rem; min-height: auto; flex-direction: column; text-align: center; }
+             .feature-content { order: 1; margin-top: 2rem; }
+             .feature-image { order: 0; margin-left: auto; margin-right: auto; max-width: 85%; }
+             #ai-spotlight .row > div { text-align: center; }
+             #ai-spotlight .ai-feature-item { justify-content: center; }
+             .business-content { flex-direction: column; text-align: center; padding: 3rem; }
+             .navbar-right-section.d-none { display: none !important; }
+             .navbar-auth-mobile { display: flex !important; }
+             #userName, #userNameMobile { max-width: 80px; } /* Adjust name width */
+        }
+        @media (max-width: 767px) {
+             .section { padding: 5rem 1rem; }
+             .section-lg { padding: 6rem 1rem; }
+             .section-xl { padding: 8rem 1rem; }
+             h2 { font-size: clamp(1.9rem, 7vw, 2.6rem); }
+             .navbar-landing { padding: 0.7rem 0; }
+             .navbar-landing.scrolled { padding: 0.5rem 0; }
+             .navbar-collapse { background: rgba(var(--bg-secondary-rgb), 0.98); backdrop-filter: blur(10px); padding: 1rem; border-radius: var(--radius-md); margin-top: 0.5rem; border: 1px solid var(--border-color); }
+             .hero-cta-buttons { flex-direction: column; gap: 1.2rem; }
+             .step-card { padding: 2rem 1.5rem; }
+             .footer-links, .footer-social { gap: 0.8rem 1.2rem; }
+             .footer-social a { font-size: 1.4rem; margin: 0 0.6rem; }
+        }
+
+    </style>
 </head>
 <body>
 
@@ -28,19 +521,39 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                    <ul class="navbar-nav">
+                    <!-- Main Nav Links -->
+                    <ul class="navbar-nav mb-2 mb-lg-0 mx-auto"> <!-- Use mx-auto for centering if needed -->
                         <li class="nav-item"><a class="nav-link" href="#feature-showcase">Features</a></li>
                         <li class="nav-item"><a class="nav-link" href="#ai-spotlight">AI Insights</a></li>
                         <li class="nav-item"><a class="nav-link" href="#community-hub">Community</a></li>
                         <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
-                        <!-- <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li> -->
                         <li class="nav-item"><a class="nav-link" href="#for-business">Partners</a></li>
                     </ul>
+
+                    <!-- Mobile Auth Section (Inside Collapse) -->
+                    <div class="navbar-auth-mobile d-lg-none">
+                        <a href="msc.html" id="launchAppButtonMobile" class="btn btn-launch-nav d-block w-75">Launch App</a>
+                        <div id="googleSignInButtonContainerMobile" class="logged-out-view w-100"></div>
+                        <div id="userInfoMobile" class="logged-in-view auth-hidden w-100">
+                            <img id="userPictureMobile" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="User Avatar">
+                            <span id="userNameMobile">User Name</span>
+                            <button id="signOutButtonMobile" class="btn btn-sm">Sign Out</button>
+                        </div>
+                    </div>
                 </div>
-                 <a href="app.html" class="btn btn-launch-nav d-none d-lg-inline-block">Launch App</a>
-                 <!-- Optional: Add Sign In/Sign Up buttons here if applicable -->
-                 <!-- <a href="#signin" class="btn btn-link text-light d-none d-lg-inline-block ms-2">Sign In</a> -->
+
+                <!-- Desktop Auth Section (Outside Collapse) -->
+                <div class="navbar-right-section d-none d-lg-flex">
+                    <a href="msc.html" id="launchAppButton" class="btn btn-launch-nav">Launch App</a>
+                    <div id="googleSignInButtonContainer" class="logged-out-view"></div>
+                    <div id="userInfo" class="logged-in-view auth-hidden">
+                        <img id="userPicture" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="User Avatar">
+                        <span id="userName">User Name</span>
+                        <button id="signOutButton" class="btn btn-sm">Sign Out</button>
+                    </div>
+                </div>
             </div>
         </nav>
     </header>
@@ -56,7 +569,7 @@
                     Stop juggling apps. AuraStream brings movie & TV discovery, watchlist management, personalized recommendations, community connection, and music discovery into one seamless, intelligent experience.
                 </p>
                 <div class="hero-cta-buttons" data-aos="fade-up" data-aos-delay="300">
-                    <a href="app.html" class="btn btn-landing btn-landing-primary btn-lg">
+                    <a href="msc.html" class="btn btn-landing btn-landing-primary btn-lg">
                        Enter AuraStream <i class="bi bi-stars ms-2"></i>
                     </a>
                      <a href="#feature-showcase" class="btn btn-landing btn-landing-secondary btn-lg">
@@ -73,7 +586,8 @@
          <section id="how-it-works" class="section section-darker">
              <div class="container">
                  <h2 class="text-center mb-5" data-aos="fade-up">Get Started in <span class="text-gradient">Seconds</span></h2>
-                 <div class="row text-center g-5">
+                 <div class="row text-center g-4 g-lg-5"> <!-- Increased gap -->
+                     <!-- Step 1 -->
                      <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                          <div class="step-card">
                              <div class="step-number">01</div>
@@ -84,6 +598,7 @@
                              </div>
                          </div>
                      </div>
+                     <!-- Step 2 -->
                      <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
                           <div class="step-card">
                              <div class="step-number">02</div>
@@ -94,6 +609,7 @@
                             </div>
                          </div>
                      </div>
+                     <!-- Step 3 -->
                      <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
                          <div class="step-card">
                              <div class="step-number">03</div>
@@ -108,549 +624,488 @@
              </div>
          </section>
 
-         <!-- Feature Showcase (Tabs) -->
+        <!-- Feature Showcase (Tabs) -->
         <section id="feature-showcase" class="section section-gradient section-lg">
-            <div class="container">
-                <h2 class="text-center mb-3" data-aos="fade-up">All Your Entertainment Needs, <span class="text-gradient">Met</span></h2>
-                <p class="lead text-center mb-5" data-aos="fade-up" data-aos-delay="100">Explore the core pillars of the AuraStream experience.</p>
-
-                <div class="feature-tabs" data-aos="fade-up" data-aos-delay="200">
-                    <!-- Nav tabs -->
-                    <ul class="nav nav-tabs justify-content-center border-0 mb-4" id="featureTab" role="tablist">
-                      <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="discover-tab" data-bs-toggle="tab" data-bs-target="#discover-pane" type="button" role="tab" aria-controls="discover-pane" aria-selected="true">
-                            <i class="bi bi-compass-fill me-2"></i>Discovery Engine
-                        </button>
-                      </li>
-                      <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="organize-tab" data-bs-toggle="tab" data-bs-target="#organize-pane" type="button" role="tab" aria-controls="organize-pane" aria-selected="false">
-                            <i class="bi bi-list-task me-2"></i>Smart Organization
-                        </button>
-                      </li>
-                      <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="connect-tab" data-bs-toggle="tab" data-bs-target="#connect-pane" type="button" role="tab" aria-controls="connect-pane" aria-selected="false">
-                             <i class="bi bi-people-fill me-2"></i>Connect & Share
-                         </button>
-                      </li>
-                       <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="music-tab" data-bs-toggle="tab" data-bs-target="#music-pane" type="button" role="tab" aria-controls="music-pane" aria-selected="false">
-                            <i class="bi bi-music-note-beamed me-2"></i>Music Integration
-                        </button>
-                      </li>
-                    </ul>
-
-                    <!-- Tab panes -->
-                    <div class="tab-content" id="featureTabContent">
-                      <div class="tab-pane fade show active feature-tab-pane" id="discover-pane" role="tabpanel" aria-labelledby="discover-tab" tabindex="0">
-                         <div class="row align-items-center g-4">
-                            <div class="col-lg-6 feature-content" data-aos="fade-right" data-aos-delay="300">
-                                <h3>Find Your Next Obsession</h3>
-                                <p>Go beyond basic search. Explore trending titles, dive deep into genres, discover hidden gems by network or studio, and get AI-powered suggestions tailored just for you.</p>
-                                <ul class="list-unstyled mt-3">
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Comprehensive Movie & TV Database</li>
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Actor/Director Deep Dives</li>
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Personalized AI Recommendations</li>
-                                </ul>
-                            </div>
-                            <div class="col-lg-6 feature-image" data-aos="fade-left" data-aos-delay="300">
-                                <!-- !! REPLACE IMAGE !! Mockup of Discovery/Search interface -->
-                                <img src="images/interface.png" alt="AuraStream Discovery Interface" class="img-fluid rounded shadow-lg">
-                            </div>
+             <!-- Content remains largely the same, styles above handle enhancements -->
+             <div class="container">
+                 <h2 class="text-center mb-3" data-aos="fade-up">All Your Entertainment Needs, <span class="text-gradient">Met</span></h2>
+                 <p class="lead text-center mb-5" data-aos="fade-up" data-aos-delay="100">Explore the core pillars of the AuraStream experience.</p>
+                 <div class="feature-tabs" data-aos="fade-up" data-aos-delay="200">
+                     <ul class="nav nav-tabs justify-content-center border-0 mb-4" id="featureTab" role="tablist">
+                         <li class="nav-item" role="presentation"><button class="nav-link active" id="discover-tab" data-bs-toggle="tab" data-bs-target="#discover-pane" type="button" role="tab" aria-controls="discover-pane" aria-selected="true"><i class="bi bi-compass-fill me-2"></i>Discovery Engine</button></li>
+                         <li class="nav-item" role="presentation"><button class="nav-link" id="organize-tab" data-bs-toggle="tab" data-bs-target="#organize-pane" type="button" role="tab" aria-controls="organize-pane" aria-selected="false"><i class="bi bi-list-task me-2"></i>Smart Organization</button></li>
+                         <li class="nav-item" role="presentation"><button class="nav-link" id="connect-tab" data-bs-toggle="tab" data-bs-target="#connect-pane" type="button" role="tab" aria-controls="connect-pane" aria-selected="false"><i class="bi bi-people-fill me-2"></i>Connect & Share</button></li>
+                         <li class="nav-item" role="presentation"><button class="nav-link" id="music-tab" data-bs-toggle="tab" data-bs-target="#music-pane" type="button" role="tab" aria-controls="music-pane" aria-selected="false"><i class="bi bi-music-note-beamed me-2"></i>Music Integration</button></li>
+                     </ul>
+                     <div class="tab-content" id="featureTabContent">
+                         <div class="tab-pane fade show active feature-tab-pane" id="discover-pane" role="tabpanel" aria-labelledby="discover-tab" tabindex="0">
+                             <div class="row align-items-center g-5"> <div class="col-lg-6 feature-content order-lg-1 order-2" data-aos="fade-right" data-aos-delay="300"><h3>Find Your Next Obsession</h3> <p>Go beyond basic search. Explore trending titles, dive deep into genres, discover hidden gems by network or studio, and get AI-powered suggestions tailored just for you.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Comprehensive Movie & TV Database</li> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Actor/Director Deep Dives</li> <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Personalized AI Recommendations</li> </ul> </div> <div class="col-lg-6 feature-image order-lg-2 order-1" data-aos="fade-left" data-aos-delay="300"> <img src="images/interface.png" alt="AuraStream Discovery Interface" class="img-fluid rounded shadow-lg" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x350/111319/a0aec0?text=Discovery+Mockup';"> </div> </div>
                          </div>
-                      </div>
-                      <div class="tab-pane fade feature-tab-pane" id="organize-pane" role="tabpanel" aria-labelledby="organize-tab" tabindex="0">
-                         <div class="row align-items-center g-4">
-                             <div class="col-lg-6 feature-content" data-aos="fade-right" data-aos-delay="300">
-                                <h3>Your Personal Command Center</h3>
-                                <p>Never lose track of what to watch again. Build your ultimate watchlist, see where everything is available to stream, track your viewing history, and pick up right where you left off.</p>
-                                <ul class="list-unstyled mt-3">
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Universal Watchlist (Movies & TV)</li>
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> "Where to Watch" Integration</li>
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Viewing History & Progress Tracking</li>
-                                </ul>
-                            </div>
-                            <div class="col-lg-6 feature-image" data-aos="fade-left" data-aos-delay="300">
-                                <!-- !! REPLACE IMAGE !! Mockup of Watchlist or Details page showing tracking -->
-                                <img src="images/watchlist.png" alt="AuraStream Watchlist Management" class="img-fluid rounded shadow-lg">
-                            </div>
+                         <div class="tab-pane fade feature-tab-pane" id="organize-pane" role="tabpanel" aria-labelledby="organize-tab" tabindex="0">
+                             <div class="row align-items-center g-5"> <div class="col-lg-6 feature-content order-lg-1 order-2" data-aos="fade-right" data-aos-delay="300"><h3>Your Personal Command Center</h3> <p>Never lose track of what to watch again. Build your ultimate watchlist, see where everything is available to stream, track your viewing history, and pick up right where you left off.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Universal Watchlist (Movies & TV)</li> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> "Where to Watch" Integration</li> <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Viewing History & Progress Tracking</li> </ul> </div> <div class="col-lg-6 feature-image order-lg-2 order-1" data-aos="fade-left" data-aos-delay="300"> <img src="images/watchlist.png" alt="AuraStream Watchlist Management" class="img-fluid rounded shadow-lg" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x350/111319/a0aec0?text=Watchlist+Mockup';"> </div> </div>
                          </div>
-                      </div>
-                      <div class="tab-pane fade feature-tab-pane" id="connect-pane" role="tabpanel" aria-labelledby="connect-tab" tabindex="0">
-                          <div class="row align-items-center g-4">
-                             <div class="col-lg-6 feature-content" data-aos="fade-right" data-aos-delay="300">
-                                <h3>Engage with Your Passion</h3>
-                                <p>AuraStream is more than just tracking; it's about connection. Share your thoughts, see what friends are watching, join discussions, and rate content within a vibrant community.</p>
-                                <ul class="list-unstyled mt-3">
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> User Profiles & Reviews</li>
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Community Forums & Discussions</li>
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Activity Feeds & Social Sharing (Optional)</li>
-                                </ul>
-                            </div>
-                             <div class="col-lg-6 feature-image" data-aos="fade-left" data-aos-delay="300">
-                                <!-- !! REPLACE IMAGE !! Mockup of Community Profile or Discussion -->
-                                <img src="images/community.svg" alt="AuraStream Community Hub" class="img-fluid rounded shadow-lg">
-                             </div>
-                          </div>
-                      </div>
-                       <div class="tab-pane fade feature-tab-pane" id="music-pane" role="tabpanel" aria-labelledby="music-tab" tabindex="0">
-                          <div class="row align-items-center g-4">
-                             <div class="col-lg-6 feature-content" data-aos="fade-right" data-aos-delay="300">
-                                <h3>Feel the Soundtrack</h3>
-                                <p>Dive deeper into the auditory world of your favorite films and shows. Discover official soundtracks and related music directly within AuraStream, powered by Spotify integration.</p>
-                                <ul class="list-unstyled mt-3">
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Integrated Spotify Search</li>
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Discover Official Soundtracks</li>
-                                    <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Explore Themed Playlists & Related Artists</li>
-                                </ul>
-                            </div>
-                             <div class="col-lg-6 feature-image" data-aos="fade-left" data-aos-delay="300">
-                                <!-- !! REPLACE IMAGE !! Mockup of Music/Spotify integration tab -->
-                                <img src="images/spotify.png" alt="AuraStream Spotify Integration" class="img-fluid rounded shadow-lg">
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-                </div>
-            </div>
+                         <div class="tab-pane fade feature-tab-pane" id="connect-pane" role="tabpanel" aria-labelledby="connect-tab" tabindex="0">
+                             <div class="row align-items-center g-5"> <div class="col-lg-6 feature-content order-lg-1 order-2" data-aos="fade-right" data-aos-delay="300"><h3>Engage with Your Passion</h3> <p>AuraStream is more than just tracking; it's about connection. Share your thoughts, see what friends are watching, join discussions, and rate content within a vibrant community.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> User Profiles & Reviews</li> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Community Forums & Discussions</li> <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Activity Feeds & Social Sharing (Optional)</li> </ul> </div> <div class="col-lg-6 feature-image order-lg-2 order-1" data-aos="fade-left" data-aos-delay="300"> <img src="images/community.svg" alt="AuraStream Community Hub" class="img-fluid rounded shadow-lg" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x350/111319/a0aec0?text=Community+Mockup';"> </div> </div>
+                         </div>
+                         <div class="tab-pane fade feature-tab-pane" id="music-pane" role="tabpanel" aria-labelledby="music-tab" tabindex="0">
+                             <div class="row align-items-center g-5"> <div class="col-lg-6 feature-content order-lg-1 order-2" data-aos="fade-right" data-aos-delay="300"><h3>Feel the Soundtrack</h3> <p>Dive deeper into the auditory world of your favorite films and shows. Discover official soundtracks and related music directly within AuraStream, powered by Spotify integration.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Integrated Spotify Search</li> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Discover Official Soundtracks</li> <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Explore Themed Playlists & Related Artists</li> </ul> </div> <div class="col-lg-6 feature-image order-lg-2 order-1" data-aos="fade-left" data-aos-delay="300"> <img src="images/spotify.png" alt="AuraStream Spotify Integration" class="img-fluid rounded shadow-lg" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x350/111319/a0aec0?text=Spotify+Mockup';"> </div> </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
         </section>
 
         <!-- AI Spotlight Section -->
         <section id="ai-spotlight" class="section section-darker">
-            <div class="container">
+             <!-- Content remains the same, styles above handle enhancements -->
+              <div class="container">
                  <div class="row align-items-center g-5">
                     <div class="col-lg-6" data-aos="fade-right">
-                        <span class="subheading text-gradient">INTELLIGENT FEATURES</span>
+                        <span class="subheading text-gradient">Intelligent Features</span>
                         <h2 class="mb-4">Beyond the Algorithm: <br><span class="text-gradient">AI-Enhanced Experience</span></h2>
-                        <p class="lead mb-4" style="font-size: 1.2rem;">AuraStream leverages Google's Gemini AI not just for recommendations, but for deeper understanding and context.</p>
-
-                        <div class="ai-feature-item">
-                             <i class="bi bi-stars ai-feature-icon"></i>
-                             <div class="ai-feature-text">
-                                <h4>Contextual Insights</h4>
-                                <p>Get AI-generated summaries of complex plots, thematic analysis, or explanations of why you might like a specific title based on your history.</p>
-                            </div>
-                         </div>
-                        <div class="ai-feature-item">
-                            <i class="bi bi-search-heart ai-feature-icon"></i>
-                             <div class="ai-feature-text">
-                                <h4>Smarter Discovery</h4>
-                                <p>Move beyond simple genre matching. AI helps uncover connections between films, directors, and actors you might have missed.</p>
-                            </div>
-                         </div>
-                         <div class="ai-feature-item">
-                            <i class="bi bi-graph-up-arrow ai-feature-icon"></i>
-                            <div class="ai-feature-text">
-                                <h4>Personalized Mood Matching</h4>
-                                <p>(Future Concept) Find content based on your current mood or desired vibe, powered by AI analysis of themes and tone.</p>
-                             </div>
-                         </div>
-                     </div>
-                     <div class="col-lg-6" data-aos="fade-left" data-aos-delay="100">
-                         <div class="ai-image-container">
-                             <!-- Placeholder for a visual representing AI/Neural Network -->
-                             <svg width="100%" height="100%" viewBox="0 0 400 350" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width: 500px; margin: auto; display: block;">
-                                <defs>
-                                    <!-- Gradient for the core and highlights -->
-                                    <linearGradient id="aiCoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#a855f7; stop-opacity:1" /> <!-- AuraStream Purple -->
-                                        <stop offset="100%" style="stop-color:#22d3ee; stop-opacity:1" /> <!-- AuraStream Cyan -->
-                                    </linearGradient>
-                                    <!-- Subtle Glow Filter -->
-                                    <filter id="aiGlow" x="-50%" y="-50%" width="200%" height="200%">
-                                        <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
-                                        <feMerge>
-                                            <feMergeNode in="coloredBlur"/>
-                                            <feMergeNode in="SourceGraphic"/>
-                                        </feMerge>
-                                    </filter>
-                                    <!-- Mask for fading lines -->
-                                    <mask id="fadeMask">
-                                        <rect width="100%" height="100%" fill="url(#fadeGradient)" />
-                                        <linearGradient id="fadeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                            <stop offset="0%" style="stop-color:white; stop-opacity:0.1" />
-                                            <stop offset="20%" style="stop-color:white; stop-opacity:1" />
-                                            <stop offset="80%" style="stop-color:white; stop-opacity:1" />
-                                            <stop offset="100%" style="stop-color:white; stop-opacity:0.1" />
-                                        </linearGradient>
-                                    </mask>
-                                </defs>
-                            
-                                <style>
-                                    .ai-bg-lines {
-                                        stroke: #2d3748; /* Dark Border Color */
-                                        stroke-width: 1;
-                                        opacity: 0.6;
-                                       /* mask: url(#fadeMask); /* Optional: Fade lines at edges */
-                                    }
-                                    .ai-connection-primary {
-                                        stroke: #4a5568; /* Medium Gray */
-                                        stroke-width: 1.5;
-                                        stroke-linecap: round;
-                                        opacity: 0.8;
-                                    }
-                                     .ai-connection-highlight {
-                                        stroke: url(#aiCoreGradient);
-                                        stroke-width: 2;
-                                        stroke-linecap: round;
-                                        filter: url(#aiGlow);
-                                         opacity: 0.8;
-                                    }
-                                    .ai-node-secondary {
-                                        fill: #374151; /* Dark Surface Color */
-                                        stroke: #4a5568; /* Medium Gray */
-                                        stroke-width: 1;
-                                    }
-                                     .ai-node-highlight {
-                                        fill: #1f2937; /* Darker background */
-                                         stroke: #22d3ee; /* Cyan */
-                                        stroke-width: 1.5;
-                                    }
-                                     .ai-core-glow-bg {
-                                         fill: #a855f7; /* Purple base for glow */
-                                         opacity: 0.2;
-                                         filter: url(#aiGlow);
-                                     }
-                                    .ai-core {
-                                        fill: url(#aiCoreGradient);
-                                    }
-                                </style>
-                            
-                                <!-- Background subtle pattern/lines (optional) -->
-                                 <g opacity="0.3">
-                                     <line class="ai-bg-lines" x1="50" y1="10" x2="350" y2="10" />
-                                     <line class="ai-bg-lines" x1="40" y1="40" x2="360" y2="40" />
-                                     <line class="ai-bg-lines" x1="10" y1="80" x2="390" y2="80" />
-                                     <line class="ai-bg-lines" x1="10" y1="270" x2="390" y2="270" />
-                                     <line class="ai-bg-lines" x1="40" y1="310" x2="360" y2="310" />
-                                     <line class="ai-bg-lines" x1="50" y1="340" x2="350" y2="340" />
-                                      <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(100 0)" />
-                                      <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(150 0)" />
-                                      <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(250 0)" />
-                                      <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(300 0)" />
-                                 </g>
-                            
-                            
-                                <!-- Network Structure -->
-                                <g transform="translate(200, 175)"> <!-- Center the core structure -->
-                            
-                                    <!-- Core Element -->
-                                    <circle class="ai-core-glow-bg" cx="0" cy="0" r="50"/>
-                                    <circle class="ai-core" cx="0" cy="0" r="30"/>
-                            
-                                     <!-- Connecting Lines -->
-                                    <line class="ai-connection-primary" x1="0" y1="0" x2="-100" y2="-80" />
-                                    <line class="ai-connection-primary" x1="0" y1="0" x2="-120" y2="30" />
-                                    <line class="ai-connection-primary" x1="0" y1="0" x2="-40" y2="100" />
-                                    <line class="ai-connection-highlight" x1="0" y1="0" x2="80" y2="-110" /> <!-- Highlight Line -->
-                                    <line class="ai-connection-primary" x1="0" y1="0" x2="130" y2="-30" />
-                                    <line class="ai-connection-primary" x1="0" y1="0" x2="100" y2="90" />
-                                    <line class="ai-connection-primary" x1="0" y1="0" x2="20" y2="130" />
-                            
-                            
-                                    <!-- Secondary Lines (Connecting outer nodes) -->
-                                    <path class="ai-connection-primary" d="M -100 -80 Q -110 0 -120 30" stroke-width="1" fill="none"/>
-                                    <path class="ai-connection-primary" d="M -120 30 Q -70 70 -40 100" stroke-width="1" fill="none"/>
-                                    <path class="ai-connection-primary" d="M 130 -30 Q 120 40 100 90" stroke-width="1" fill="none"/>
-                                    <path class="ai-connection-highlight" d="M 80 -110 Q 120 -80 130 -30" stroke-width="1.5" fill="none" /> <!-- Highlight Line connecting nodes -->
-                                     <path class="ai-connection-primary" d="M 100 90 Q 50 120 20 130" stroke-width="1" fill="none"/>
-                            
-                                    <!-- Nodes -->
-                                    <circle class="ai-node-secondary" cx="-100" cy="-80" r="10"/>
-                                    <circle class="ai-node-secondary" cx="-120" cy="30" r="12"/>
-                                    <circle class="ai-node-secondary" cx="-40" cy="100" r="8"/>
-                                    <circle class="ai-node-highlight" cx="80" cy="-110" r="14"/> <!-- Highlight Node -->
-                                    <circle class="ai-node-secondary" cx="130" cy="-30" r="10"/>
-                                    <circle class="ai-node-secondary" cx="100" cy="90" r="11"/>
-                                    <circle class="ai-node-secondary" cx="20" cy="130" r="9"/>
-                            
-                                </g>
-                                <title>AI Network Visualization</title>
-                                <desc>Abstract representation of interconnected nodes and data flow for AI-powered features.</desc>
-                            </svg>
-                         </div>
-                     </div>
-                 </div>
-             </div>
+                        <p class="lead mb-5" style="font-size: 1.2rem;">AuraStream leverages cutting-edge AI not just for recommendations, but for deeper understanding and context.</p>
+                        <div class="ai-feature-item"> <i class="bi bi-stars ai-feature-icon"></i> <div class="ai-feature-text"> <h4>Contextual Insights</h4> <p>Get AI-generated summaries of complex plots, thematic analysis, or explanations of why you might like a specific title based on your history.</p> </div> </div>
+                        <div class="ai-feature-item"> <i class="bi bi-search-heart ai-feature-icon"></i> <div class="ai-feature-text"> <h4>Smarter Discovery</h4> <p>Move beyond simple genre matching. AI helps uncover connections between films, directors, and actors you might have missed.</p> </div> </div>
+                        <div class="ai-feature-item"> <i class="bi bi-graph-up-arrow ai-feature-icon"></i> <div class="ai-feature-text"> <h4>Personalized Mood Matching</h4> <p>(Future Concept) Find content based on your current mood or desired vibe, powered by AI analysis of themes and tone.</p> </div> </div>
+                    </div>
+                    <div class="col-lg-6" data-aos="fade-left" data-aos-delay="100">
+                        <div class="ai-image-container">
+                            <svg width="90%" height="90%" viewBox="0 0 400 350" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width: 450px; margin: auto; display: block;"> <defs> <linearGradient id="aiCoreGradient" x1="0%" y1="0%" x2="100%" y2="100%"> <stop offset="0%" style="stop-color:var(--primary-accent); stop-opacity:1" /> <stop offset="100%" style="stop-color:var(--secondary-accent); stop-opacity:1" /> </linearGradient> <filter id="aiGlow" x="-50%" y="-50%" width="200%" height="200%"> <feGaussianBlur stdDeviation="5" result="coloredBlur"/> <feMerge> <feMergeNode in="coloredBlur"/> <feMergeNode in="SourceGraphic"/> </feMerge> </filter> </defs> <style> .ai-bg-lines { stroke: var(--border-color); stroke-width: 0.8; opacity: 0.4; } .ai-connection-primary { stroke: #5a677c; stroke-width: 1.2; stroke-linecap: round; opacity: 0.7; } .ai-connection-highlight { stroke: url(#aiCoreGradient); stroke-width: 2; stroke-linecap: round; filter: url(#aiGlow); opacity: 0.85; } .ai-node-secondary { fill: var(--surface-color); stroke: #6b7280; stroke-width: 1; } .ai-node-highlight { fill: var(--bg-secondary); stroke: var(--secondary-accent); stroke-width: 1.5; } .ai-core-glow-bg { fill: var(--primary-accent); opacity: 0.15; filter: url(#aiGlow); } .ai-core { fill: url(#aiCoreGradient); } </style> <g opacity="0.2"> <line class="ai-bg-lines" x1="50" y1="10" x2="350" y2="10" /> <line class="ai-bg-lines" x1="40" y1="40" x2="360" y2="40" /> <line class="ai-bg-lines" x1="10" y1="80" x2="390" y2="80" /> <line class="ai-bg-lines" x1="10" y1="270" x2="390" y2="270" /> <line class="ai-bg-lines" x1="40" y1="310" x2="360" y2="310" /> <line class="ai-bg-lines" x1="50" y1="340" x2="350" y2="340" /> <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(100 0)" /> <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(150 0)" /> <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(250 0)" /> <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(300 0)" /> </g> <g transform="translate(200, 175)"> <circle class="ai-core-glow-bg" cx="0" cy="0" r="55"/> <circle class="ai-core" cx="0" cy="0" r="35"/> <line class="ai-connection-primary" x1="0" y1="0" x2="-100" y2="-80" /> <line class="ai-connection-primary" x1="0" y1="0" x2="-120" y2="30" /> <line class="ai-connection-primary" x1="0" y1="0" x2="-40" y2="100" /> <line class="ai-connection-highlight" x1="0" y1="0" x2="80" y2="-110" /> <line class="ai-connection-primary" x1="0" y1="0" x2="130" y2="-30" /> <line class="ai-connection-primary" x1="0" y1="0" x2="100" y2="90" /> <line class="ai-connection-primary" x1="0" y1="0" x2="20" y2="130" /> <path class="ai-connection-primary" d="M -100 -80 Q -110 0 -120 30" stroke-width="1" fill="none"/> <path class="ai-connection-primary" d="M -120 30 Q -70 70 -40 100" stroke-width="1" fill="none"/> <path class="ai-connection-primary" d="M 130 -30 Q 120 40 100 90" stroke-width="1" fill="none"/> <path class="ai-connection-highlight" d="M 80 -110 Q 120 -80 130 -30" stroke-width="1.5" fill="none" /> <path class="ai-connection-primary" d="M 100 90 Q 50 120 20 130" stroke-width="1" fill="none"/> <circle class="ai-node-secondary" cx="-100" cy="-80" r="10"/> <circle class="ai-node-secondary" cx="-120" cy="30" r="12"/> <circle class="ai-node-secondary" cx="-40" cy="100" r="8"/> <circle class="ai-node-highlight" cx="80" cy="-110" r="14"/> <circle class="ai-node-secondary" cx="130" cy="-30" r="10"/> <circle class="ai-node-secondary" cx="100" cy="90" r="11"/> <circle class="ai-node-secondary" cx="20" cy="130" r="9"/> </g> <title>AI Network Visualization</title> <desc>Abstract representation of interconnected nodes and data flow for AI-powered features.</desc> </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Community Hub Section -->
         <section id="community-hub" class="section section-primary">
-            <div class="container">
-                <h2 class="text-center mb-3" data-aos="fade-up">Join the <span class="text-gradient">Conversation</span></h2>
-                <p class="lead text-center mb-5" data-aos="fade-up" data-aos-delay="100">Connect with fellow movie buffs and TV fanatics.</p>
+             <!-- Content remains the same, styles above handle enhancements -->
+             <div class="container">
+                 <h2 class="text-center mb-3" data-aos="fade-up">Join the <span class="text-gradient">Conversation</span></h2>
+                 <p class="lead text-center mb-5" data-aos="fade-up" data-aos-delay="100">Connect with fellow movie buffs and TV fanatics.</p>
                  <div class="row g-4 justify-content-center">
-                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="150">
-                        <div class="community-card">
-                             <i class="bi bi-chat-square-quote-fill community-icon"></i>
-                            <h4>Discuss & Debate</h4>
-                            <p>Dive into spoiler-filled (or safe!) discussions for every movie and episode. Share your theories and hot takes.</p>
-                             <div class="avatar-stack">
-                                <!-- !! REPLACE AVATARS !! -->
-                                 <img src="https://img.icons8.com/fluency/50/user-male-circle.png" alt="User Avatar">
-                                 <img src="https://img.icons8.com/color/48/circled-user-male-skin-type-6--v1.png" alt="User Avatar">
-                                 <img src="https://img.icons8.com/color/48/user-female-skin-type-1-2.png" alt="User Avatar">
-                            </div>
-                         </div>
-                    </div>
-                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="250">
-                         <div class="community-card">
-                             <i class="bi bi-star-fill community-icon" style="color: var(--secondary-accent);"></i>
-                            <h4>Rate & Review</h4>
-                            <p>Contribute your own ratings and detailed reviews. Help others discover great content and see community consensus.</p>
-                             <div class="avatar-stack">
-                                 <img src="https://img.icons8.com/color/48/circled-user-male-skin-type-4--v1.png" alt="User Avatar">
-                                 <img src="https://img.icons8.com/ios-filled/50/user-male-circle.png" alt="User Avatar">
-                             </div>
-                         </div>
-                    </div>
-                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="350">
-                        <div class="community-card">
-                             <i class="bi bi-person-plus-fill community-icon"></i>
-                            <h4>Follow & Connect</h4>
-                            <p>Follow friends or cinephiles you admire. See their activity, share recommendations, and build your network.</p>
-                            <div class="avatar-stack">
-                                <img src="https://img.icons8.com/color/48/gender-neutral-user.png" alt="User Avatar">
-                                <img src="https://img.icons8.com/metro/26/gender-neutral-user.png" alt="User Avatar">
-                                <img src="https://img.icons8.com/windows/32/gender-neutral-user.png" alt="User Avatar">
-                                <img src="https://img.icons8.com/glyph-neue/64/gender-neutral-user.png" alt="User Avatar">
-                            </div>
-                         </div>
-                    </div>
+                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="150"> <div class="community-card"> <div class="community-content"> <i class="bi bi-chat-square-quote-fill community-icon"></i> <h4>Discuss & Debate</h4> <p>Dive into spoiler-filled (or safe!) discussions for every movie and episode. Share your theories and hot takes.</p> <div class="avatar-stack"> <img src="https://img.icons8.com/fluency/50/user-male-circle.png" alt="User Avatar" title="User 1"> <img src="https://img.icons8.com/ios-filled/50/user-male-circle.png" alt="User Avatar" title="User 3"> </div> </div> </div> </div>
+                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="250"> <div class="community-card"> <div class="community-content"> <i class="bi bi-star-fill community-icon" style="color: var(--secondary-accent);"></i> <h4>Rate & Review</h4> <p>Contribute your own ratings and detailed reviews. Help others discover great content and see community consensus.</p> <div class="avatar-stack"> <img src="https://img.icons8.com/color/48/circled-user-male-skin-type-6--v1.png" alt="User Avatar" title="User 4"> <img src="https://img.icons8.com/color/48/gender-neutral-user.png" alt="User Avatar" title="User 5"> </div> </div> </div> </div>
+                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="350"> <div class="community-card"> <div class="community-content"> <i class="bi bi-person-plus-fill community-icon"></i> <h4>Follow & Connect</h4> <p>Follow friends or cinephiles you admire. See their activity, share recommendations, and build your network.</p> <div class="avatar-stack"> <img src="https://img.icons8.com/metro/26/gender-neutral-user.png" alt="User Avatar" title="User 6"> <img src="https://img.icons8.com/color/48/user-female-skin-type-1-2.png" alt="User Avatar" title="User 7"> <img src="https://img.icons8.com/glyph-neue/64/gender-neutral-user.png" alt="User Avatar" title="User 8"> <img src="https://img.icons8.com/color/48/circled-user-male-skin-type-4--v1.png" alt="User Avatar" title="User 9"> </div> </div> </div> </div>
                  </div>
-                <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="400">
-                    <a href="community.html" class="btn btn-landing btn-landing-secondary">Explore the Community <i class="bi bi-arrow-right ms-2"></i></a>
-                    <!-- Link to actual community page/feature or sign up -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section id="testimonials" class="section section-gradient">
-            <div class="container">
-                <h2 class="text-center mb-5" data-aos="fade-up">Trusted by <span class="text-gradient">Enthusiasts</span> Like You</h2>
-                <div class="row g-4">
-                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                        <div class="testimonial-card">
-                            <div class="testimonial-header">
-                                <!-- !! REPLACE IMAGE !! -->
-                                <img src="https://img.icons8.com/officel/80/circled-user-female-skin-type-3.png" alt="Sarah L">
-                                <div class="testimonial-info">
-                                     <strong>Sarah L.</strong>
-                                     <span>Film Blogger</span>
-                                 </div>
-                             </div>
-                             <blockquote>"AuraStream finally solved my 'too many lists' problem! Having watchlist, history, AND community reviews in one place is a game-changer. The AI insights are surprisingly accurate too."</blockquote>
-                        </div>
-                    </div>
-                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
-                         <div class="testimonial-card">
-                             <div class="testimonial-header">
-                                <!-- !! REPLACE IMAGE !! -->
-                                 <img src="https://img.icons8.com/officel/80/circled-user-male-skin-type-4.png" alt="David M">
-                                 <div class="testimonial-info">
-                                    <strong>David M.</strong>
-                                    <span>Casual Viewer</span>
-                                </div>
-                             </div>
-                            <blockquote>"Love how easy it is to see *where* I can actually watch something. The Spotify integration for soundtracks is a brilliant touch I didn't know I needed."</blockquote>
-                        </div>
-                    </div>
-                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
-                        <div class="testimonial-card">
-                            <div class="testimonial-header">
-                                <!-- !! REPLACE IMAGE !! -->
-                                <img src="https://img.icons8.com/puffy-filled/32/gender-neutral-user.png" alt="Aisha B">
-                                <div class="testimonial-info">
-                                     <strong>Aisha B.</strong>
-                                    <span>Software Developer</span>
-                                </div>
-                             </div>
-                             <blockquote>"Clean UI, responsive, and integrates data sources effectively. Appreciate the transparency from the developer. Excited to see how the community features grow!"</blockquote>
-                         </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- For Business / Partners Section -->
-        <section id="for-business" class="section section-darker">
-            <div class="container">
-                <h2 class="text-center mb-5" data-aos="fade-up">Partner with <span class="text-gradient">AuraStream</span></h2>
-                <div class="business-content" data-aos="fade-up" data-aos-delay="100">
-                     <div class="business-text">
-                        <h3>Unlock Opportunities</h3>
-                        <p class="text-medium">AuraStream offers unique partnership possibilities for content creators, distributors, advertisers, and data analysts. Leverage our engaged community and rich dataset.</p>
-                        <ul class="list-unstyled mt-3">
-                            <li><i class="bi bi-graph-up text-secondary-accent me-2"></i> Audience Insights & Analytics</li>
-                            <li><i class="bi bi-megaphone-fill text-secondary-accent me-2"></i> Targeted Content Promotion</li>
-                            <li><i class="bi bi-hdd-stack-fill text-secondary-accent me-2"></i> Data Licensing & API Access</li>
-                            <!-- <li><i class="bi bi-palette-fill text-secondary-accent me-2"></i> White-Label Solutions</li> -->
-                        </ul>
-                         <a href="partnerships.html" class="btn-link-arrow mt-3 d-inline-block">Learn More About Partnerships <i class="bi bi-arrow-right"></i></a>
-                    </div>
-                     <div class="business-logos">
-                         <p class="text-light mb-3 fw-bold">Potential Use Cases For:</p>
-                         <!-- !! REPLACE LOGOS !! Examples - replace with relevant hypothetical or real partner types -->
-                         <img src="images/sm.svg" alt="Studio logo" class="source-logo">
-                         <img src="https://vidsrc.domains/vidsrc-logo-light.svg?t=1688251159" alt="Streaming Service Logo" class="source-logo">
-                         <img src="images/analytics.svg" alt="Analytics Firm Logo" class="source-logo">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- FAQ Section -->
-         <section id="faq" class="section section-primary">
-             <div class="container" style="max-width: 900px;">
-                 <h2 class="text-center mb-5" data-aos="fade-up">Frequently Asked <span class="text-gradient">Questions</span></h2>
-                 <div class="accordion faq-accordion" id="faqAccordion" data-aos="fade-up" data-aos-delay="100">
-                     <div class="accordion-item">
-                         <h2 class="accordion-header" id="headingOne">
-                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                Is AuraStream free to use?
-                             </button>
-                         </h2>
-                         <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
-                             <div class="accordion-body">
-                                Yes, the core features of AuraStream, including discovery, watchlist management, basic community interaction, and music search, are currently planned to be free. Advanced features or premium tiers might be considered in the future.
-                            </div>
-                         </div>
-                     </div>
-                     <div class="accordion-item">
-                         <h2 class="accordion-header" id="headingTwo">
-                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                Does AuraStream host movies or TV shows?
-                             </button>
-                         </h2>
-                         <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
-                             <div class="accordion-body">
-                                No, AuraStream does not host any streamable content itself. It acts as a central hub to discover content and find where it's legally available to watch on various third-party streaming services. We provide links and embedded players where possible via official APIs.
-                            </div>
-                         </div>
-                     </div>
-                     <div class="accordion-item">
-                         <h2 class="accordion-header" id="headingThree">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                What data sources does AuraStream use?
-                            </button>
-                        </h2>
-                         <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
-                             <div class="accordion-body">
-                                AuraStream primarily utilizes APIs from The Movie Database (TMDb) for movie/TV show information, Spotify for music integration, Google's Gemini for AI insights, and aggregates "where to watch" data from various provider APIs (like JustWatch, subject to availability and terms).
-                            </div>
-                        </div>
-                     </div>
-                    <div class="accordion-item">
-                         <h2 class="accordion-header" id="headingFour">
-                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                                How does the Community feature work?
-                            </button>
-                         </h2>
-                         <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
-                             <div class="accordion-body">
-                                Users can create profiles, rate and review content, participate in discussion forums tied to specific movies/shows, follow other users, and see activity feeds. Community features require user registration.
-                             </div>
-                         </div>
-                     </div>
-                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingFive">
-                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
-                                Who developed AuraStream?
-                            </button>
-                         </h2>
-                         <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
-                             <div class="accordion-body">
-                                AuraStream is a concept project developed by Mohamed El-bouanani, a Computer Science student, as a portfolio piece showcasing full-stack web development skills and integration of various technologies and APIs.
-                            </div>
-                        </div>
-                    </div>
+                 <div class="text-center mt-5 pt-3" data-aos="fade-up" data-aos-delay="400">
+                     <a href="#hero" class="btn btn-landing btn-landing-secondary btn-lg">Explore Community <i class="bi bi-arrow-right ms-2"></i></a>
                  </div>
              </div>
         </section>
 
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="section section-gradient">
+            <!-- Content remains the same, styles above handle enhancements -->
+            <div class="container">
+                 <h2 class="text-center mb-5" data-aos="fade-up">Trusted by <span class="text-gradient">Enthusiasts</span> Like You</h2>
+                 <div class="row g-4">
+                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100"> <div class="testimonial-card"> <div class="testimonial-header"> <img src="https://img.icons8.com/officel/80/circled-user-female-skin-type-3.png" alt="Sarah L"> <div class="testimonial-info"> <strong>Sarah L.</strong> <span>Film Blogger</span> </div> </div> <blockquote>"AuraStream finally solved my 'too many lists' problem! Having watchlist, history, AND community reviews in one place is a game-changer. The AI insights are surprisingly accurate too."</blockquote> </div> </div>
+                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200"> <div class="testimonial-card"> <div class="testimonial-header"> <img src="https://img.icons8.com/officel/80/circled-user-male-skin-type-4.png" alt="David M"> <div class="testimonial-info"> <strong>David M.</strong> <span>Casual Viewer</span> </div> </div> <blockquote>"Love how easy it is to see *where* I can actually watch something. The Spotify integration for soundtracks is a brilliant touch I didn't know I needed."</blockquote> </div> </div>
+                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300"> <div class="testimonial-card"> <div class="testimonial-header"> <img src="https://img.icons8.com/puffy-filled/32/gender-neutral-user.png" alt="Aisha B"> <div class="testimonial-info"> <strong>Aisha B.</strong> <span>Software Developer</span> </div> </div> <blockquote>"Clean UI, responsive, and integrates data sources effectively. Appreciate the transparency from the developer. Excited to see how the community features grow!"</blockquote> </div> </div>
+                 </div>
+             </div>
+        </section>
+
+        <!-- For Business / Partners Section -->
+        <section id="for-business" class="section section-darker">
+            <!-- Content remains the same, styles above handle enhancements -->
+            <div class="container">
+                 <h2 class="text-center mb-5" data-aos="fade-up">Partner with <span class="text-gradient">AuraStream</span></h2>
+                 <div class="business-content" data-aos="fade-up" data-aos-delay="100">
+                     <div class="business-text"> <h3>Unlock Opportunities</h3> <p class="text-medium">AuraStream offers unique partnership possibilities for content creators, distributors, advertisers, and data analysts. Leverage our engaged community and rich dataset.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-graph-up text-secondary-accent me-2"></i> Audience Insights & Analytics</li> <li class="mb-2"><i class="bi bi-megaphone-fill text-secondary-accent me-2"></i> Targeted Content Promotion</li> <li><i class="bi bi-hdd-stack-fill text-secondary-accent me-2"></i> Data Licensing & API Access</li> </ul> <a href="#contact-partners" class="btn-link-arrow mt-4 d-inline-block">Learn More About Partnerships <i class="bi bi-arrow-right"></i></a> </div>
+                         <img src="images/sm.svg" alt="Studio logo" class="source-logo">
+                         <img src="https://vidsrc.domains/vidsrc-logo-light.svg?t=1688251159" alt="Streaming Service Logo" class="source-logo">
+                         <img src="images/analytics.svg" alt="Analytics Firm Logo" class="source-logo">
+                 </div>
+             </div>
+        </section>
+
+        <!-- FAQ Section -->
+         <section id="faq" class="section section-primary">
+             <!-- Content remains the same, styles above handle enhancements -->
+             <div class="container" style="max-width: 900px;">
+                 <h2 class="text-center mb-5" data-aos="fade-up">Frequently Asked <span class="text-gradient">Questions</span></h2>
+                 <div class="accordion faq-accordion" id="faqAccordion" data-aos="fade-up" data-aos-delay="100">
+                     <div class="accordion-item"> <h2 class="accordion-header" id="headingOne"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne"> Is AuraStream free to use? </button> </h2> <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion"> <div class="accordion-body"> Yes, the core features of AuraStream, including discovery, watchlist management, basic community interaction, and music search, are currently planned to be free. Advanced features or premium tiers might be considered in the future. </div> </div> </div>
+                     <div class="accordion-item"> <h2 class="accordion-header" id="headingTwo"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"> Does AuraStream host movies or TV shows? </button> </h2> <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion"> <div class="accordion-body"> No, AuraStream does not host any streamable content itself. It acts as a central hub to discover content and find where it's legally available to watch on various third-party streaming services. We provide links and embedded players where possible via official APIs. </div> </div> </div>
+                     <div class="accordion-item"> <h2 class="accordion-header" id="headingThree"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree"> What data sources does AuraStream use? </button> </h2> <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion"> <div class="accordion-body"> AuraStream primarily utilizes APIs from The Movie Database (TMDb) for movie/TV show information, Spotify for music integration, Google's Gemini for AI insights, and aggregates "where to watch" data from various provider APIs (like JustWatch, subject to availability and terms). </div> </div> </div>
+                     <div class="accordion-item"> <h2 class="accordion-header" id="headingFour"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour"> How does the Community feature work? </button> </h2> <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion"> <div class="accordion-body"> Users can create profiles, rate and review content, participate in discussion forums tied to specific movies/shows, follow other users, and see activity feeds. Community features require user registration. </div> </div> </div>
+                     <div class="accordion-item"> <h2 class="accordion-header" id="headingFive"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive"> Who developed AuraStream? </button> </h2> <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion"> <div class="accordion-body"> AuraStream is a concept project developed by Mohamed El-bouanani, a Computer Science student, as a portfolio piece showcasing full-stack web development skills and integration of various technologies and APIs. </div> </div> </div>
+                 </div>
+             </div>
+        </section>
 
         <!-- Data Sources Strip -->
         <section id="data-sources">
-            <div class="container text-center">
-                <p class="small text-light mb-3" data-aos="fade-up">Powered by Leading Data Sources & APIs</p>
+             <!-- Content remains the same, styles above handle enhancements -->
+             <div class="container text-center">
+                 <p class="small text-light mb-4 fw-bold" data-aos="fade-up">Powered by Leading Data Sources & APIs</p>
                  <div class="source-logos-container" data-aos="fade-up" data-aos-delay="100">
-                     <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" title="The Movie Database (TMDb)">
-                        <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="TMDb Logo" class="source-logo">
-                     </a>
-                     <a href="https://developer.spotify.com/" target="_blank" rel="noopener noreferrer" title="Spotify API">
-                         <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_White.png" alt="Spotify Logo" class="source-logo source-logo-spotify">
-                     </a>
-                      <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" title="Google AI - Gemini API">
-                         <!-- !! Find a better Gemini/Google AI Logo if available, prefer SVG -->
-                         <img src="https://seeklogo.com/images/G/google-ai-logo-996E85F6FD-seeklogo.com.png" alt="Google AI Logo" class="source-logo" style="max-height: 45px;">
-                     </a>
-                     <span class="source-logo text-light" style="font-size: 0.9rem; filter: grayscale(50%) brightness(1.3); opacity: 0.75;">
-                          JustWatch (Data)
-                     </span>
-                      <span class="source-logo text-light" style="font-size: 0.9rem; filter: grayscale(50%) brightness(1.3); opacity: 0.75;">
-                         + More Providers
-                     </span>
+                     <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" title="The Movie Database (TMDb)"> <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="TMDb Logo" class="source-logo"> </a>
+                     <a href="https://developer.spotify.com/" target="_blank" rel="noopener noreferrer" title="Spotify API"> <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_White.png" alt="Spotify Logo" class="source-logo source-logo-spotify"> </a>
+                     <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" title="Google AI - Gemini API"> <img src="https://seeklogo.com/images/G/google-ai-logo-996E85F6FD-seeklogo.com.png" alt="Google AI Logo" class="source-logo" style="max-height: 45px;"> </a>
+                     <span class="source-logo text-light" title="Data Aggregation (e.g., JustWatch)"> Watch Providers </span>
+                     <span class="source-logo text-light"> + More </span>
                  </div>
              </div>
         </section>
 
         <!-- Final CTA -->
         <section id="final-cta" class="section section-xl">
-            <div class="container" data-aos="zoom-in-up">
-                <h2>Ready to Unify Your Entertainment?</h2>
-                <p>
-                    Experience the seamless flow of discovery, organization, and connection. Launch AuraStream now and rediscover the joy of movies and TV.
-                </p>
-                 <a href="app.html" class="btn btn-landing btn-cta-final btn-lg">
-                   Launch AuraStream App <i class="bi bi-box-arrow-in-right ms-2"></i>
-                 </a>
-            </div>
+            <!-- Content remains the same, styles above handle enhancements -->
+             <div class="container" data-aos="zoom-in-up">
+                 <h2>Ready to Unify Your Entertainment?</h2>
+                 <p> Experience the seamless flow of discovery, organization, and connection. Launch AuraStream now and rediscover the joy of movies and TV. </p>
+                 <a href="msc.html" class="btn btn-landing btn-cta-final btn-lg"> Launch AuraStream App <i class="bi bi-box-arrow-in-right ms-2"></i> </a>
+             </div>
         </section>
 
     </main>
 
     <!-- Footer -->
-      <footer>
-        <div class="container footer-content">
-            <div class="footer-logo" data-aos="fade-up">
-                 <a class="navbar-brand-landing" href="#">
-                    <i class="bi bi-activity"></i> AuraStream
-                </a>
-            </div>
-            <div class="footer-links" data-aos="fade-up" data-aos-delay="100">
-                 <a href="#feature-showcase">Features</a>
-                 <a href="#ai-spotlight">AI Insights</a>
-                 <a href="#community-hub">Community</a>
-                 <a href="#faq">FAQ</a>
-                 <a href="#for-business">Partners</a>
-                 <a href="#">Blog</a> <!-- Example -->
-                 <a href="#">About Us</a> <!-- Example -->
-                 <a href="#">Contact</a> <!-- Example -->
-            </div>
-            <div class="footer-social" data-aos="fade-up" data-aos-delay="200">
-                <!-- !! Replace # with actual social media links !! -->
-                 <a href="https://x.com/Simo_Elbou3" title="Twitter / X"><i class="bi bi-twitter-x"></i></a>
-                 <a href="https://github.com/MEDELBOU3" title="GitHub"><i class="bi bi-github"></i></a>
-                 <a href="https://www.linkedin.com/in/elbou-simo-644820282/" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
-                 <a href="https://discord.com/channels/@me/1185698051210346547/1358535887268610220" title="Discord"><i class="bi bi-discord"></i></a>
-                 <a href="https://www.instagram.com/simo_elb_3?igsh=MTVsYnlvZTlpaWVxdw=="><i class="bi bi-instagram"></i></a>
-            </div>
-            <div class="footer-legal text-center text-muted" data-aos="fade-up" data-aos-delay="300">
-                <p>© 2024 AuraStream Concept by Mohamed El-bouanani. All rights reserved (Concept Work).</p>
-                <p>Data sourced from TMDb, Spotify, Google Gemini, and other providers under their respective terms. AuraStream does not claim ownership of third-party content or data.</p>
-                <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a> | <a href="#hero">Back to Top</a></p>
-            </div>
-        </div>
+    <footer>
+        <!-- Content remains the same, styles above handle enhancements -->
+         <div class="container footer-content">
+             <div class="footer-logo" data-aos="fade-up"> <a class="navbar-brand-landing" href="#"> <i class="bi bi-activity"></i> AuraStream </a> </div>
+             <div class="footer-links" data-aos="fade-up" data-aos-delay="100"> <a href="#feature-showcase">Features</a> <a href="#ai-spotlight">AI Insights</a> <a href="#community-hub">Community</a> <a href="#faq">FAQ</a> <a href="#for-business">Partners</a> <a href="#" title="Coming Soon">Blog</a> <a href="#" title="About the Concept">About Us</a> <a href="#" title="Contact Information">Contact</a> </div>
+             <div class="footer-social" data-aos="fade-up" data-aos-delay="200"> <a href="https://x.com/Simo_Elbou3" target="_blank" rel="noopener noreferrer" title="Twitter / X"><i class="bi bi-twitter-x"></i></a> <a href="https://github.com/MEDELBOU3" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="bi bi-github"></i></a> <a href="https://www.linkedin.com/in/elbou-simo-644820282/" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="bi bi-linkedin"></i></a> <a href="https://discord.com/users/1185698051210346547" target="_blank" rel="noopener noreferrer" title="Discord Profile"><i class="bi bi-discord"></i></a> <a href="https://www.instagram.com/simo_elb_3?igsh=MTVsYnlvZTlpaWVxdw==" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="bi bi-instagram"></i></a> </div>
+             <div class="footer-legal text-center text-muted" data-aos="fade-up" data-aos-delay="300"> <p>© 2024 AuraStream Concept by Mohamed El-bouanani. All rights reserved (Concept Work).</p> <p>Data sourced from TMDb, Spotify, Google Gemini, and other providers under their respective terms. AuraStream does not claim ownership of third-party content or data.</p> <p><a href="#" title="Placeholder">Privacy Policy</a> | <a href="#" title="Placeholder">Terms of Service</a> | <a href="#hero">Back to Top</a></p> </div>
+         </div>
      </footer>
 
-    <!-- Bootstrap JS -->
+    <!-- JS Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-    <!-- AOS JS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Google Identity Services Library MUST be loaded before our script uses it -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-    <!-- Landing Page JS -->
-    <script src="app.js"></script>
+
+    <!-- Enhanced Landing Page Application JS -->
+    <script>
+        /**
+         * AuraStream Landing Page Application
+         * Handles: Core UI Effects (Navbar, AOS, Smooth Scroll) & Google Authentication
+         * Author: Mohamed El-bouanani (Concept) & AI Assistant
+         * Version: 3.0.0
+         */
+
+        /**
+         * Module: Core UI Effects
+         * Handles general page interactions and animations.
+         */
+        const AuraUICore = (() => {
+            const SELECTORS = {
+                navbar: '.navbar-landing',
+                navCollapse: '#navbarNav',
+                navLink: '.navbar-nav .nav-link',
+                smoothScrollAnchor: 'a[href^="#"]',
+                navbarFixedTop: '.navbar-landing.fixed-top'
+            };
+
+            const initNavbar = () => {
+                const navbar = document.querySelector(SELECTORS.navbar);
+                const navCollapseElement = document.getElementById(SELECTORS.navCollapse.substring(1)); // Remove # for getElementById
+                const navLinks = document.querySelectorAll(SELECTORS.navLink);
+
+                if (!navbar) {
+                    console.warn('Navbar element not found.');
+                    return;
+                }
+
+                const handleScroll = () => navbar.classList.toggle('scrolled', window.scrollY > 60); // Increased threshold
+                handleScroll(); // Initial check
+                window.addEventListener('scroll', handleScroll, { passive: true });
+
+                if (navCollapseElement && typeof bootstrap !== 'undefined') {
+                    const bsCollapse = new bootstrap.Collapse(navCollapseElement, { toggle: false });
+                    navLinks.forEach(link => {
+                        link.addEventListener('click', () => {
+                            if (navCollapseElement.classList.contains('show')) bsCollapse.hide();
+                        });
+                    });
+                } else if (!navCollapseElement) {
+                    console.warn('Navbar collapse element not found.');
+                } else if (typeof bootstrap === 'undefined') {
+                    console.warn('Bootstrap JS not loaded, cannot control navbar collapse on click.');
+                }
+            };
+
+            const initAOS = () => {
+                if (typeof AOS !== 'undefined') {
+                    AOS.init({
+                        duration: 750, // Slightly longer duration
+                        once: true,
+                        offset: 80, // Adjust offset
+                        easing: 'ease-out-cubic',
+                        disable: window.innerWidth < 768 // Optionally disable on mobile
+                    });
+                } else {
+                    console.warn('AOS library not loaded.');
+                }
+            };
+
+            const initSmoothScroll = () => {
+                document.querySelectorAll(SELECTORS.smoothScrollAnchor).forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        const targetId = this.getAttribute('href');
+                        if (targetId && targetId.length > 1 && targetId.startsWith('#')) {
+                            try {
+                                const targetElement = document.querySelector(targetId);
+                                if (targetElement) {
+                                    e.preventDefault();
+                                    const navbarHeight = document.querySelector(SELECTORS.navbarFixedTop)?.offsetHeight || 65;
+                                    const elementPosition = targetElement.getBoundingClientRect().top;
+                                    const offsetPosition = elementPosition + window.pageYOffset - navbarHeight - 15; // Fine-tune offset
+
+                                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                                } else {
+                                    console.warn(`Smooth scroll target element not found: ${targetId}`);
+                                }
+                             } catch (error) {
+                                console.error(`Error finding smooth scroll target ${targetId}:`, error);
+                            }
+                        }
+                    });
+                });
+            };
+
+            const initialize = () => {
+                try {
+                    initNavbar();
+                    initAOS();
+                    initSmoothScroll();
+                    console.info("AuraUICore initialized successfully.");
+                } catch (error) {
+                    console.error("Error initializing AuraUICore:", error);
+                }
+            };
+
+            return { init: initialize };
+        })();
+
+
+        /**
+         * Module: Google Authentication Handler
+         * Manages Google Sign-In/Sign-Out flow and UI updates.
+         */
+        const AuraAuth = (() => {
+            const CLIENT_ID = '886921214537-35pg2kb0qjfnd807cpjbk1bgi41dfhf5.apps.googleusercontent.com';
+            const PLACEHOLDER_AVATAR = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+            // Cache DOM Elements for performance
+            const ui = {
+                signInBtnContainer: document.getElementById('googleSignInButtonContainer'),
+                userInfoDiv: document.getElementById('userInfo'),
+                userPicture: document.getElementById('userPicture'),
+                userName: document.getElementById('userName'),
+                signOutButton: document.getElementById('signOutButton'),
+                signInBtnContainerMobile: document.getElementById('googleSignInButtonContainerMobile'),
+                userInfoDivMobile: document.getElementById('userInfoMobile'),
+                userPictureMobile: document.getElementById('userPictureMobile'),
+                userNameMobile: document.getElementById('userNameMobile'),
+                signOutButtonMobile: document.getElementById('signOutButtonMobile'),
+                loggedOutViews: document.querySelectorAll('.logged-out-view'),
+                loggedInViews: document.querySelectorAll('.logged-in-view'),
+                authHiddenClass: 'auth-hidden' // CSS class for hiding elements
+            };
+
+            // Ensure all critical elements exist
+            const checkUIElements = () => {
+                let allFound = true;
+                for (const key in ui) {
+                    // NodeLists are okay if empty, check individual elements
+                    if (!(ui[key] instanceof NodeList) && !ui[key]) {
+                         console.warn(`Auth UI element not found: ${key}`);
+                         // Decide if this is critical, maybe set a flag to disable auth?
+                         // allFound = false;
+                     }
+                }
+                return allFound;
+            };
+
+            /** Decode JWT - Client-side inspection ONLY. */
+            const decodeJwtResponse = (token) => { /* ... (keep existing implementation) ... */
+                if (!token) return null; try { const base64Url = token.split('.')[1]; const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/'); const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')); return JSON.parse(jsonPayload); } catch (error) { console.error("Error decoding JWT:", error); return null; }
+            };
+
+
+            const updateAuthUI = (isLoggedIn, userData = null) => {
+                console.info(`Updating Auth UI - Logged In: ${isLoggedIn}`);
+                const action = isLoggedIn ? 'remove' : 'add';
+                ui.loggedInViews.forEach(el => el?.classList[action](ui.authHiddenClass));
+                ui.loggedOutViews.forEach(el => el?.classList[isLoggedIn ? 'add' : 'remove'](ui.authHiddenClass));
+
+                if (isLoggedIn && userData) {
+                    const displayName = userData.given_name || userData.name || 'Aura User';
+                    const displayPicture = userData.picture || PLACEHOLDER_AVATAR;
+                    const fullName = userData.name || '';
+
+                    if (ui.userPicture) ui.userPicture.src = displayPicture;
+                    if (ui.userName) { ui.userName.textContent = displayName; ui.userName.title = fullName; }
+                    if (ui.userPictureMobile) ui.userPictureMobile.src = displayPicture;
+                    if (ui.userNameMobile) { ui.userNameMobile.textContent = displayName; ui.userNameMobile.title = fullName; }
+                    console.info("User profile updated in UI.");
+                } else {
+                    if (ui.userPicture) ui.userPicture.src = PLACEHOLDER_AVATAR;
+                    if (ui.userName) { ui.userName.textContent = ''; ui.userName.title = ''; }
+                    if (ui.userPictureMobile) ui.userPictureMobile.src = PLACEHOLDER_AVATAR;
+                    if (ui.userNameMobile) { ui.userNameMobile.textContent = ''; ui.userNameMobile.title = ''; }
+                    console.info("Auth UI reset to logged-out state.");
+                }
+            };
+
+            const handleCredentialResponse = (response) => {
+                console.info("Google Sign-In Credential Response received.");
+                const decodedToken = decodeJwtResponse(response.credential);
+
+                if (decodedToken) {
+                    // --- BACKEND VERIFICATION IS CRUCIAL FOR REAL APPS ---
+                    console.warn("SECURITY NOTE: Client-side decoding is for display ONLY. Send token to backend for verification!");
+
+                    const userData = { id: decodedToken.sub, name: decodedToken.name, given_name: decodedToken.given_name, family_name: decodedToken.family_name, picture: decodedToken.picture, email: decodedToken.email, email_verified: decodedToken.email_verified };
+
+                    try {
+                        localStorage.setItem('auraUserLoggedIn', 'true');
+                        localStorage.setItem('auraUserData', JSON.stringify(userData));
+                        console.info("User data persisted to localStorage.");
+                    } catch (e) { console.error("Failed to save to localStorage:", e); }
+
+                    updateAuthUI(true, userData);
+                } else {
+                    console.error("Failed to decode Google ID token.");
+                    updateAuthUI(false); // Show logged-out state on error
+                }
+            };
+
+            const renderGoogleButton = () => {
+                if (typeof google === 'undefined' || !google.accounts?.id?.renderButton) {
+                    console.error("GSI client not ready for renderButton."); return;
+                }
+                const buttonOptions = { theme: "outline", size: "medium", type: "standard", text: "signin_with", shape: "pill" }; // Pill shape
+
+                [ui.signInBtnContainer, ui.signInBtnContainerMobile].forEach(container => {
+                    if (container && !container.classList.contains(ui.authHiddenClass)) { // Only render if visible
+                         container.innerHTML = ''; // Clear previous
+                         try {
+                             google.accounts.id.renderButton(container, buttonOptions);
+                             console.info(`Google button rendered in ${container.id}.`);
+                         } catch (error) {
+                              console.error(`Error rendering button in ${container.id}:`, error);
+                         }
+                    }
+                });
+            };
+
+            const handleSignOut = () => {
+                console.info("Signing out user...");
+                if (typeof google !== 'undefined' && google.accounts?.id) {
+                    // google.accounts.id.disableAutoSelect(); // Consider if needed
+                }
+                try {
+                    localStorage.removeItem('auraUserLoggedIn');
+                    localStorage.removeItem('auraUserData');
+                    console.info("User data removed from localStorage.");
+                } catch (e) { console.error("Failed to remove localStorage data:", e); }
+
+                updateAuthUI(false);
+                // Debounce or delay rendering slightly to prevent potential flicker
+                setTimeout(renderGoogleButton, 100);
+            };
+
+            const checkInitialLoginState = () => {
+                console.info("Checking initial login state...");
+                let isLoggedIn = false; let userData = null;
+                try {
+                    isLoggedIn = localStorage.getItem('auraUserLoggedIn') === 'true';
+                    if (isLoggedIn) userData = JSON.parse(localStorage.getItem('auraUserData') || 'null');
+                    if (!userData) isLoggedIn = false; // If data is missing/invalid, treat as logged out
+                } catch (e) {
+                    console.error("Error reading localStorage state:", e);
+                    isLoggedIn = false; userData = null;
+                    localStorage.removeItem('auraUserLoggedIn'); localStorage.removeItem('auraUserData'); // Clear bad data
+                }
+                updateAuthUI(isLoggedIn, userData);
+                return isLoggedIn; // Return status for GSI init logic
+            };
+
+            const initializeGSI = () => {
+                if (!checkUIElements()) {
+                     console.error("Auth UI elements missing, cannot initialize GSI properly.");
+                     return; // Prevent initialization if crucial elements are missing
+                }
+
+                if (typeof google === 'undefined' || !google.accounts?.id?.initialize) {
+                    console.error("GSI client not loaded or ready for initialization.");
+                    updateAuthUI(false); // Ensure logged-out UI
+                    return;
+                }
+
+                try {
+                    console.info("Initializing Google Identity Services...");
+                    google.accounts.id.initialize({
+                        client_id: CLIENT_ID,
+                        callback: handleCredentialResponse,
+                        // context: "signin", // Optional: context for prompts
+                        // ux_mode: "popup",
+                        // nonce: 'YOUR_SECURE_NONCE' // IMPORTANT for replay protection if sending to backend
+                    });
+                    console.info("GSI Initialized.");
+
+                    const initiallyLoggedIn = checkInitialLoginState();
+
+                    // Add sign-out listeners
+                     [ui.signOutButton, ui.signOutButtonMobile].forEach(btn => {
+                         if (btn) btn.addEventListener('click', handleSignOut);
+                     });
+
+                    // Render button only if initially logged out
+                    if (!initiallyLoggedIn) {
+                        renderGoogleButton();
+                    }
+
+                    // Optional: Google One Tap
+                    // google.accounts.id.prompt(notification => { /* ... handle prompt notifications ... */ });
+
+                } catch (error) {
+                    console.error("Error initializing Google Identity Services:", error);
+                    updateAuthUI(false);
+                }
+            };
+
+            return { init: initializeGSI }; // Expose only the init function
+        })();
+
+
+        // --- Global Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+             console.info("DOM Loaded. Initializing AuraStream modules...");
+             AuraUICore.init();
+             // GSI script has `defer`, so it should execute after DOMContentLoaded,
+             // but window.onload is a safer bet to ensure the `google` object is available.
+        });
+
+         window.onload = () => {
+            console.info("Window Loaded. Initializing Google Sign-In...");
+            // Check if GSI object exists before initializing
+            if (typeof google !== 'undefined' && google.accounts?.id) {
+                 AuraAuth.init();
+            } else {
+                 // If GSI hasn't loaded yet (unlikely with defer but possible), wait a bit more or handle error
+                 console.warn("GSI client not found on window.onload, retrying initialization shortly or login may fail.");
+                 // Optional: Add a timeout fallback, but ideally defer handles this.
+                  setTimeout(() => {
+                      if (typeof google !== 'undefined' && google.accounts?.id) {
+                          AuraAuth.init();
+                      } else {
+                           console.error("GSI client failed to load. Google Sign-In unavailable.");
+                           // Update UI to show login is unavailable?
+                      }
+                  }, 1500); // Wait 1.5 seconds as a fallback
+            }
+         };
+
+    </script>
 
 </body>
 </html>
