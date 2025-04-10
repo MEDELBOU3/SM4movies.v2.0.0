@@ -1,4 +1,4 @@
-     /* --- CSS Reset & Base Styles --- */
+ /* --- CSS Reset & Base Styles --- */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -147,6 +147,100 @@ body.theme-light {
     --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.15);
     --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
 }
+
+body.theme-ocean {
+    --bg-primary: #0d1b2a;
+    --bg-secondary: #1b263b;
+    --surface-color: #415a77;
+    --bg-primary-rgb: 13, 27, 42;
+    --bg-secondary-rgb: 27, 38, 59;
+    --surface-rgb: 65, 90, 119;
+    --primary-accent: #3abff8; /* Ocean Blue */
+    --primary-accent-rgb: 58, 191, 248;
+    --secondary-accent: #38bdf8;
+    --secondary-accent-rgb: 56, 189, 248;
+    --text-light: #e0f2fe;
+    --text-medium: #bae6fd;
+    --border-color: #64748b;
+    --border-light: rgba(var(--primary-accent-rgb), 0.2);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+
+/* DESERT THEME */
+body.theme-desert {
+    --bg-primary: #3e2723;
+    --bg-secondary: #5d4037;
+    --surface-color: #795548;
+    --bg-primary-rgb: 62, 39, 35;
+    --bg-secondary-rgb: 93, 64, 55;
+    --surface-rgb: 121, 85, 72;
+    --primary-accent: #ffb74d; /* Sand Orange */
+    --primary-accent-rgb: 255, 183, 77;
+    --secondary-accent: #ff8f00; /* Sunset Gold */
+    --secondary-accent-rgb: 255, 143, 0;
+    --text-light: #fbe9e7;
+    --text-medium: #efebe9;
+    --border-color: #a1887f;
+    --border-light: rgba(var(--primary-accent-rgb), 0.3);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+/* SOLARIZED THEME */
+body.theme-solarized {
+    --bg-primary: #002b36;
+    --bg-secondary: #073642;
+    --surface-color: #586e75;
+    --bg-primary-rgb: 0, 43, 54;
+    --bg-secondary-rgb: 7, 54, 66;
+    --surface-rgb: 88, 110, 117;
+    --primary-accent: #b58900;
+    --primary-accent-rgb: 181, 137, 0;
+    --secondary-accent: #2aa198;
+    --secondary-accent-rgb: 42, 161, 152;
+    --text-light: #fdf6e3;
+    --text-medium: #839496;
+    --border-color: #93a1a1;
+    --border-light: rgba(var(--primary-accent-rgb), 0.3);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+body.theme-solarflare {
+    --bg-primary: #1b1212;
+    --bg-secondary: #2a1d1d;
+    --surface-color: #3c2a2a;
+    --bg-primary-rgb: 27, 18, 18;
+    --bg-secondary-rgb: 42, 29, 29;
+    --surface-rgb: 60, 42, 42;
+    --primary-accent: #f97316; /* Warm Orange */
+    --primary-accent-rgb: 249, 115, 22;
+    --secondary-accent: #facc15; /* Gold */
+    --secondary-accent-rgb: 250, 204, 21;
+    --text-light: #fff7ed;
+    --text-medium: #fcd34d;
+    --border-color: #78350f;
+    --border-light: rgba(var(--primary-accent-rgb), 0.2);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+body.theme-cyberpunk {
+    --bg-primary: #0f0c29;
+    --bg-secondary: #302b63;
+    --surface-color: #24243e;
+    --bg-primary-rgb: 15, 12, 41;
+    --bg-secondary-rgb: 48, 43, 99;
+    --surface-rgb: 36, 36, 62;
+    --primary-accent: #f72585; /* Neon Pink */
+    --primary-accent-rgb: 247, 37, 133;
+    --secondary-accent: #7209b7; /* Deep Purple */
+    --secondary-accent-rgb: 114, 9, 183;
+    --text-light: #f1f1f1;
+    --text-medium: #c084fc;
+    --border-color: #3a0ca3;
+    --border-light: rgba(var(--primary-accent-rgb), 0.3);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
 
 /* --- Typography --- */
 h1, h2, h3, h4, h5, h6 {
@@ -413,7 +507,8 @@ body.theme-light .form-control {
 .dropdown-header {
     padding: 0.6rem 1.2rem;
     font-size: 0.8rem;
-    color: var(--text-medium);
+    color: var(--text-light);
+    background: var(--gradient-primary);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -751,21 +846,26 @@ body.theme-light .dropdown-item:focus {
     border-radius: var(--radius-md);
     overflow: hidden;
     height: 100%;
+    padding: 0.5rem;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
 }
 
 .cast-member-link:hover {
     transform: scale(1.05);
     box-shadow: var(--shadow-lg);
     background: rgba(var(--surface-rgb), 0.03);
+    border: 2px solid var(--border-color);
 }
 
 .cast-member-link img {
     width: 120px;
-    height: 180px;
-    border-radius: var(--radius-md);
+    height: 120px;
+    border-radius: 50%;
     object-fit: cover;
     display: block;
-    margin: 0 auto 0.5rem auto;
+    margin: 5px auto;
+    border: 1px solid var(--border-color);
 }
 
 .cast-member-link .actor-name {
@@ -1270,6 +1370,246 @@ body.theme-light .dropdown-item:focus {
     height: 40px;
 }
 
+/* --- Skeleton Loader Styles --- */
+@keyframes skeleton-shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.skeleton {
+  background-color: rgba(255, 255, 255, 0.06); /* Slightly lighter than surface */
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0px, rgba(255, 255, 255, 0.12) 40px, rgba(255, 255, 255, 0.06) 80px);
+  background-size: 1000px 100%; /* Make shimmer wider */
+  animation: skeleton-shimmer 2s infinite linear;
+  border-radius: var(--radius-sm);
+  display: block;
+  line-height: 1; /* Prevent text line height issues */
+}
+
+/* Specific Skeleton Element Types */
+.skeleton-card {
+  background-color: var(--surface-color); /* Match card background */
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.skeleton-card-img {
+  height: 0;
+  padding-bottom: 150%; /* Aspect ratio for posters (3:2) */
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-card-body {
+  padding: 0.75rem; /* Match card padding */
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+.skeleton-title {
+  height: 1.1em; /* Approx height of card title */
+  margin-bottom: 0.5rem;
+  width: 85%;
+}
+.skeleton-text-sm {
+  height: 0.9em; /* Approx height of rating/meta */
+  margin-top: auto; /* Push to bottom */
+  width: 50%;
+}
+
+/* Horizontal Card Skeletons */
+.skeleton-h-card {
+    background-color: var(--surface-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    aspect-ratio: 16 / 9; /* Match backdrop aspect ratio */
+    position: relative;
+    scroll-snap-align: start; /* For horizontal scroll */
+    flex: 0 0 auto; /* Needed for horizontal scroll layout */
+    width: clamp(280px, 30vw, 380px); /* Match h-card width */
+    border: 1px solid var(--border-color);
+}
+.skeleton-h-card-backdrop {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-h-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem;
+    background: linear-gradient(to top, rgba(var(--surface-rgb), 0.9) 10%, transparent 90%);
+}
+.skeleton-h-title {
+    height: 1.1em;
+    width: 70%;
+    margin-bottom: 0.4rem;
+}
+.skeleton-h-text-sm {
+    height: 0.8em;
+    width: 40%;
+}
+
+/* Details Page Skeletons */
+.skeleton-details-backdrop {
+    height: 60vh; /* Match details backdrop */
+    max-height: 550px;
+    margin-bottom: -120px; /* Match overlap */
+}
+.skeleton-details-poster {
+    width: 100%;
+    max-width: 280px; /* Match poster size */
+    aspect-ratio: 2 / 3;
+    border-radius: var(--radius-lg);
+    border: 3px solid rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-details-title {
+    height: 2.5em;
+    width: 70%;
+    max-width: 500px;
+    margin-bottom: 0.75rem;
+}
+.skeleton-details-meta {
+    height: 1.2em;
+    width: 60%;
+    max-width: 400px;
+    margin-bottom: 1rem;
+}
+.skeleton-details-genres {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+.skeleton-details-genre-badge {
+    height: 1.8em;
+    width: 70px;
+    border-radius: var(--radius-pill);
+}
+.skeleton-details-heading {
+    height: 1.5em;
+    width: 200px;
+    margin-bottom: 1rem;
+}
+.skeleton-details-text {
+    height: 1em;
+    width: 95%;
+    margin-bottom: 0.6rem;
+}
+.skeleton-details-text-short {
+    height: 1em;
+    width: 70%;
+    margin-bottom: 0.6rem;
+}
+.skeleton-details-button {
+    height: 48px; /* Match btn-lg */
+    width: 180px;
+    border-radius: var(--radius-md);
+    margin-right: 0.5rem;
+}
+
+/* Person Page Skeletons */
+.skeleton-person-profile {
+    width: 100%;
+    max-width: 300px; /* Match person profile */
+    aspect-ratio: 1 / 1.2; /* Approx profile aspect */
+    border-radius: var(--radius-lg);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-person-name {
+    height: 2.2em;
+    width: 60%;
+    max-width: 400px;
+    margin-bottom: 1rem;
+}
+.skeleton-person-meta {
+    height: 1.1em;
+    width: 40%;
+    margin-bottom: 0.6rem;
+}
+
+/* Other Skeletons */
+.skeleton-episode-still {
+    width: 100%;
+    max-width: 240px; /* Match episode still */
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-md);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-episode-title {
+    height: 1.2em;
+    width: 60%;
+    margin-bottom: 0.5rem;
+}
+.skeleton-episode-meta {
+    height: 0.9em;
+    width: 80%;
+    margin-bottom: 0.75rem;
+}
+.skeleton-episode-text {
+    height: 1em;
+    width: 95%;
+    margin-bottom: 0.5rem;
+}
+.skeleton-episode-button {
+    height: 31px; /* Match btn-sm */
+    width: 120px;
+    border-radius: var(--radius-sm);
+}
+
+.skeleton-spotify-img {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+    margin-right: 1rem;
+}
+.skeleton-spotify-title {
+    height: 1em;
+    width: 70%;
+    margin-bottom: 0.3rem;
+}
+.skeleton-spotify-artist {
+    height: 0.8em;
+    width: 50%;
+}
+.skeleton-spotify-button {
+    width: 31px; height: 31px; border-radius: var(--radius-sm); flex-shrink: 0;
+}
+
+.skeleton-network-logo {
+    width: 100px; /* Match network logo item size */
+    height: 55px;
+    border-radius: var(--radius-md);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Helper for grid containers */
+.skeleton-grid {
+    display: grid;
+    gap: 1rem; /* Adjust gap to match your card grid */
+    /* Use grid-template-columns similar to your Bootstrap cols */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Example */
+}
+@media (min-width: 576px) { .skeleton-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+@media (min-width: 992px) { .skeleton-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
+
+.skeleton-h-grid {
+    display: flex;
+    gap: 1rem; /* Match horizontal card gap */
+    overflow-x: hidden; /* Hide scrollbar during skeleton */
+}
+
+/* Ensure spinner doesn't overlay skeleton initially */
+.loading-spinner { position: relative; z-index: 1; }
+
+/* Person Bio Skeleton */
+.skeleton-bio-line { height: 1em; width: 100%; margin-bottom: 0.6rem; }
+.skeleton-bio-line.short { width: 80%; }
+.skeleton-bio-line.final { width: 50%; }
+
 /* --- Network Carousel --- */
 .network-carousel-wrapper {
     position: relative;
@@ -1278,6 +1618,7 @@ body.theme-light .dropdown-item:focus {
 
 .network-logos-container {
     display: flex;
+    width: 100%;
     gap: 1.5rem;
     overflow-x: auto;
     padding: 1rem 0.5rem;
@@ -1297,13 +1638,16 @@ body.theme-light .dropdown-item:focus {
     text-align: center;
     cursor: pointer;
     transition: transform 0.2s ease, filter 0.2s ease;
+    background-size: 200%;
+    background-position: center;
 }
 
 .network-logo-item img {
     width: 150px;
     height: 80px;
     object-fit: contain;
-    background: rgba(var(--surface-rgb), 0.05);
+    background: var(--gradient-primary); /* Match gradient background */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
     border-radius: var(--radius-md);
     padding: 10px;
     border: 1px solid var(--border-color);
@@ -1328,7 +1672,7 @@ body.theme-light .dropdown-item:focus {
 
 .network-logo-item:hover {
     transform: scale(1.05);
-    filter: brightness(1.1);
+    filter: brightness(1.2);
 }
 
 .network-logo-item:hover span {
@@ -1340,7 +1684,7 @@ body.theme-light .dropdown-item:focus {
     top: 40%;
     transform: translateY(-50%);
     z-index: 10;
-    background: rgba(var(--bg-secondary-rgb), 0.8);
+    background: rgba(var(--bg-primary-rgb), 0.9);
     border: 1px solid var(--border-color);
     border-radius: 50%;
     width: 40px;
@@ -1376,6 +1720,92 @@ body.theme-light .dropdown-item:focus {
     opacity: 0 !important;
     cursor: default;
     pointer-events: none;
+}
+
+.live-sport-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid transparent; /* Base border for smooth hover transition */
+    backdrop-filter: blur(5px); /* Optional: subtle blur */
+    display: flex; /* Ensure cards have flex layout if using h-100 */
+    flex-direction: column;
+}
+
+.live-sport-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(var(--primary-accent-rgb), 0.15);
+    border-color: rgba(var(--primary-accent-rgb), 0.3);
+}
+
+.live-card-header {
+    background: rgba(var(--surface-rgb), 0.3); /* Slightly different background */
+    border-bottom: 1px solid rgba(var(--border-rgb), 0.2); /* Softer border */
+}
+
+.live-card-header .league-info img {
+    max-height: 20px;
+     /* Make logos white-ish for dark themes by default */
+     filter: contrast(0) brightness(1.5);
+}
+
+.live-indicator .live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: var(--danger-color, #dc3545); /* Use theme danger or default red */
+    border-radius: 50%;
+    animation: pulse 1.5s infinite ease-in-out;
+    vertical-align: middle;
+    margin-top: -2px; /* Fine-tune alignment */
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.live-indicator .minute {
+    font-style: italic;
+    opacity: 0.9;
+    font-size: 0.9em; /* Make minute slightly smaller */
+}
+
+.team-info .team-logo {
+    max-width: 45px; /* Slightly larger logos */
+    max-height: 45px;
+    object-fit: contain;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); /* Add subtle shadow */
+}
+
+.team-info .team-name {
+    font-weight: 500; /* Slightly less bold */
+    font-size: 0.9rem; /* Adjust size */
+    line-height: 1.3;
+}
+
+.score-info span {
+    letter-spacing: 1px; /* Add spacing to score */
+    line-height: 1;
+    font-size: 1.7rem; /* Adjust score size */
+    color: var(--text-light); /* Ensure score is bright */
+}
+
+#livesports-view h1 {
+    border-bottom: 2px solid var(--primary-accent); display: inline-block; padding-bottom: 0.5rem; 
+}
+
+.live-sport-card .card-footer {
+     background: rgba(var(--surface-rgb), 0.1); /* Subtle footer background */
+     border-top: 1px solid rgba(var(--border-rgb), 0.15);
+     margin-top: auto; /* Push footer to bottom */
+}
+
+.event-web-search-btn {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.8rem; /* Slightly larger padding */
 }
 
 /* --- AI Insight Box --- */
@@ -1539,7 +1969,106 @@ body.theme-light .dropdown-item:focus {
 
 /* --- Person View --- */
 #person-view .person-header {
+    position: relative;
     gap: 2.5rem;
+    padding: 2rem;
+    border-radius: 20px;
+    border: 2px solid var(--border-color);
+    overflow: hidden;
+    z-index: 0;
+}
+
+.person-header::before {
+  content: '';
+  position: absolute;
+  top: -5%; /* Cover edges when scaling/blurring */
+  left: -5%;
+  right: -5%;
+  bottom: -5%;
+  background-image: var(--person-bg-image); /* Use the JS-set variable */
+  background-size: cover;
+  background-position: center center;
+  filter: blur(15px) brightness(0.7); /* Adjust blur and brightness */
+  transform: scale(1.1); /* Ensure blur covers edges */
+  z-index: -2; /* Place it behind the overlay and content */
+  transition: background-image 0.5s ease-in-out; /* Optional: Smooth transition */
+}
+
+/* Darkening Overlay for Text Contrast */
+.person-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(18, 20, 26, 0.9) 0%, rgba(18, 20, 26, 0.6) 60%, rgba(18, 20, 26, 0.4) 100%); /* Adjust gradient/color/opacity */
+  /* Or a solid color: background-color: rgba(18, 20, 26, 0.7); */
+  z-index: -1; /* Place it above the blurred image, but behind content */
+}
+
+/* Ensure Content is Above Pseudo-elements */
+.person-header .person-profile-pic,
+.person-header .person-info {
+  position: relative; /* Needed for z-index */
+  z-index: 1; /* Place content above the overlay and background */
+}
+
+.read-more-bio {
+    color: var(--bs-info); /* Example color */
+    text-decoration: none;
+}
+.read-more-bio:hover {
+    text-decoration: underline;
+}
+/* Ensure fallback icon displays correctly over the background */
+.person-profile-pic .img-fallback {
+    display: none; /* Hide broken image placeholder */
+}
+.person-profile-pic .img-fallback + .img-fallback-icon {
+    display: inline-block !important; /* Show icon when image fails */
+    font-size: 150px; /* Adjust size */
+    color: #adb5bd; /* Adjust color */
+    /* Add any other styling needed */
+    width: 100%;
+    max-width: 200px; /* Match image size */
+    height: auto;
+    text-align: center;
+}
+/* Responsive adjustments for fallback icon if needed */
+@media (min-width: 768px) {
+    .person-profile-pic .img-fallback + .img-fallback-icon {
+        /* max-width: 250px; */ /* Adjust as per your layout */
+        font-size: 180px;
+   }
+}
+@media (min-width: 992px) {
+    .person-profile-pic .img-fallback + .img-fallback-icon {
+       /* max-width: 200px; */
+       font-size: 150px;
+   }
+}
+
+/* Optional: Style for expanded bio */
+.person-bio {
+    max-height: 100px; /* Adjust initial visible height (e.g., ~4-5 lines) */
+    overflow: hidden;
+    transition: max-height 0.5s ease-out;
+    position: relative; /* For potential fade-out effect */
+}
+
+.person-bio.expanded {
+    max-height: 1000px; /* Set to a large enough value */
+    transition: max-height 0.7s ease-in;
+}
+
+
+.person-profile-pic {
+    position: relative;
+    min-height: 200px; /* Ensure space for the icon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #person-view .person-profile-pic img {
@@ -1550,6 +2079,26 @@ body.theme-light .dropdown-item:focus {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     border: 3px solid rgba(var(--surface-rgb), 0.1);
+    transition: opacity 0.3s ease;
+}
+
+.person-profile-pic img.img-fallback {
+    opacity: 0; /* Hide the broken image */
+}
+
+.person-profile-pic .img-fallback-icon {
+    font-size: 5rem; /* Large icon size */
+    color: var(--primary-accent); /* Use theme's primary accent color */
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.person-profile-pic img.img-fallback ~ .img-fallback-icon {
+    display: block !important; /* Show the icon when image fails */
 }
 
 #person-view .person-info h1 {
@@ -1699,3 +2248,221 @@ body.theme-light .dropdown-item:focus {
     #person-view .person-info h1 { font-size: clamp(1.8rem, 6vw, 2.2rem); }
     #person-view .person-profile-pic img { max-width: 200px; }
 }
+
+ /* --- Add these styles to your existing <style> block --- */
+
+ /* Like/Favorite Button */
+ .like-btn {
+     position: absolute;
+     top: 0.6rem;
+     left: 0.6rem; /* Position opposite to watchlist */
+     z-index: 5;
+     background-color: rgba(var(--surface-rgb), 0.6);
+     border: 1px solid rgba(255, 255, 255, 0.1);
+     color: var(--text-medium);
+     border-radius: 50%; /* Circle shape */
+     width: 34px;
+     height: 34px;
+     padding: 0;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     font-size: 1rem;
+     backdrop-filter: blur(5px);
+     transition: all var(--transition-fast);
+     box-shadow: var(--shadow-sm);
+ }
+ .like-btn:hover {
+     background-color: rgba(var(--tertiary-accent-rgb), 0.2);
+     color: var(--tertiary-accent);
+     transform: scale(1.1);
+     border-color: rgba(var(--tertiary-accent-rgb), 0.5);
+ }
+ .like-btn.is-favorite {
+     background-color: rgba(var(--tertiary-accent-rgb), 0.8);
+     color: #fff;
+     border-color: var(--tertiary-accent);
+     text-shadow: 0 0 5px rgba(0,0,0,0.5);
+ }
+ .like-btn.is-favorite:hover {
+    filter: brightness(1.1);
+    background-color: rgba(var(--tertiary-accent-rgb), 0.9);
+ }
+ .like-btn i {
+    transition: transform 0.2s ease-in-out; /* Animate icon */
+ }
+.like-btn.is-favorite i {
+    transform: scale(1.1);
+}
+
+ /* Analytics View Styles */
+ #analytics-view {
+    padding-top: 100px; /* Adjust for fixed navbar */
+    min-height: 80vh;
+ }
+ .stat-card {
+     background-color: var(--surface-color);
+     border-radius: var(--radius-lg);
+     padding: 1.5rem;
+     border: 1px solid var(--border-color);
+     text-align: center;
+     box-shadow: var(--shadow-md);
+     height: 100%;
+ }
+ .stat-card .stat-icon {
+     font-size: 2.5rem;
+     color: var(--primary-accent);
+     margin-bottom: 1rem;
+     display: block;
+ }
+ .stat-card .stat-value {
+     font-size: 2.8rem;
+     font-weight: 700;
+     color: #fff;
+     line-height: 1;
+     margin-bottom: 0.5rem;
+ }
+ .stat-card .stat-label {
+     font-size: 1rem;
+     color: var(--text-medium);
+ }
+
+ .chart-container {
+    background-color: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    /* min-height: 350px; */ /* You can keep min-height or remove it */
+    height:   80vh; /* <<< ADD THIS LINE (adjust value as needed) */
+    position: relative;
+    display: flex; /* Use flex to help center canvas if needed */
+    flex-direction: column; /* Stack title and canvas */
+    justify-content: center; /* Center content vertically */
+}
+
+/* Optional: Ensure canvas itself behaves within the container */
+.chart-container canvas {
+    max-width: 100%;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.chart-title { /* Keep existing style */
+   font-size: 1.3rem;
+   font-weight: 600;
+   color: var(--text-light);
+   margin-bottom: 1rem; /* Reduced bottom margin slightly */
+   text-align: center;
+   flex-shrink: 0; /* Prevent title from shrinking */
+}
+
+
+ /* Chart.js Tooltip Customization (Optional) */
+ .chartjs-tooltip {
+    background: rgba(0,0,0,0.8) !important;
+    border-radius: var(--radius-sm) !important;
+    color: #fff !important;
+    padding: 8px 12px !important;
+ }
+ /* Add specific skeleton styles if needed, or reuse existing */
+ #analytics-content .skeleton-card { /* Example reuse */
+    height: 150px; /* Adjust size */
+ }
+  #analytics-content .skeleton-chart {
+      background-color: var(--surface-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 2rem;
+      border: 1px solid var(--border-color);
+      height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  #analytics-content .skeleton-chart > div { /* Target the inner spinner div */
+      width: 50px; height: 50px;
+  }
+  #analytics-content .skeleton { background: linear-gradient(90deg, var(--border-color) 25%, rgba(var(--border-color-rgb), 0.6) 50%, var(--border-color) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite linear; border-radius: var(--radius-sm); }
+    
+  /* --- Styles for Recently Added Favorites --- */
+#recent-favorites-list {
+    /* Uses Bootstrap's row for layout, no specific styles needed on the row itself usually */
+    /* Optional: Add some top margin if needed */
+     margin-top: 0.5rem;
+}
+
+#recent-favorites-list .recent-favorite-item {
+    display: block; /* Make the anchor tag behave like a block for layout */
+    text-decoration: none;
+    position: relative; /* Needed for the absolute positioned title */
+    overflow: hidden; /* Hide anything overflowing the rounded corners */
+    border-radius: var(--radius-md); /* Consistent rounding */
+    transition: transform var(--transition-fast), box-shadow var(--transition-medium);
+    box-shadow: var(--shadow-sm);
+    background-color: var(--surface-color); /* Background for placeholder */
+}
+
+#recent-favorites-list .recent-favorite-item:hover {
+    transform: scale(1.05); /* Lift effect on hover */
+    box-shadow: var(--shadow-lg); /* Enhanced shadow on hover */
+    z-index: 10; /* Bring hovered item slightly forward */
+}
+
+#recent-favorites-list .recent-favorite-item img {
+    width: 100%;
+    aspect-ratio: 2 / 3; /* Standard poster aspect ratio */
+    object-fit: cover; /* Ensure image covers the area */
+    display: block; /* Remove any extra space below image */
+    border-radius: var(--radius-md); /* Match parent rounding */
+}
+
+/* Placeholder style if image fails (ensure you have the placeholder div in HTML if needed) */
+#recent-favorites-list .recent-favorite-item .card-img-placeholder {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background-color: var(--surface-color);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-medium);
+}
+
+#recent-favorites-list .recent-favorite-item .recent-favorite-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* Gradient overlay for better text readability */
+    background: linear-gradient(to top, rgba(var(--bg-primary-rgb), 0.95) 20%, rgba(var(--bg-primary-rgb), 0.7) 60%, transparent 100%);
+    color: var(--text-light);
+    font-size: 0.85rem; /* Slightly larger font */
+    font-weight: 500;
+    padding: 1.2rem 0.7rem 0.7rem; /* More top padding */
+    text-align: center;
+    white-space: nowrap; /* Prevent title wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add '...' if title is too long */
+    border-bottom-left-radius: var(--radius-md); /* Match rounding */
+    border-bottom-right-radius: var(--radius-md);
+    transition: opacity var(--transition-fast);
+    opacity: 0.9; /* Slightly transparent normally */
+}
+
+#recent-favorites-list .recent-favorite-item:hover .recent-favorite-title {
+    opacity: 1; /* Fully opaque on hover */
+}
+
+/* Ensure skeletons for recent list look correct if using */
+#recent-favorites-list .skeleton-card {
+    aspect-ratio: 2 / 3;
+    height: auto; /* Let aspect ratio control height */
+    padding: 0; /* No padding needed for image-like skeleton */
+}
+#recent-favorites-list .skeleton-card .skeleton-card-img {
+    height: 100%; /* Fill the card */
+}
+#recent-favorites-list .skeleton-card .skeleton-card-body {
+    display: none; /* Hide body elements for image-only skeleton */
+}
+    
