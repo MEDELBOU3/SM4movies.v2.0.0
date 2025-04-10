@@ -1,4 +1,4 @@
-  // --- Configuration ---
+   // --- Configuration ---
         const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
@@ -52,6 +52,11 @@
                 },
                 { title: "Upcoming Movies", endpoint: "/movie/upcoming", type:'movie' },
             ],
+            
+            SPORTRADAR_BASE_URL: 'https://api.sportradar.com/soccer/trial/v4/en', // Adjust if needed (e.g., /soccer/production/v4/en or api.sportradar.us)
+            SPORTRADAR_API_KEY: 'VEv4okaElakk1DyeLIAWsojBisfHllWzPRx3ARjI',
+            // ----------------------------------------------------
+
             SPOTIFY_CLIENT_ID: '414c70fe6b3e4d5f9a8fe0fc8d91a86d', // Replace with your Spotify Client ID
             SPOTIFY_CLIENT_SECRET: 'bf45a79db80444cca0a5e9d85d6cb62f', // Replace with your Spotify Client Secret
             SPOTIFY_TOKEN_URL: 'https://accounts.spotify.com/api/token',
@@ -75,6 +80,7 @@
              BG_PRIMARY_RGB: '11, 12, 16', 
         };
 
+
         // --- DOM References ---
         const DOM = {
             // Views
@@ -85,9 +91,11 @@
                 player: document.getElementById('player-view'),
                 genre: document.getElementById('genre-results-view'),
                 music: document.getElementById('music-view'),
+                livesports: document.getElementById('livesports-view'),
                 network: document.getElementById('network-results-view'),
                 person: document.getElementById('person-view'), // NEW: Person view
                 watchlist: document.getElementById('watchlist-view'), 
+                analytics: document.getElementById('analytics-view'),
             },
             // Navbar
             navbarMenu: document.getElementById('navbarNav'),
@@ -120,8 +128,12 @@
             networkResultsTitle: document.getElementById('network-results-title'),
             loadMoreNetworkBtn: document.getElementById('load-more-network-btn'),
             networkLoadingSpinner: document.getElementById('network-loading-more-spinner'),
-             // Person View (NEW)
-             personWrapper: document.getElementById('person-content-wrapper'),
+            //Lives
+            liveSportsGrid: document.getElementById('livesports-grid'),
+            // Person View (NEW)
+            personWrapper: document.getElementById('person-content-wrapper'),
+            //Analytics
+            analyticsNavLink: document.querySelector('.nav-link[href="#analytics"]'),
             // --- NEW: Gemini refs for Person View ---
             personAiBioBtn: null, // Will be selected dynamically
             personAiBioContainer: null, // Will be selected dynamically
@@ -423,6 +435,287 @@
                  }
              },
 
+             // --- NEW: Skeleton Generator Functions ---
+
+            // Generates HTML for vertical skeleton cards
+            getSkeletonCardHTML: (count = 6) => {
+                let cardsHtml = '';
+                for (let i = 0; i < count; i++) {
+                    cardsHtml += `
+                        <div class="col">
+                            <div class="skeleton-card">
+                                <div class="skeleton skeleton-card-img"></div>
+                                <div class="skeleton-card-body">
+                                    <div class="skeleton skeleton-title"></div>
+                                    <div class="skeleton skeleton-text-sm"></div>
+                                </div>
+                            </div>
+                        </div>`;
+                }
+                // Note: Container should be the <div class="row ...">
+                return cardsHtml;
+            },
+
+            // Generates HTML for Live Score skeleton cards
+            getSkeletonLiveScoreCardHTML: (count = 4) => {
+                let cardsHtml = '';
+                for (let i = 0; i < count; i++) {
+                    // Uses col classes directly to match the final layout
+                    cardsHtml += `
+                        <div class="col-12 col-md-6 col-lg-4"> 
+                            <div class="skeleton-livescore-card">
+                                <div class="skeleton-league-info">
+                                    <div class="skeleton skeleton-league-logo"></div>
+                                    <div class="skeleton skeleton-league-name"></div>
+                                    <div class="skeleton skeleton-status-indicator ms-auto"></div>
+                                </div>
+                                <div class="skeleton-match-details">
+                                    <div class="skeleton-team">
+                                        <div class="skeleton skeleton-team-logo"></div>
+                                        <div class="skeleton skeleton-team-name"></div>
+                                    </div>
+                                    <div class="skeleton-score-info">
+                                        <div class="skeleton skeleton-score"></div>
+                                    </div>
+                                    <div class="skeleton-team">
+                                        <div class="skeleton skeleton-team-logo"></div>
+                                        <div class="skeleton skeleton-team-name"></div>
+                                    </div>
+                                </div>
+                                <div class="skeleton-card-actions">
+                                    <div class="skeleton skeleton-card-button"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return cardsHtml; // Return the columns directly
+            },
+
+            // Generates HTML for horizontal skeleton cards
+            getSkeletonHorizontalCardHTML: (count = 5) => {
+                let cardsHtml = '';
+                for (let i = 0; i < count; i++) {
+                    cardsHtml += `
+                        <div class="skeleton-h-card">
+                            <div class="skeleton skeleton-h-card-backdrop"></div>
+                            <div class="skeleton-h-card-overlay">
+                                <div class="skeleton skeleton-h-title"></div>
+                                <div class="skeleton skeleton-h-text-sm"></div>
+                            </div>
+                        </div>`;
+                }
+                // Container should be the flexbox .horizontal-card-container
+                return cardsHtml;
+            },
+
+            // Generates HTML for the Hero section skeleton
+            getSkeletonHeroHTML: () => {
+                // Note: Assumes hero container structure handles layout
+                return `
+                    <div class="skeleton skeleton-hero-backdrop"></div>
+                    <div class="hero-overlay" style="background:none;"></div> 
+                    <div class="container hero-content">
+                        <div class="hero-genres mb-3">
+                           <span class="skeleton skeleton-badge" style="width: 60px;"></span>
+                           <span class="skeleton skeleton-badge" style="width: 80px;"></span>
+                        </div>
+                        <div class="skeleton skeleton-title mb-3" style="height: 2em; width: 70%;"></div>
+                        <div class="skeleton skeleton-meta mb-3">
+                            <span class="skeleton skeleton-text-sm" style="width: 80px; display:inline-block; margin-right: 1rem;"></span>
+                            <span class="skeleton skeleton-text-sm" style="width: 100px; display:inline-block; margin-right: 1rem;"></span>
+                            <span class="skeleton skeleton-text-sm" style="width: 60px; display:inline-block;"></span>
+                        </div>
+                        <div class="skeleton skeleton-text mb-1" style="width: 95%;"></div>
+                        <div class="skeleton skeleton-text mb-4" style="width: 85%;"></div>
+                        <div class="hero-actions mt-4">
+                            <div class="skeleton skeleton-button" style="height: 48px; width: 150px;"></div>
+                            <div class="skeleton skeleton-button" style="height: 48px; width: 150px;"></div>
+                        </div>
+                    </div>`;
+            },
+
+            // Generates HTML for the Details page skeleton
+            getSkeletonDetailsHTML: () => {
+                 // Pre-generate skeleton grids for cast/similar
+                 const skeletonCastGrid = Utils.getSkeletonCardHTML(6); // 6 cards for cast/similar sections
+                 const skeletonSimilarGrid = Utils.getSkeletonCardHTML(6);
+                 const skeletonSeasonTabs = `
+                    <li class="nav-item"><span class="skeleton skeleton-button" style="width: 100px; height: 40px; margin-right: 0.5rem;"></span></li>
+                    <li class="nav-item"><span class="skeleton skeleton-button" style="width: 100px; height: 40px; margin-right: 0.5rem;"></span></li>
+                    <li class="nav-item"><span class="skeleton skeleton-button" style="width: 100px; height: 40px;"></span></li>
+                 `;
+                 const skeletonEpisodePane = Utils.getSkeletonEpisodeHTML(1); // Show one loading episode
+
+                 return `
+                    <div class="skeleton skeleton-details-backdrop"></div>
+                    <div class="container details-content-overlay">
+                         <div class="skeleton skeleton-button mb-4" style="height: 31px; width: 80px;"></div>
+                         <div class="details-header row mb-5 align-items-center">
+                             <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
+                                 <div class="skeleton skeleton-details-poster"></div>
+                             </div>
+                             <div class="details-info col-lg-9 col-md-8">
+                                 <div class="skeleton skeleton-details-title"></div>
+                                 <div class="skeleton-details-meta">
+                                     <span class="skeleton skeleton-text-sm" style="width: 60px; display:inline-block; margin-right: 1rem;"></span>
+                                     <span class="skeleton skeleton-text-sm" style="width: 80px; display:inline-block; margin-right: 1rem;"></span>
+                                     <span class="skeleton skeleton-text-sm" style="width: 90px; display:inline-block;"></span>
+                                 </div>
+                                 <div class="skeleton-details-genres mb-3">
+                                     <div class="skeleton skeleton-details-genre-badge"></div>
+                                     <div class="skeleton skeleton-details-genre-badge"></div>
+                                     <div class="skeleton skeleton-details-genre-badge"></div>
+                                 </div>
+                                 <div class="skeleton skeleton-details-heading" style="width: 150px;"></div>
+                                 <div class="skeleton skeleton-details-text"></div>
+                                 <div class="skeleton skeleton-details-text"></div>
+                                 <div class="skeleton skeleton-details-text-short mb-4"></div>
+
+                                 <div class="skeleton skeleton-details-text-short mb-1" style="width: 200px;"></div>
+                                 <div class="skeleton skeleton-details-text-short mb-3" style="width: 250px;"></div>
+
+                        
+                                 <div class="skeleton skeleton-details-heading" style="width: 120px; margin-top: 1rem;"></div>
+                                 <div class="skeleton mb-3" style="height: 70px; width: 100%;"></div>
+                                 <div class="skeleton skeleton-button mb-4" style="height: 31px; width: 160px;"></div>
+
+
+                                 <div class="details-actions mt-4">
+                                     <div class="skeleton skeleton-details-button"></div>
+                                     <div class="skeleton skeleton-details-button" style="width: 160px;"></div>
+                                 </div>
+                             </div>
+                         </div>
+                        <div class="details-section season-episode-section mt-5">
+                             <div class="skeleton skeleton-details-heading" style="width: 280px;"></div>
+                             <ul class="nav nav-pills mb-4 flex-nowrap" style="overflow-x: auto; white-space: nowrap;">${skeletonSeasonTabs}</ul>
+                             <div class="tab-content">
+                                <div class="tab-pane fade show active">${skeletonEpisodePane}</div>
+                             </div>
+                         </div>
+
+                         <div class="details-section mt-5">
+                             <div class="skeleton skeleton-details-heading"></div>
+                             <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
+                                 ${skeletonCastGrid}
+                             </div>
+                         </div>
+
+                         <div class="details-section mt-5">
+                             <div class="skeleton skeleton-details-heading" style="width: 250px;"></div>
+                             <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                                 ${skeletonSimilarGrid}
+                             </div>
+                         </div>
+
+                          <div class="details-section mt-5">
+                             <div class="skeleton skeleton-details-heading" style="width: 300px;"></div>
+                             <div class="d-flex flex-wrap gap-3 align-items-center">
+                                <div class="skeleton" style="width: 50px; height: 50px; border-radius: var(--radius-sm);"></div>
+                                <div class="skeleton" style="width: 50px; height: 50px; border-radius: var(--radius-sm);"></div>
+                                <div class="skeleton" style="width: 50px; height: 50px; border-radius: var(--radius-sm);"></div>
+                             </div>
+                          </div>
+
+                    </div>
+                 `;
+            },
+
+            // Generates HTML for the Person page skeleton
+            getSkeletonPersonHTML: () => {
+                const skeletonCardGrid = Utils.getSkeletonCardHTML(6); // For known for
+                return `
+                <div class="row person-header mb-4 mb-md-5">
+                    <div class="col-md-4 col-lg-3 person-profile-pic text-center text-md-start mb-4 mb-md-0">
+                         <div class="skeleton skeleton-person-profile mx-auto mx-md-0"></div>
+                    </div>
+                    <div class="col-md-8 col-lg-9 person-info">
+                        <div class="skeleton skeleton-person-name mb-3"></div>
+                    
+                        <div class="person-social-links mt-2 mb-3">
+                            <span class="skeleton skeleton-button" style="width: 30px; height: 30px; border-radius: 50%;"></span>
+                            <span class="skeleton skeleton-button" style="width: 30px; height: 30px; border-radius: 50%;"></span>
+                        </div>
+                        <div class="person-meta mb-4">
+                           <div class="skeleton skeleton-person-meta mb-2"></div>
+                           <div class="skeleton skeleton-person-meta mb-2"></div>
+                           <div class="skeleton skeleton-person-meta" style="width: 60%;"></div>
+                        </div>
+
+                     
+                        <div class="details-section mt-4">
+                            <div class="skeleton skeleton-details-heading" style="width: 180px;"></div>
+                            <div class="skeleton mb-3" style="min-height: 60px; width: 100%;"></div>
+                            <div class="skeleton skeleton-button mb-4" style="height: 31px; width: 180px;"></div>
+                        </div>
+
+                        <div class="skeleton skeleton-details-heading" style="width: 150px; margin-top: 2rem;"></div>
+                        <div class="person-bio">
+                             <div class="skeleton skeleton-bio-line"></div>
+                             <div class="skeleton skeleton-bio-line"></div>
+                             <div class="skeleton skeleton-bio-line short"></div>
+                             <div class="skeleton skeleton-bio-line"></div>
+                             <div class="skeleton skeleton-bio-line final"></div>
+                        </div>
+                    </div>
+                </div>
+                 <div class="filmography-section mt-5">
+                     <div class="skeleton skeleton-details-heading" style="width: 180px;"></div>
+                     <div id="person-known-for-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                         ${skeletonCardGrid}
+                     </div>
+                 </div>
+                `;
+            },
+
+            // Generates HTML for episode item skeletons
+            getSkeletonEpisodeHTML: (count = 3) => {
+                let episodesHtml = '';
+                for (let i = 0; i < count; i++) {
+                    episodesHtml += `<div class="skeleton-episode">
+                             <div class="skeleton skeleton-episode-still flex-shrink-0"></div>
+                             <div class="episode-details flex-grow-1">
+                                 <div class="skeleton skeleton-episode-title mb-1"></div>
+                                 <div class="skeleton skeleton-episode-meta mb-2"></div>
+                                 <div class="skeleton skeleton-episode-text mb-1"></div>
+                                 <div class="skeleton skeleton-episode-text short mb-3"></div>
+                                 <div class="skeleton skeleton-episode-button"></div>
+                             </div>
+                         </div>`;
+                }
+                return episodesHtml;
+            },
+
+             // Generates HTML for Spotify track list skeletons
+             getSkeletonSpotifyTrackHTML: (count = 5) => {
+                 let tracksHtml = '';
+                 for (let i = 0; i < count; i++) {
+                     tracksHtml += `
+                         <li class="list-group-item d-flex align-items-center skeleton-spotify-item">
+                             <div class="skeleton skeleton-spotify-img"></div>
+                             <div class="track-info flex-grow-1 overflow-hidden me-2">
+                                 <div class="skeleton skeleton-spotify-title"></div>
+                                 <div class="skeleton skeleton-spotify-artist"></div>
+                             </div>
+                             <div class="skeleton skeleton-spotify-button"></div>
+                         </li>
+                     `;
+                 }
+                 // Assuming the container is the <ul>
+                 return tracksHtml; // Return list items directly
+             },
+
+             // Generates HTML for network logo skeletons
+             getSkeletonNetworkLogoHTML: (count = 8) => {
+                 let logosHtml = '';
+                 for (let i = 0; i < count; i++) {
+                     logosHtml += `<div class="skeleton skeleton-network-logo"></div>`;
+                 }
+                 // Return directly as they are usually in a flex container
+                 return logosHtml;
+             },
+
              // Format date string (e.g., "Jan 1, 2023")
             formatAirDate: (dateString) => {
                 try {
@@ -554,6 +847,143 @@
 
                 return State.spotifyTokenPromise;
             },
+
+
+
+            /*fetchSportMonks: async (endpoint, params = {}) => {
+                // --- PRODUCTION WARNING ---
+               if (!config.SPORTMONKS_API_TOKEN || config.SPORTMONKS_API_TOKEN === 'YOUR_SPORTMONKS_API_TOKEN_HERE') {
+                    console.error("SportMonks API Token missing or is still the placeholder value in the 'config' object. Please add your valid token.");
+                    Utils.showToast("Live Sports configuration error. Check API Token.", "danger");
+                    return null;
+                }
+
+                if (!config.SPORTMONKS_BASE_URL) {
+                    console.error("SportMonks Base URL (SPORTMONKS_BASE_URL) is missing in the 'config' object.");
+                    Utils.showToast("Live Sports configuration error. Check Base URL.", "danger");
+                    return null;
+                }
+
+                // In production, replace direct token usage with a call to your backend proxy.
+                const urlParams = new URLSearchParams({
+                    api_token: config.SPORTMONKS_API_TOKEN, // Use the configured token
+                    ...params
+                });
+               // Clean up null/empty params
+                Object.keys(params).forEach(key => {
+                    if (params[key] == null || params[key] === '') {
+                        urlParams.delete(key);
+                    }
+                });
+                // Handle includes array correctly
+                if (Array.isArray(params.include)) {
+                    urlParams.set('include', params.include.join(','));
+                } else if (params.include === '') {
+                // If include was explicitly set to empty string, remove it
+                urlParams.delete('include');
+            }
+
+
+            const url = `${config.SPORTMONKS_BASE_URL}${endpoint}?${urlParams.toString()}`;
+
+
+            try {
+                    const response = await fetch(url, { signal: params.signal });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        const errorMessage = data?.message || `SportMonks API Error ${response.status}`;
+                        console.error("SportMonks API Error:", response.status, errorMessage, data);
+                        if (response.status === 401 || response.status === 403) {
+                             throw new Error(`SportMonks Auth Error: ${errorMessage}. Check API Token/Permissions.`);
+                         }
+                         if (response.status === 429) {
+                             throw new Error(`SportMonks Rate Limit Exceeded: ${errorMessage}`);
+                         }
+                        throw new Error(errorMessage);
+                    }
+                    return data?.data || data;
+
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.error(`SportMonks Fetch Error (${endpoint}):`, error);
+                        Utils.showToast(`Live Sports Error: ${error.message}`, "danger");
+                    } else {
+                        console.log(`SportMonks Request Aborted (${endpoint})`);
+                    }
+                    return null; // Indicate failure
+                }
+            },*/
+    
+            
+            fetchSportradar: async (endpoint, params = {}) => {
+                // Check configuration
+                if (!config.SPORTRADAR_API_KEY || config.SPORTRADAR_API_KEY === 'YOUR_SPORTRADAR_API_KEY_HERE') { // Check for placeholder too
+                    console.error("Sportradar API Key (SPORTRADAR_API_KEY) missing or placeholder in 'config'.");
+                    Utils.showToast("Live Sports configuration error. Check API Key.", "danger");
+                    return null;
+                }
+                if (!config.SPORTRADAR_BASE_URL) {
+                    console.error("Sportradar Base URL (SPORTRADAR_BASE_URL) is missing in 'config'.");
+                    Utils.showToast("Live Sports configuration error. Check Base URL.", "danger");
+                    return null;
+                }
+                  // --- SECURITY WARNING ---
+                // Exposing API keys client-side is generally insecure for production apps.
+                // Consider a backend proxy to handle API requests.
+                // console.warn("Sportradar API key is used directly client-side. Use a backend proxy for production.");
+
+                // Add API key to parameters
+                const urlParams = new URLSearchParams({
+                    ...params,
+                    api_key: config.SPORTRADAR_API_KEY // Add the API key here
+                });
+
+                // Clean up null/empty params (optional, Sportradar might ignore them)
+                 Object.keys(params).forEach(key => {
+                     if (params[key] == null || params[key] === '') {
+                         urlParams.delete(key);
+                     }
+                 });
+
+                // Construct the full URL
+                const url = `${config.SPORTRADAR_BASE_URL}${endpoint}?${urlParams.toString()}`;
+
+                try {
+                    const response = await fetch(url, { signal: params.signal }); // Support cancellation
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        // Attempt to get a specific error message from Sportradar response
+                        const errorMessage = data?.message || `Sportradar API Error ${response.status}`;
+                        console.error("Sportradar API Error:", response.status, errorMessage, data);
+                        if (response.status === 401 || response.status === 403) {
+                             throw new Error(`Sportradar Auth Error: ${errorMessage}. Check API Key/Permissions.`);
+                         }
+                         if (response.status === 404) {
+                            throw new Error(`Sportradar Endpoint Not Found (404): ${endpoint}`);
+                         }
+                        throw new Error(errorMessage);
+                    }
+
+                    // Sportradar endpoints often wrap results. Return the relevant part.
+                    // For /live/summaries.json, it's usually data.summaries
+                    // Adjust this based on the specific endpoint used.
+                    // If the root object IS the array, just return data.
+                    return data.summaries || data; // COMMON: Return 'summaries' array, fallback to data itself
+
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.error(`Sportradar Fetch Error (${endpoint}):`, error);
+                        Utils.showToast(`Live Sports Error: ${error.message}`, "danger");
+                    } else {
+                        console.log(`Sportradar Request Aborted (${endpoint})`);
+                    }
+                    return null; // Indicate failure
+                }
+            },
+
+        
 
             // Generic Spotify API Fetcher (uses App Token)
             fetchSpotify: async (endpoint, method = 'GET', body = null) => {
@@ -888,6 +1318,20 @@
                      activeNavLinkHref = '#watchlist'; // Highlight watchlist nav link
                      runOnViewLoad = () => App.loadWatchlistPage();
                  }
+                 else if (hash === '#livesports') {
+                    targetViewElement = DOM.views.livesports;
+                     activeNavLinkHref = '#livesports'; // Highlight the new link
+                    runOnViewLoad = () => App.loadLiveSportsPage();
+                 }
+                else if (hash === '#analytics') {
+                    targetViewElement = DOM.views.analytics;
+                    activeNavLinkHref = '#analytics'; // Highlight the analytics link
+                    runOnViewLoad = () => {
+                        // Ensure analytics content area exists
+                        Analytics.dom.content = document.getElementById('analytics-content'); // Re-select in case view was removed/re-added
+                        Analytics.updateAnalyticsDisplay(); // Calculate and render/update stats & charts
+                    };
+                }
                  else {
                      // Unknown hash, redirect to home
                      console.warn("Unknown hash detected:", hash);
@@ -942,6 +1386,7 @@
 
              // Listener for hash changes
              handleHashChange: () => Router.updateView()
+            
         };
 
         // --- Visualizer Module ---
@@ -1104,6 +1549,9 @@
             }
         };
 
+    
+
+
         // --- Main App Module ---
         const App = {
             init: () => {
@@ -1114,9 +1562,13 @@
 
                 // Initial data loading
                 App.loadTmdbGenres(); // Load genres for dropdown/mapping
+         
 
                 ContinueWatching.load(); // Load continue watching list
                 Watchlist.load(); // Load watchlist
+
+                Favorites.load(); // <<< NEW: Load Favorites
+                Analytics.init(); // <<< NEW: Initialize Analytics module 
 
                 // Set up Router
                 Router.updateView(); // Initial view based on hash or default
@@ -1163,6 +1615,20 @@
                     link.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
                 });
 
+                document.querySelector('.nav-link[href="#livesports"]')?.addEventListener('click', () => {
+                     // Ensure bsInstances.navbarCollapse is initialized
+                    if (!bsInstances.navbarCollapse && DOM.navbarMenu) {
+                        bsInstances.navbarCollapse = new bootstrap.Collapse(DOM.navbarMenu, { toggle: false });
+                    }
+                    bsInstances.navbarCollapse?.hide();
+                });
+
+                document.querySelector('.nav-link[href="#analytics"]')?.addEventListener('click', (e) => {
+                    // No special action needed here unless you want to force reload data
+                    // Analytics.updateAnalyticsDisplay(); // Might already be handled by router
+                    bsInstances.navbarCollapse?.hide();
+                });
+
                 // Resize listener for visualizer and network buttons
                 window.addEventListener('resize', Utils.debounce(() => {
                     App.resizeVisualizerCanvas();
@@ -1191,7 +1657,19 @@
             applyTheme: (themeName) => {
                 const body = document.body;
                 // Remove any existing theme classes
-                body.classList.remove('theme-midnight', 'theme-forest', 'theme-crimson',  'theme-nebula', 'theme-light'); // Add others if created
+                body.classList.remove(
+                    'theme-midnight',
+                    'theme-forest',
+                    'theme-crimson',
+                    'theme-nebula',
+                    'theme-ocean',
+                    'theme-desert',
+                    'theme-solarized',
+                    'theme-solarflare',
+                    'theme-cyberpunk',
+                    'theme-light'
+                );
+
 
                 if (themeName && themeName !== 'default') {
                     body.classList.add(`theme-${themeName}`);
@@ -1199,6 +1677,15 @@
                 } else {
                     console.log('Applied default theme');
                 }
+
+                if (!localStorage.getItem(App.THEME_STORAGE_KEY)) {
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        App.applyTheme('midnight');
+                    } else {
+                       App.applyTheme('light');
+                    }
+                }
+
 
                 // Optional: Update active state in dropdown (if needed)
                  document.querySelectorAll('#theme-selector-menu .dropdown-item').forEach(btn => {
@@ -1266,60 +1753,73 @@
             loadWatchlistPage: () => {
                 if (!DOM.watchlistGrid || !DOM.clearWatchlistBtn) return;
 
-                DOM.watchlistGrid.innerHTML = ''; // Clear previous content
+                // *** Show Skeleton Loading ***
+                const skeletonCount = State.watchlist.length > 0 ? Math.min(State.watchlist.length, 12) : 6; // Show skel based on current count (max 12) or default 6
+                DOM.watchlistGrid.innerHTML = Utils.getSkeletonCardHTML(skeletonCount);
+                Utils.setElementVisibility(DOM.clearWatchlistBtn, false); // Hide clear button during load
 
-                if (State.watchlist.length === 0) {
-                    DOM.watchlistGrid.innerHTML = `
-                        <div class="col-12">
-                            <div class="empty-watchlist text-center py-5">
-                                <i class="bi bi-bookmark-x"></i>
-                                <h4>Your Watchlist is Empty</h4>
-                                <p>Add movies and TV shows you want to watch later!</p>
-                            </div>
-                        </div>`;
-                    Utils.setElementVisibility(DOM.clearWatchlistBtn, false); // Hide clear button
-                } else {
-                    // Render cards using the standard vertical card renderer
-                    // We need to simulate the structure TMDB API uses for renderTmdbCards
-                    const itemsForRendering = State.watchlist.map(item => ({
-                         id: item.id,
-                         media_type: item.type,
-                         title: item.title, // Already stored
-                         name: item.title, // Add name for TV shows if needed by renderer
-                         poster_path: item.poster_path,
-                         vote_average: item.vote_average,
-                         // Add any other fields renderTmdbCards might expect (can be null)
-                         overview: null,
-                         release_date: null,
-                         first_air_date: null,
-                    }));
+                // Use setTimeout to allow skeleton to render before potentially blocking localStorage reads (minor)
+                setTimeout(() => {
+                    // Clear skeletons *just before* rendering real content (or checking if empty)
+                    DOM.watchlistGrid.innerHTML = ''; // Clear previous/skeleton content
 
-                    App.renderTmdbCards(itemsForRendering, DOM.watchlistGrid, null, false);
+                    if (State.watchlist.length === 0) {
+                        DOM.watchlistGrid.innerHTML = `
+                            <div class="col-12">
+                                <div class="empty-watchlist text-center py-5">
+                                    <i class="bi bi-bookmark-x display-1 mb-3 text-muted"></i>
+                                    <h4 class="text-white">Your Watchlist is Empty</h4>
+                                    <p class="text-muted">Add movies and TV shows you want to watch later!</p>
+                                </div>
+                            </div>`;
+                        Utils.setElementVisibility(DOM.clearWatchlistBtn, false); // Hide clear button
+                    } else {
+                        // Render cards using the standard vertical card renderer
+                        const itemsForRendering = State.watchlist.map(item => ({
+                             id: item.id,
+                             media_type: item.type,
+                             title: item.title,
+                             name: item.title,
+                             poster_path: item.poster_path,
+                             vote_average: item.vote_average,
+                             overview: null,
+                             release_date: null,
+                             first_air_date: null,
+                        }));
 
-                    // Add "Remove" buttons AFTER cards are rendered
-                    DOM.watchlistGrid.querySelectorAll('.card').forEach((cardElement, index) => {
-                        const item = State.watchlist[index]; // Get corresponding item from state
-                        if (!item) return;
+                        App.renderTmdbCards(itemsForRendering, DOM.watchlistGrid, null, false);
 
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'btn remove-watchlist-btn';
-                        removeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
-                        removeBtn.title = `Remove ${item.title} from Watchlist`;
-                        removeBtn.setAttribute('aria-label', `Remove ${item.title} from Watchlist`);
-                        removeBtn.dataset.itemId = item.id;
-                        removeBtn.dataset.itemType = item.type;
+                        // Add "Remove" buttons AFTER cards are rendered
+                        DOM.watchlistGrid.querySelectorAll('.card').forEach((cardElement, index) => {
+                            const item = State.watchlist[index];
+                            if (!item) return;
 
-                        removeBtn.addEventListener('click', (e) => {
-                            e.preventDefault(); // Prevent link navigation if card is <a>
-                            e.stopPropagation(); // Prevent card click event
-                            App.handleRemoveFromWatchlist(e.currentTarget, cardElement);
+                            const removeBtn = document.createElement('button');
+                            // Style this button appropriately - similar to watchlist-btn but maybe 'x'
+                            removeBtn.className = 'btn btn-sm btn-danger remove-watchlist-page-btn';
+                            removeBtn.innerHTML = '<i class="bi bi-trash3-fill"></i>'; // Trash icon maybe?
+                            removeBtn.title = `Remove ${item.title} from Watchlist`;
+                            removeBtn.setAttribute('aria-label', `Remove ${item.title} from Watchlist`);
+                            removeBtn.dataset.itemId = item.id;
+                            removeBtn.dataset.itemType = item.type;
+                            removeBtn.style.position = 'absolute'; // Position it on card
+                            removeBtn.style.top = '0.5rem';
+                            removeBtn.style.left = '5px'
+                            removeBtn.style.zIndex = '5';
+
+
+                            removeBtn.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                App.handleRemoveFromWatchlist(e.currentTarget, cardElement);
+                            });
+
+                            cardElement.appendChild(removeBtn); // Add button to card
                         });
 
-                        cardElement.appendChild(removeBtn); // Add button to card
-                    });
-
-                     Utils.setElementVisibility(DOM.clearWatchlistBtn, true); // Show clear button
-                }
+                         Utils.setElementVisibility(DOM.clearWatchlistBtn, true); // Show clear button
+                    }
+                 }, 10); // Small delay
             },
 
              // --- Add Handlers for Watchlist Actions ---
@@ -1385,6 +1885,49 @@
                     App.loadWatchlistPage();
                 }
             },
+
+            loadLiveSportsPage: async () => {
+                if (!DOM.liveSportsGrid) {
+                    console.error("Live sports grid container not found in DOM.");
+                    return;
+                }
+                console.log("Loading Live Sports page using Sportradar...");
+                // Show skeleton loaders
+                DOM.liveSportsGrid.innerHTML = Utils.getSkeletonLiveScoreCardHTML(6); // Show 6 skeletons
+
+                try {
+                    // Fetch live summaries from Sportradar
+                    // Common endpoint for live soccer matches. Check docs if this differs for your key.
+                    const liveSummaries = await API.fetchSportradar('/live/summaries.json');
+
+                    // Check if the fetch was successful and returned an array
+                    // fetchSportradar is designed to return the array directly (e.g., data.summaries)
+                    if (liveSummaries && Array.isArray(liveSummaries)) {
+                        // Call the rendering function (needs to be adapted for Sportradar structure)
+                        App.renderLiveSportsCards(liveSummaries); // <<< Will modify this function next
+                    } else if (liveSummaries === null) {
+                         // Error handled by fetchSportradar, message already shown
+                         // Display error in the grid
+                         DOM.liveSportsGrid.innerHTML = Utils.getErrorHTML("Could not load live sports events. Please try again later.");
+                    }
+                    else {
+                        // Handle cases where fetch succeeded but returned no data or wrong format
+                        console.warn("No live fixtures found or invalid API response from Sportradar:", liveSummaries);
+                         DOM.liveSportsGrid.innerHTML = `
+                             <div class="col-12 text-center py-5 text-muted">
+                                 <i class="bi bi-moon-stars fs-1 mb-3"></i>
+                                 <h4 class="text-white">No Live Sports Events Currently</h4>
+                                 <p>Check back later for live matches!</p>
+                             </div>`;
+                    }
+
+                } catch (error) {
+                    // Catch errors not handled within fetchSportradar (unlikely but possible)
+                    console.error("Unexpected error loading live sports:", error);
+                    DOM.liveSportsGrid.innerHTML = Utils.getErrorHTML("An unexpected error occurred loading live sports.");
+                }
+            },
+
 
             // --- Spotify Methods ---
             setSpotifyStatus: (message, type = "info", showSpinner = false) => {
@@ -1532,23 +2075,237 @@
                  });
              },
 
+             renderLiveSportsCards: (summaries) => {
+                if (!DOM.liveSportsGrid) return;
+                DOM.liveSportsGrid.innerHTML = ''; // Clear loading/previous
+
+                if (!summaries || summaries.length === 0) {
+                    DOM.liveSportsGrid.innerHTML = `
+                        <div class="col-12 text-center py-5 text-muted">
+                            <i class="bi bi-moon-stars fs-1 mb-3"></i>
+                            <h4 class="text-white">No Live Sports Events Found</h4>
+                            <p>Check back later for live matches!</p>
+                        </div>`;
+                    return;
+                }
+
+                summaries.forEach(summary => {
+                    try {
+                        const sportEvent = summary.sport_event;
+                        const statusInfo = summary.sport_event_status;
+                        const competition = sportEvent.sport_event_context.competition;
+                        const competitors = sportEvent.competitors || [];
+
+                        // --- Extract Data (adjust field names based on actual Sportradar response) ---
+                        const leagueName = Utils.escapeHtml(competition?.name || 'Unknown League');
+                        // Sportradar often doesn't provide league logos easily in basic summaries
+                        const leagueLogo = null; // Placeholder - finding logos might require extra calls or mapping
+
+                        const homeTeam = competitors.find(c => c.qualifier === 'home');
+                        const awayTeam = competitors.find(c => c.qualifier === 'away');
+
+                        const homeTeamName = Utils.escapeHtml(homeTeam?.name || 'Home Team');
+                        const awayTeamName = Utils.escapeHtml(awayTeam?.name || 'Away Team');
+                        // Team logos often aren't in the summary endpoint
+                        const homeTeamLogo = null; // Placeholder
+                        const awayTeamLogo = null; // Placeholder
+
+                        const homeScore = statusInfo?.home_score ?? '-';
+                        const awayScore = statusInfo?.away_score ?? '-';
+
+                        // --- Determine Status and Time ---
+                        let statusText = statusInfo?.status?.toUpperCase() || 'LIVE'; // Default to LIVE
+                        let statusClass = 'text-danger'; // Default for LIVE
+                        let minuteText = '';
+
+                        switch (statusInfo?.status) {
+                            case 'live':
+                                statusText = 'LIVE';
+                                statusClass = 'text-danger';
+                                // Extract match clock if available
+                                if (statusInfo.clock?.match_clock) {
+                                     // Format clock (e.g., "45:00" -> "45'")
+                                     const matchClockParts = statusInfo.clock.match_clock.split(':');
+                                     minuteText = `<span class="minute ms-1">${matchClockParts[0]}</span>`; // Show only minutes + '
+                                }
+                                break;
+                            case 'closed':
+                            case 'ended':
+                                statusText = 'FT'; // Full Time
+                                statusClass = 'text-muted';
+                                break;
+                            case 'halftime_break':
+                            case 'paused': // Sportradar might use 'paused' for HT
+                                statusText = 'HT'; // Half Time
+                                statusClass = 'text-warning';
+                                break;
+                            case 'postponed':
+                                statusText = 'POSTP';
+                                statusClass = 'text-info';
+                                break;
+                            case 'cancelled':
+                                statusText = 'CANC';
+                                statusClass = 'text-muted';
+                                break;
+                            // Add more cases as needed based on Sportradar documentation (e.g., 'interrupted', 'aet', 'penalties')
+                            default:
+                                statusText = statusInfo?.status?.toUpperCase() || 'N/A'; // Show the status if unknown mapping
+                                statusClass = 'text-info';
+                                break;
+                        }
+
+
+                        // --- Create Card HTML ---
+                        const card = document.createElement('div');
+                        card.className = 'col-12 col-md-6 col-lg-4'; // Responsive columns
+
+                        card.innerHTML = `
+                            <div class="card live-sport-card h-100 shadow-sm border-light border-opacity-10 overflow-hidden" style="background: rgba(var(--surface-rgb), 0.5);">
+                                <div class="live-card-header p-2 px-3 d-flex justify-content-between align-items-center border-bottom border-light border-opacity-10" style="background: rgba(var(--surface-rgb), 0.3);">
+                                    <div class="league-info d-flex align-items-center gap-2 text-truncate">
+                                        ${leagueLogo ? `<img src="${leagueLogo}" alt="${leagueName} Logo" width="20" height="20" style="object-fit: contain;">` : '<i class="bi bi-shield-shaded"></i>'}
+                                        <span class="small fw-medium text-muted text-truncate">${leagueName}</span>
+                                    </div>
+                                    <div class="live-indicator small fw-bold ${statusClass}">
+                                        ${statusClass === 'text-danger' ? '<span class="live-dot me-1"></span>' : ''}
+                                        ${statusText} ${minuteText}
+                                    </div>
+                                </div>
+                                <div class="card-body p-3">
+                                    <div class="row align-items-center text-center g-2">
+                                        <!-- Home Team -->
+                                        <div class="col-5 team-info">
+                                             ${homeTeamLogo ? `<img src="${homeTeamLogo}" alt="${homeTeamName}" class="team-logo mb-1" loading="lazy">` : '<i class="bi bi-people-fill fs-2 mb-1 text-muted"></i>'}
+                                            <span class="team-name d-block small text-truncate text-light">${homeTeamName}</span>
+                                        </div>
+                                        <!-- Score -->
+                                        <div class="col-2 score-info">
+                                            <span class="fs-4 fw-bold text-light">${homeScore} - ${awayScore}</span>
+                                        </div>
+                                        <!-- Away Team -->
+                                        <div class="col-5 team-info">
+                                             ${awayTeamLogo ? `<img src="${awayTeamLogo}" alt="${awayTeamName}" class="team-logo mb-1" loading="lazy">` : '<i class="bi bi-people-fill fs-2 mb-1 text-muted"></i>'}
+                                            <span class="team-name d-block small text-truncate text-light">${awayTeamName}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer p-2 text-center bg-transparent border-top border-light border-opacity-10">
+                                     <button class="btn btn-sm btn-outline-secondary event-web-search-btn"
+                                             data-hometeam="${homeTeamName}"
+                                             data-awayteam="${awayTeamName}"
+                                             data-league="${leagueName}"
+                                             title="Search web for event information">
+                                         <i class="bi bi-search me-1"></i> Search Web
+                                     </button>
+                                </div>
+                            </div>
+                        `;
+
+                        // Add listener for the "Search Web" button
+                        const webSearchBtn = card.querySelector('.event-web-search-btn');
+                        if (webSearchBtn) {
+                            webSearchBtn.addEventListener('click', (e) => {
+                                const home = e.currentTarget.dataset.hometeam;
+                                const away = e.currentTarget.dataset.awayteam;
+                                const league = e.currentTarget.dataset.league;
+                                const searchQuery = `${home} vs ${away} ${league} live event info`;
+                                window.open(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`, '_blank', 'noopener,noreferrer');
+                            });
+                        }
+
+                        DOM.liveSportsGrid.appendChild(card);
+                    } catch (cardError) {
+                        console.error("Error rendering live sport card for summary:", summary, cardError);
+                        // Optionally append an error card placeholder
+                         const errorCard = document.createElement('div');
+                         errorCard.className = 'col-12 col-md-6 col-lg-4';
+                         errorCard.innerHTML = `<div class="card h-100"><div class="card-body">${Utils.getErrorHTML("Error displaying this event.")}</div></div>`;
+                         DOM.liveSportsGrid.appendChild(errorCard);
+                    }
+                });
+            },
+
+            // NEW: Handler for Like/Favorite Button Click
+            handleAddOrRemoveFavorite: (button) => {
+        const { itemId, itemType, itemTitle, itemPoster, itemRating, itemGenres } = button.dataset;
+        const idNum = parseInt(itemId);
+        if (!idNum || !itemType) return;
+
+        let genreIds = [];
+        try {
+            // Parse genre IDs safely
+            genreIds = JSON.parse(itemGenres || '[]');
+            if (!Array.isArray(genreIds)) genreIds = []; // Ensure it's an array
+        } catch (e) {
+            console.error("Failed to parse genre IDs from button data:", itemGenres, e);
+            genreIds = []; // Default to empty array on error
+        }
+
+        const itemData = {
+            id: idNum,
+            type: itemType,
+            title: itemTitle,
+            poster_path: itemPoster !== 'null' ? itemPoster : null,
+            vote_average: itemRating !== 'null' ? parseFloat(itemRating) : null,
+            genre_ids: genreIds // Pass genre IDs
+        };
+
+        // Toggle Favorite State
+        if (Favorites.isFavorite(idNum, itemType)) {
+            if (Favorites.remove(idNum, itemType)) {
+                // Update button visually
+                button.classList.remove('is-favorite');
+                button.innerHTML = '<i class="bi bi-heart"></i>'; // Empty heart
+                button.title = "Add to Favorites";
+            }
+        } else {
+            if (Favorites.add(itemData)) {
+                // Update button visually
+                button.classList.add('is-favorite');
+                button.innerHTML = '<i class="bi bi-heart-fill"></i>'; // Filled heart
+                button.title = "Favorited (Click to unfavorite)";
+            }
+        }
+
+        // --- IMPORTANT: Update Analytics Display ---
+        // Only update if the analytics view exists (or maybe always update in background?)
+        if (DOM.views.analytics && DOM.views.analytics.classList.contains('active')) {
+            Analytics.updateAnalyticsDisplay(); // Update charts if view is active
+        } else {
+            console.log("Favorite changed, analytics view not active.");
+            // Optionally, you could still recalculate data in the background
+            // without rendering if needed for other features.
+        }
+    },
+       
             // --- TMDB Methods ---
             loadTmdbGenres: async () => {
-                try {
-                    const [movieGenresData, tvGenresData] = await Promise.all([
-                        API.fetchTMDB('/genre/movie/list'),
-                        API.fetchTMDB('/genre/tv/list')
-                    ]);
-                    State.allMovieGenres = movieGenresData?.genres || [];
-                    State.allTvGenres = tvGenresData?.genres || [];
-                    App.renderGenreList(State.allMovieGenres, State.allTvGenres);
-                    console.log("Genres loaded:", State.allMovieGenres.length, "movie,", State.allTvGenres.length, "TV");
-                } catch (error) {
-                    console.error("Failed to load TMDB genres:", error);
-                    Utils.showToast("Could not load genres.", "warning");
-                    App.renderGenreList([], []); // Render empty list on error
-                }
-            },
+        let success = false; // Flag to track success
+        try {
+            console.log("Fetching TMDB genres...");
+            const [movieGenresData, tvGenresData] = await Promise.all([
+                API.fetchTMDB('/genre/movie/list'),
+                API.fetchTMDB('/genre/tv/list')
+            ]);
+            State.allMovieGenres = movieGenresData?.genres || [];
+            State.allTvGenres = tvGenresData?.genres || [];
+            App.renderGenreList(State.allMovieGenres, State.allTvGenres);
+            console.log("Genres loaded:", State.allMovieGenres.length, "movie,", State.allTvGenres.length, "TV");
+            success = true; // Mark as successful
+        } catch (error) {
+            console.error("Failed to load TMDB genres:", error);
+            Utils.showToast("Could not load genres.", "warning");
+            App.renderGenreList([], []); // Render empty list on error
+        } finally {
+             // --- NEW: Trigger analytics update AFTER genres are loaded (or failed) ---
+             // Check if the analytics view is currently the active one
+             if (DOM.views.analytics?.classList.contains('active')) {
+                 console.log("Analytics view is active, triggering update after genre load.");
+                 // Small delay to ensure DOM is settled if called very early
+                 setTimeout(Analytics.updateAnalyticsDisplay, 50);
+             }
+        }
+    },
 
              renderGenreList: (movieGenres, tvGenres) => {
                  if (!DOM.genreDropdownMenu) return;
@@ -1567,7 +2324,7 @@
                  }
                  if (tvGenres.length > 0) {
                      if (movieGenres.length > 0) DOM.genreDropdownMenu.innerHTML += '<li><hr class="dropdown-divider"></li>';
-                     DOM.genreDropdownMenu.innerHTML += '<li><h6 class="dropdown-header">TV Show Genres</h6></li>';
+                     DOM.genreDropdownMenu.innerHTML += '<li><h6 class="dropdown-header" >TV Show Genres</h6></li>';
                      tvGenres.forEach(genre => {
                          DOM.genreDropdownMenu.innerHTML += `<li><a class="dropdown-item" href="#genre=tv/${genre.id}">${Utils.escapeHtml(genre.name)}</a></li>`;
                      });
@@ -1576,6 +2333,9 @@
 
              loadHomePageContent: async () => {
                  console.log("Loading home page content...");
+                 if (DOM.views.hero) DOM.views.hero.innerHTML = Utils.getSkeletonHeroHTML();
+                 if (DOM.homeContentSectionsContainer) DOM.homeContentSectionsContainer.innerHTML = ''; // Clear section area first
+                 if (DOM.networkLogosContainer) DOM.networkLogosContainer.innerHTML = Utils.getSkeletonNetworkLogoHTML(10); 
                  if (DOM.views.hero) DOM.views.hero.innerHTML = Utils.getSpinnerHTML("Loading hero...", true);
                  if (DOM.homeContentSectionsContainer) DOM.homeContentSectionsContainer.innerHTML = Utils.getSpinnerHTML("Loading sections...", true);
                  if (DOM.networkLogosContainer) DOM.networkLogosContainer.innerHTML = Utils.getSpinnerHTML("Loading networks...");
@@ -1589,24 +2349,26 @@
 
                  // Update scroll buttons AFTER logos are rendered
                  App.updateNetworkScrollButtons();
+
+                 setTimeout(() => {
+                     State.horizontalScrollContainers?.forEach(({ container, prevBtn, nextBtn }) => {
+                         App.updateHScrollButtons(container, prevBtn, nextBtn);
+                     });
+                 }, 200);
              },
 
              loadHeroItem: async () => {
                  if (!DOM.views.hero) return;
                  try {
-                     // Fetch trending movies/tv to pick one for the hero
                      const trending = await API.fetchTMDB('/trending/all/week');
-                     // Filter for items with backdrops and suitable type (movie/tv)
                      const heroCandidates = trending?.results?.filter(item => item.backdrop_path && (item.media_type === 'movie' || item.media_type === 'tv')) || [];
 
                      if (heroCandidates.length > 0) {
-                         // Pick a random item from the top candidates (e.g., top 5)
                          const randomIndex = Math.floor(Math.random() * Math.min(heroCandidates.length, 5));
                          const heroItem = heroCandidates[randomIndex];
-                         // Fetch full details for the selected item
                          const itemDetails = await API.fetchTMDB(`/${heroItem.media_type}/${heroItem.id}`);
                          if (itemDetails) {
-                             App.renderHeroItem(itemDetails);
+                             App.renderHeroItem(itemDetails); // Replaces skeleton
                          } else {
                              throw new Error("Failed to fetch hero item details.");
                          }
@@ -1617,98 +2379,105 @@
                      console.error("Failed to load hero item:", error);
                      DOM.views.hero.innerHTML = Utils.getErrorHTML(`Failed to load hero section: ${error.message}`);
                  } finally {
-                     // Add 'loaded' class slightly after rendering to trigger animation
                      setTimeout(() => DOM.views.hero?.classList.add('loaded'), 50);
                  }
              },
 
              loadHomeSections: async () => {
                  if (!DOM.homeContentSectionsContainer) return;
-                 DOM.homeContentSectionsContainer.innerHTML = '';
+                 DOM.homeContentSectionsContainer.innerHTML = ''; // Clear previous sections
                  State.horizontalScrollContainers = []; // Reset for resize listener
 
                  for (const section of config.HOME_SECTIONS) {
                      // --- Special handling for Continue Watching ---
                      if (section.id === 'continue-watching') {
-                         if (ContinueWatching.getList().length > 0) { // Only show if not empty
+                         if (ContinueWatching.getList().length > 0) {
                              const sectionDiv = document.createElement('section');
                              sectionDiv.className = 'content-section mb-5';
-                             sectionDiv.id = 'continue-watching-section'; // Add ID for specific styling
+                             sectionDiv.id = 'continue-watching-section';
+                             const isHorizontal = true; // Always horizontal
                              sectionDiv.innerHTML = `
                                  <h2 class="section-title">${Utils.escapeHtml(section.title)}</h2>
                                  <div class="horizontal-scroll-wrapper">
                                      <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
                                      <div class="horizontal-card-container">
-                                         ${Utils.getSpinnerHTML(`Loading ${section.title}...`)}
+                                         ${Utils.getSkeletonHorizontalCardHTML(4)} {/* Skeleton Here */}
                                      </div>
                                      <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
                                  </div>`;
                              DOM.homeContentSectionsContainer.appendChild(sectionDiv);
-                             // Load content specifically for this section
-                             App.loadContinueWatchingSection(sectionDiv);
+                             // Load content specifically for this section (will replace skeleton)
+                             App.loadContinueWatchingSection(sectionDiv); // Make sure this function clears skeleton first
                          }
-                         continue; // Skip the generic fetch logic below for this section
+                         continue;
                      }
 
-                     // --- Generic Section Loading (Keep existing logic) ---
+                     // --- Generic Section Loading ---
                      const sectionDiv = document.createElement('section');
                      sectionDiv.className = 'content-section mb-5';
                      let contentContainerHtml;
                      let isHorizontal = section.display_style === 'horizontal_backdrop';
 
+                     // *** Add Skeletons Here ***
+                     const skeletonHtml = isHorizontal
+                         ? Utils.getSkeletonHorizontalCardHTML(5) // Adjust count
+                         : Utils.getSkeletonCardHTML(6); // Adjust count
+
                      if (isHorizontal) {
                          contentContainerHtml = `
                              <div class="horizontal-scroll-wrapper">
                                  <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
-                                 <div class="horizontal-card-container">${Utils.getSpinnerHTML(`Loading ${section.title}...`)}</div>
+                                 <div class="horizontal-card-container">${skeletonHtml}</div>
                                  <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
                              </div>`;
                      } else { /* Vertical Layout */
-                         contentContainerHtml = `<div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">${Utils.getSpinnerHTML(`Loading ${section.title}...`)}</div>`;
+                         contentContainerHtml = `<div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">${skeletonHtml}</div>`;
                      }
                      sectionDiv.innerHTML = `<h2 class="section-title">${Utils.escapeHtml(section.title)}</h2>${contentContainerHtml}`;
                      DOM.homeContentSectionsContainer.appendChild(sectionDiv);
 
-                     // Fetch and Render (existing logic)
+                     // Fetch and Render (will replace skeletons)
                      try {
-                        const data = await API.fetchTMDB(section.endpoint, { page: 1 });
-                        // ... (rest of the try block remains the same: find resultsContainer, render cards, add listeners for horizontal scroll) ...
-                        const resultsContainer = isHorizontal
+                         const data = await API.fetchTMDB(section.endpoint, { page: 1 });
+                         const resultsContainer = isHorizontal
                              ? sectionDiv.querySelector('.horizontal-card-container')
                              : sectionDiv.querySelector('.row');
 
-                        if (data && data.results && resultsContainer) {
+                         if (data && data.results && resultsContainer) {
+                             // *** Render functions should clear container first ***
                              if (isHorizontal) {
                                  App.renderHorizontalCards(data.results.slice(0, 20), resultsContainer, section.type || null, section.show_trailer_button || false);
-                                 const scrollWrapper = sectionDiv.querySelector('.horizontal-scroll-wrapper');
-                                 const prevBtn = scrollWrapper?.querySelector('.h-scroll-btn.prev');
-                                 const nextBtn = scrollWrapper?.querySelector('.h-scroll-btn.next');
+                                 // ... rest of horizontal scroll setup ...
+                                  const scrollWrapper = sectionDiv.querySelector('.horizontal-scroll-wrapper');
+                                  const prevBtn = scrollWrapper?.querySelector('.h-scroll-btn.prev');
+                                  const nextBtn = scrollWrapper?.querySelector('.h-scroll-btn.next');
                                  if (resultsContainer && prevBtn && nextBtn) {
-                                     State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
-                                     App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
-                                     resultsContainer.addEventListener('scroll', Utils.debounce(() => { App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);}, 100), { passive: true });
-                                     prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
-                                     nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
+                                     // Avoid adding duplicate listeners if somehow re-run
+                                     if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
+                                         State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
+                                         resultsContainer.addEventListener('scroll', Utils.debounce(() => { App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);}, 100), { passive: true });
+                                         prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
+                                         nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
+                                     }
+                                     App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn); // Update initially
                                  }
                              } else {
                                  App.renderTmdbCards(data.results.slice(0, 12), resultsContainer, section.type || null, false);
                              }
                          } else { /* No results handling */
                             if(resultsContainer) resultsContainer.innerHTML = '<p class="text-muted px-3 col-12">No content found.</p>';
-                            if (isHorizontal) { /* Update buttons even if no results */
+                             if (isHorizontal) { /* Update buttons even if no results */
                                 const scrollWrapper = sectionDiv.querySelector('.horizontal-scroll-wrapper');
                                 const prevBtn = scrollWrapper?.querySelector('.h-scroll-btn.prev');
                                 const nextBtn = scrollWrapper?.querySelector('.h-scroll-btn.next');
                                 if(resultsContainer && prevBtn && nextBtn) App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
                             }
                          }
-
                      } catch (error) { /* Error handling */
                           console.error(`Failed to load section ${section.title}:`, error);
                          const resultsContainer = isHorizontal ? sectionDiv.querySelector('.horizontal-card-container') : sectionDiv.querySelector('.row');
                          if(resultsContainer) resultsContainer.innerHTML = Utils.getErrorHTML(`Could not load ${section.title}.`);
                      }
-                     // --- End Generic Section Loading ---
                  } // End loop
              },
 
@@ -1730,11 +2499,10 @@
                  const continueWatchingList = ContinueWatching.getList();
 
                  if (continueWatchingList.length === 0) {
-                     sectionDiv.remove(); // Remove the whole section if list is empty now
-                     // Clean up from resize listener if needed
-                     State.horizontalScrollContainers = State.horizontalScrollContainers.filter(c => c.container !== resultsContainer);
-                     return;
-                 }
+                    sectionDiv.remove();
+                    State.horizontalScrollContainers = State.horizontalScrollContainers.filter(c => c.container !== resultsContainer);
+                    return;
+                }
 
                  // Render cards using a modified horizontal renderer or directly build HTML
                  resultsContainer.innerHTML = ''; // Clear spinner
@@ -1745,7 +2513,7 @@
                      const year = item.lastWatchedTimestamp ? new Date(item.lastWatchedTimestamp).getFullYear() : ''; // Or fetch year if needed
                      const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
                      const progressPercent = item.progressPercent || 0; // Use stored dummy progress
-
+                     resultsContainer.appendChild(cardLink);
                      // Determine link based on type
                      let cardHref = `#player=${item.type}/${item.id}`;
                      if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
@@ -1835,6 +2603,7 @@
                 nextBtn.classList.toggle('disabled', !canScroll || scrollLeft >= (scrollWidth - clientWidth - tolerance));
             },
 
+           
 
             // --- NEW Rendering Function for Horizontal Cards ---
             renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false) => {
@@ -1995,21 +2764,23 @@
 
             loadDetailsPage: async (type, id) => {
                 if (!DOM.detailsWrapper) return;
-                DOM.detailsWrapper.innerHTML = Utils.getSpinnerHTML("Loading details...", true);
+                // *** Show Skeleton ***
+                DOM.detailsWrapper.innerHTML = Utils.getSkeletonDetailsHTML();
 
                 try {
                      const itemData = await API.fetchTMDB(`/${type}/${id}`, {
-                         append_to_response: 'credits,similar,videos,watch/providers' // Fetch extra details
+                         append_to_response: 'credits,similar,videos,watch/providers'
                      });
 
                      if (!itemData) {
                          throw new Error("Item details not found.");
                      }
-                    App.renderDetailsPage(itemData);
+                     // *** Render function replaces skeleton ***
+                    App.renderDetailsPage(itemData); // Make sure this function clears the container first if needed (it does by setting innerHTML)
 
                 } catch (error) {
                     console.error(`Failed to load details for ${type} ${id}:`, error);
-                    DOM.detailsWrapper.innerHTML = Utils.getErrorHTML(`Failed to load details: ${error.message}`);
+                    DOM.detailsWrapper.innerHTML = Utils.getErrorHTML(`Failed to load details: ${error.message}`); // Replace skeleton with error
                 }
             },
 
@@ -2059,26 +2830,29 @@
                  }
              },
 
-            loadTmdbSearchResults: async (query) => {
+             loadTmdbSearchResults: async (query) => {
                  if (!DOM.tmdbSearchResultsGrid || !DOM.tmdbSearchResultsTitle) return;
 
                  DOM.tmdbSearchResultsTitle.textContent = `Search Results for "${query}"`;
-                 DOM.tmdbSearchResultsGrid.innerHTML = Utils.getSpinnerHTML("Searching...", true);
+                 // *** Show Skeleton ***
+                 DOM.tmdbSearchResultsGrid.innerHTML = Utils.getSkeletonCardHTML(12); // Show 12 skeletons for search
 
                  try {
                      const searchData = await API.fetchTMDB('/search/multi', { query: query, page: 1, include_adult: false });
+                     // *** Render function replaces skeleton ***
                      if (searchData && searchData.results) {
-                         // Filter out persons from multi-search results for the main grid
                          const mediaResults = searchData.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv');
-                         App.renderTmdbCards(mediaResults, DOM.tmdbSearchResultsGrid, null, false);
+                         App.renderTmdbCards(mediaResults, DOM.tmdbSearchResultsGrid, null, false); // renderTmdbCards clears container
                      } else {
-                         DOM.tmdbSearchResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found.</p>';
+                         DOM.tmdbSearchResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found.</p>'; // Replace skeleton
                      }
                  } catch (error) {
                      console.error("Search failed:", error);
-                     DOM.tmdbSearchResultsGrid.innerHTML = Utils.getErrorHTML(`Search failed: ${error.message}`);
+                     DOM.tmdbSearchResultsGrid.innerHTML = Utils.getErrorHTML(`Search failed: ${error.message}`); // Replace skeleton
                  }
              },
+
+
 
              loadGenreResultsPage: async (page = 1) => {
                  if (!State.currentGenre || !DOM.genreResultsGrid || !DOM.genreResultsTitle || !DOM.loadMoreGenreBtn || !DOM.genreLoadingSpinner) return;
@@ -2087,11 +2861,12 @@
                  DOM.genreResultsTitle.textContent = `${Utils.escapeHtml(name)} ${type === 'tv' ? 'TV Shows' : 'Movies'}`;
 
                  const isLoadingMore = page > 1;
-                 Utils.setElementVisibility(DOM.loadMoreGenreBtn, false); // Hide button while loading
-                 Utils.setElementVisibility(DOM.genreLoadingSpinner, true); // Show spinner
+                 Utils.setElementVisibility(DOM.loadMoreGenreBtn, false);
+                 Utils.setElementVisibility(DOM.genreLoadingSpinner, true); // Show spinner *near* button
 
+                 // *** Show Skeleton ONLY on first load ***
                  if (!isLoadingMore) {
-                     DOM.genreResultsGrid.innerHTML = Utils.getSpinnerHTML("Loading genre results...", true); // Show main spinner only on first page load
+                     DOM.genreResultsGrid.innerHTML = Utils.getSkeletonCardHTML(12); // Show 12 skeletons initially
                  }
 
                  try {
@@ -2101,22 +2876,24 @@
                          sort_by: 'popularity.desc'
                      });
 
+                     // *** Render function replaces skeleton (if page 1) or appends ***
                      if (genreData && genreData.results) {
+                         // Pass 'append' flag correctly to renderTmdbCards
                          App.renderGenreResultsPage(genreData.results, genreData.page, genreData.total_pages);
                      } else {
-                         if (!isLoadingMore) DOM.genreResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this genre.</p>';
-                         // Hide load more button if no results on first page
+                         if (!isLoadingMore) DOM.genreResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this genre.</p>'; // Replace skeleton
                          Utils.setElementVisibility(DOM.loadMoreGenreBtn, false);
                      }
                  } catch (error) {
-                     console.error("Genre results loading failed:", error);
-                      if (!isLoadingMore) {
-                          DOM.genreResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load genre results: ${error.message}`);
-                      } else {
-                           Utils.showToast(`Failed to load more results: ${error.message}`, 'warning');
-                      }
+                    console.error("Genre results loading failed:", error);
+                     if (!isLoadingMore) {
+                         DOM.genreResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load genre results: ${error.message}`); // Replace skeleton
+                     } else {
+                          Utils.showToast(`Failed to load more results: ${error.message}`, 'warning');
+                          // Leave existing cards, spinner will hide below
+                     }
                  } finally {
-                     Utils.setElementVisibility(DOM.genreLoadingSpinner, false); // Always hide spinner after loading attempt
+                     Utils.setElementVisibility(DOM.genreLoadingSpinner, false);
                  }
              },
 
@@ -2171,7 +2948,7 @@
                      return;
                  }
 
-                 config.CURATED_WATCH_PROVIDERS.forEach(provider => {
+                config.CURATED_WATCH_PROVIDERS.forEach(provider => {
                      const logoUrl = provider.logo ? `${config.LOGO_BASE_URL}${provider.logo}` : 'https://via.placeholder.com/100x50/1a1d24/666?text=No+Logo';
                      const item = document.createElement('div');
                      item.className = 'network-logo-item';
@@ -2182,6 +2959,11 @@
                          <span>${Utils.escapeHtml(provider.name)}</span>
                      `;
                      item.addEventListener('click', App.handleNetworkLogoClick);
+                     DOM.networkLogosContainer.appendChild(item);
+                });
+
+                config.CURATED_WATCH_PROVIDERS.forEach(provider => {
+                    // ... (logo item creation) ...
                      DOM.networkLogosContainer.appendChild(item);
                  });
 
@@ -2206,54 +2988,67 @@
                  Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
                  Utils.setElementVisibility(DOM.networkLoadingSpinner, true);
 
+                 // *** Show Skeleton ONLY on first load ***
                  if (!isLoadingMore) {
-                     DOM.networkResultsGrid.innerHTML = Utils.getSpinnerHTML("Loading network results...", true);
+                     DOM.networkResultsGrid.innerHTML = Utils.getSkeletonCardHTML(12); // Show 12 skeletons initially
                  }
 
+                let discoveryType = 'movie';
+                const tvFocusedProviders = [203]; // Add other TV-centric provider IDs if needed (e.g., maybe Hulu ID 15?)
+                    if (tvFocusedProviders.includes(id)) {
+                        discoveryType = 'tv';
+                        console.log(`Provider ${id} (${name}) identified as TV-focused. Fetching /discover/tv.`);
+                    } else {
+                        console.log(`Provider ${id} (${name}) treated as movie-focused. Fetching /discover/movie.`);
+                    }
                  try {
-                     // Discover endpoint allows filtering by watch provider and region
-                     const networkData = await API.fetchTMDB(`/discover/movie`, { // Can also search tv: `/discover/tv` or fetch both and combine
-                         with_watch_providers: id,
-                         watch_region: config.TARGET_REGION,
-                         page: page,
-                         sort_by: 'popularity.desc'
-                     });
+                   
+                    const networkData = await API.fetchTMDB(`/discover/${discoveryType}`, {
+                        with_watch_providers: id,
+                        watch_region: config.TARGET_REGION,
+                        page: page,
+                        sort_by: 'popularity.desc'
+                    });
 
-                     // You might want to fetch TV results separately and merge them
-                     // const tvNetworkData = await API.fetchTMDB(`/discover/tv`, { ... });
-
+                     // *** Render function replaces skeleton (if page 1) or appends ***
                      if (networkData && networkData.results) {
-                          // Assuming movie results for now
-                         App.renderNetworkResultsPage(networkData.results, networkData.page, networkData.total_pages);
-                     } else {
-                         if (!isLoadingMore) DOM.networkResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this network.</p>';
-                         Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
-                     }
-                 } catch (error) {
+                        App.renderNetworkResultsPage(networkData.results, networkData.page, networkData.total_pages, discoveryType);
+                        } else {
+                           if (!isLoadingMore) DOM.networkResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this network.</p>'; // Replace skeleton
+                           Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+                        }
+                      
+                     } catch (error) {
+
                      console.error("Network results loading failed:", error);
-                      if (!isLoadingMore) {
-                          DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load network results: ${error.message}`);
+                   
+                     if (!isLoadingMore) {
+                          DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load network results: ${error.message}`); // Replace skeleton
                       } else {
                           Utils.showToast(`Failed to load more network results: ${error.message}`, 'warning');
                       }
-                 } finally {
-                     Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
-                 }
+                    } finally {
+                        Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
+                    }
              },
 
-             renderNetworkResultsPage: (results, currentPage, totalPages) => {
-                 if (!DOM.networkResultsGrid || !DOM.loadMoreNetworkBtn) return;
 
-                 const append = currentPage > 1; // Append if loading more
-                 App.renderTmdbCards(results, DOM.networkResultsGrid, 'movie', append); // Assuming movie type for now
+            renderNetworkResultsPage: (results, currentPage, totalPages, itemType = 'movie') => { // Added itemType parameter
+                if (!DOM.networkResultsGrid || !DOM.loadMoreNetworkBtn) return;
+            
+                const append = currentPage > 1;
+                // --- *** Pass the determined itemType to renderTmdbCards *** ---
+                App.renderTmdbCards(results, DOM.networkResultsGrid, itemType, append);
 
-                 // Update Load More Button state
-                 const canLoadMore = currentPage < totalPages;
-                 Utils.setElementVisibility(DOM.loadMoreNetworkBtn, canLoadMore);
-                 if (canLoadMore) {
-                     DOM.loadMoreNetworkBtn.dataset.page = currentPage;
-                 }
-             },
+                // Update Load More Button state
+                const canLoadMore = currentPage < totalPages;
+                Utils.setElementVisibility(DOM.loadMoreNetworkBtn, canLoadMore);
+                if (canLoadMore) {
+                    DOM.loadMoreNetworkBtn.dataset.page = currentPage;
+                    // --- *** Store the type for the next page load *** ---
+                    DOM.loadMoreNetworkBtn.dataset.itemType = itemType;
+                }
+            },
 
             handleLoadMoreNetworkResults: () => {
                  if (!DOM.loadMoreNetworkBtn) return;
@@ -2298,147 +3093,200 @@
             /* --- NEW Person Page Functions --- */
             loadPersonPage: async (personId) => {
                 if (!DOM.personWrapper) return;
-                DOM.personWrapper.innerHTML = Utils.getSpinnerHTML("Loading person details...", true);
-                State.currentPersonId = personId; // Update state
+                // *** Show Skeleton ***
+                DOM.personWrapper.innerHTML = Utils.getSkeletonPersonHTML();
+                State.currentPersonId = personId;
 
                 try {
-                    // Fetch person details and their combined movie/tv credits in one call
                     const personData = await API.fetchTMDB(`/person/${personId}`, {
-                        append_to_response: 'combined_credits'
+                        append_to_response: 'combined_credits,external_ids'
                     });
 
                     if (!personData) {
                         throw new Error("Person details not found.");
                     }
-                    App.renderPersonPage(personData);
+                    // *** Render function replaces skeleton ***
+                    App.renderPersonPage(personData); // This sets innerHTML, replacing skeleton
 
                 } catch (error) {
                     console.error(`Failed to load details for person ${personId}:`, error);
-                    DOM.personWrapper.innerHTML = Utils.getErrorHTML(`Failed to load person details: ${error.message}`);
+                    DOM.personWrapper.innerHTML = Utils.getErrorHTML(`Failed to load person details: ${error.message}`); // Replace skeleton with error
                 }
             },
 
-            renderPersonPage: (personData) => {
-                if (!DOM.personWrapper) return;
+        renderPersonPage: (personData) => {
+            if (!DOM.personWrapper) return;
 
-                const {
-                    id: personId,
-                    name, profile_path, biography, birthday, place_of_birth,
-                    known_for_department, combined_credits
-                } = personData;
+            const {
+                id: personId,
+                name, profile_path, biography, birthday, place_of_birth,
+                known_for_department, combined_credits,
+                // --- Add these ---
+                external_ids, // The whole object
+                homepage      // The person's homepage URL
+                // ---------------
+                // gender, deathday // Add if needed later
+            } = personData;
 
-                // Use the larger profile image URL from config
-                const profileUrl = profile_path
-                    ? `${config.PROFILE_BASE_URL}${profile_path}`
-                    : 'https://via.placeholder.com/250x375/1a1d24/808080?text=No+Image'; // Placeholder
+            // --- Extract specific IDs from external_ids (with fallback) ---
+            const {
+                imdb_id,
+                facebook_id,
+                instagram_id,
+                twitter_id,
+                wikidata_id
+            } = external_ids || {}; // Use || {} as fallback if external_ids is null/undefined
 
-                // Filter and sort known credits (cast roles with posters, by popularity)
-                const knownCredits = combined_credits?.cast
-                    ?.filter(c => c.poster_path && (c.media_type === 'movie' || c.media_type === 'tv'))
-                    .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
-                    .slice(0, 12) || []; // Take top 12
+            // Profile URLs (no changes needed here)
+            const profileUrlLarge = profile_path
+                ? `${config.PROFILE_BASE_URL_LARGE || config.PROFILE_BASE_URL}${profile_path}`
+                : null;
+            const profileUrl = profile_path
+                ? `${config.PROFILE_BASE_URL}${profile_path}`
+                : 'https://via.placeholder.com/250x375/1a1d24/808080?text=No+Image';
 
-                let personHtml = `
-                    <div class="row person-header mb-4 mb-md-5">
-                        <div class="col-md-4 col-lg-3 person-profile-pic text-center text-md-start mb-4 mb-md-0">
-                            <img src="${profileUrl}" alt="${Utils.escapeHtml(name)}" class="img-fluid" loading="lazy">
-                        </div>
-                        <div class="col-md-8 col-lg-9 person-info">
-                            <h1 class="text-white mb-3 custom-color">${Utils.escapeHtml(name)}</h1>
-                            <div class="person-meta mb-4">
-                                ${known_for_department ? `<p><strong  class="text-white-50 custom-color-st">Known For:</strong> ${Utils.escapeHtml(known_for_department)}</p>` : ''}
-                                ${birthday ? `<p><strong  class="text-white-50 custom-color-st">Born:</strong> ${Utils.formatAirDate(birthday)}</p>` : ''}
-                                ${place_of_birth ? `<p><strong  class="text-white-50 custom-color-st">Place of Birth:</strong> ${Utils.escapeHtml(place_of_birth)}</p>` : ''}
-                            </div>
+            // Known Credits (no changes needed here)
+            const knownCredits = combined_credits?.cast
+                ?.filter(c => c.poster_path && (c.media_type === 'movie' || c.media_type === 'tv'))
+                .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+                .slice(0, 18) || [];
 
-                             <div class="details-section mt-4">
-                                <h4 class="text-white fw-semibold custom-color">AI Bio Highlight</h4>
-                                <div id="ai-bio-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 60px;">
-                                    <p class="text-muted small mb-0">Click the button for an AI-generated career highlight.</p>
-                                </div>
-                                <button id="get-ai-bio-btn" class="btn btn-sm btn-outline-info"
-                                        data-person-id="${personId}"
-                                        data-person-name="${Utils.escapeHtml(name)}">
-                                    <i class="bi bi-magic me-1"></i> Get AI Highlight
-                                </button>
-                                <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
-                            </div>
+             // --- Update Social Links HTML ---
+             // Now use the extracted imdb_id and homepage variables
+            let socialLinksHtml = '<div class="person-social-links mt-2 mb-3">'; // Start div
 
-                            ${biography ? `
-                                <h4 class="text-white mt-4 fw-semibold custom-color">Biography</h4>
-                                <div class="person-bio" id="person-bio-text">
-                                    <p>${Utils.escapeHtml(biography).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>
-                                </div>
-                                <a href="#" class="btn btn-sm btn-link read-more-bio d-none" id="read-more-bio-btn">Read More</a>
-                            ` : '<p class="text-muted">No biography available.</p>'}
-                        </div>
+            if (imdb_id) {
+                socialLinksHtml += `<a href="https://www.imdb.com/name/${imdb_id}" target="_blank" rel="noopener noreferrer" class="text-white-50 me-3 fs-5" title="IMDb"><i class="bi bi-imdb"></i></a>`;
+            } else {
+                 // Optional: Show disabled link if no ID
+                socialLinksHtml += `<a href="#" class="text-white-50 me-3 fs-5 disabled opacity-50" title="IMDb (Not Available)"><i class="bi bi-imdb"></i></a>`;
+            }
+
+            if (homepage) {
+                socialLinksHtml += `<a href="${homepage}" target="_blank" rel="noopener noreferrer" class="text-white-50 fs-5" title="Homepage"><i class="bi bi-link-45deg"></i></a>`;
+            } else {
+                socialLinksHtml += `<a href="#" class="text-white-50 fs-5 disabled opacity-50" title="Homepage (Not Available)"><i class="bi bi-link-45deg"></i></a>`;
+            }
+
+            // Add placeholders/logic for other social links (Twitter, Instagram etc.) if needed
+             socialLinksHtml += `<a href="#" class="text-white-50 me-3 fs-5 disabled opacity-50" title="Twitter (Coming Soon)"><i class="bi bi-twitter-x"></i></a>`;
+             socialLinksHtml += `<a href="#" class="text-white-50 me-3 fs-5 disabled opacity-50" title="Instagram (Coming Soon)"><i class="bi bi-instagram"></i></a>`;
+            socialLinksHtml += '</div>'; // End div
+
+
+            // --- The rest of your personHtml generation ---
+            let personHtml = `
+            <div class="row person-header mb-4 mb-md-5">
+                <div class="col-md-4 col-lg-3 person-profile-pic text-center text-md-start mb-4 mb-md-0">
+                    <img src="${profileUrl}" alt="${Utils.escapeHtml(name)}" class="img-fluid" loading="lazy" onerror="this.onerror=null; this.src=''; this.classList.add('img-fallback');">
+                    <i class="bi bi-person-circle img-fallback-icon d-none"></i>
+                </div>
+                <div class="col-md-8 col-lg-9 person-info">
+                    <h1 class="text-white mb-2 custom-color">${Utils.escapeHtml(name)}</h1>
+                     ${socialLinksHtml}
+                    <div class="person-meta mb-4">
+                        ${known_for_department ? `<p><strong class="text-white-50 custom-color-st">Known For:</strong> ${Utils.escapeHtml(known_for_department)}</p>` : ''}
+                        ${birthday ? `<p><strong class="text-white-50 custom-color-st">Born:</strong> ${Utils.formatAirDate(birthday)}</p>` : ''}
+                        ${place_of_birth ? `<p><strong class="text-white-50 custom-color-st">Place of Birth:</strong> ${Utils.escapeHtml(place_of_birth)}</p>` : ''}
+                        
                     </div>
-                `;
 
-                // Known For Section (Filmography)
-                if (knownCredits.length > 0) {
+                    
+                    <div class="details-section mt-4">
+                    
+                        <h4 class="text-white fw-semibold custom-color">AI Bio Highlight</h4>
+                        <div id="ai-bio-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 60px;">
+                             <p class="text-muted small mb-0">Click the button for an AI-generated career highlight.</p>
+                        </div>
+                        <button id="get-ai-bio-btn" class="btn btn-sm btn-outline-info"
+                                data-person-id="${personId}"
+                                data-person-name="${Utils.escapeHtml(name)}">
+                            <i class="bi bi-magic me-1"></i> Get AI Highlight
+                        </button>
+                        <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
+                    </div>
+
+                    
+                    ${biography ? `
+                        <h4 class="text-white mt-4 fw-semibold custom-color">Biography</h4>
+                        <div class="person-bio" id="person-bio-text">
+                            <p>${Utils.escapeHtml(biography).replace(/\r?\n\r?\n/g, '</p><p>').replace(/\r?\n/g, '<br>')}</p>
+                        </div>
+                        <a href="#" class="btn btn-sm btn-link read-more-bio d-none" id="read-more-bio-btn">Read More</a>
+                    ` : '<p class="text-muted mt-4">No biography available.</p>'}
+                </div>
+            </div>
+            `;
+
+            // Known For Section (Filmography)
+            // ... (rest of your code for known for, setting background, post-render actions) ...
+            if (knownCredits.length > 0) {
                     personHtml += `
                         <div class="filmography-section mt-5">
                             <h2 class="filmography-title">Known For</h2>
                             <div id="person-known-for-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
-                                <!-- Known for cards rendered by renderTmdbCards -->
-                                ${Utils.getSpinnerHTML("Loading credits...")}
                             </div>
                         </div>
                     `;
                 }
 
-                DOM.personWrapper.innerHTML = personHtml;
+            DOM.personWrapper.innerHTML = personHtml;
 
-                // --- Post-Render Actions ---
 
-                // Render Known For cards if data exists
-                if (knownCredits.length > 0) {
+            // --- Post-Render Actions ---
+
+            // Set Background Image Effect
+            const headerElement = DOM.personWrapper.querySelector('.person-header');
+            if (headerElement && profileUrlLarge) {
+                 headerElement.style.setProperty('--person-bg-image', `url(${profileUrlLarge})`);
+            } else if (headerElement) {
+                 headerElement.style.removeProperty('--person-bg-image');
+            }
+
+            // Render Known For cards
+            if (knownCredits.length > 0) {
                     const knownForGrid = document.getElementById('person-known-for-grid');
                     if (knownForGrid) {
-                        // Pass null as defaultType, let renderTmdbCards infer from item.media_type
+                        // RenderTmdbCards clears the container before adding cards
                         App.renderTmdbCards(knownCredits, knownForGrid, null, false);
                     }
-                }
+            }
+             // Add "Read More" functionality for biography
+             const bioText = document.getElementById('person-bio-text');
+             const readMoreBtn = document.getElementById('read-more-bio-btn');
+             if (bioText && readMoreBtn) {
+                setTimeout(() => {
+                    const contentHeight = bioText.scrollHeight;
+                    const containerHeight = bioText.clientHeight;
+                    const isOverflowing = contentHeight > (containerHeight + 5);
 
-                // Add "Read More" functionality for biography
-                 const bioText = document.getElementById('person-bio-text');
-                 const readMoreBtn = document.getElementById('read-more-bio-btn');
+                    if (isOverflowing) {
+                        Utils.setElementVisibility(readMoreBtn, true);
+                        readMoreBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            bioText.classList.toggle('expanded');
+                            readMoreBtn.textContent = bioText.classList.contains('expanded') ? 'Read Less' : 'Read More';
+                        });
+                    } else {
+                         Utils.setElementVisibility(readMoreBtn, false);
+                         bioText.classList.remove('expanded');
+                    }
+                }, 150);
+             }
 
-                 if (bioText && readMoreBtn) {
-                     // Check if content overflows its container AFTER rendering
-                     // Use setTimeout to allow browser layout engine to calculate scrollHeight
-                    setTimeout(() => {
-                        const isOverflowing = bioText.scrollHeight > bioText.clientHeight;
-                        if (isOverflowing) {
-                            Utils.setElementVisibility(readMoreBtn, true); // Show button only if text overflows
-
-                            readMoreBtn.addEventListener('click', (e) => {
-                                e.preventDefault();
-                                bioText.classList.toggle('expanded');
-                                readMoreBtn.textContent = bioText.classList.contains('expanded') ? 'Read Less' : 'Read More';
-                            });
-                        } else {
-                             Utils.setElementVisibility(readMoreBtn, false); // Ensure hidden if no overflow
-                        }
-                    }, 100); // Short delay seems sufficient
-                 }
-
-                // --- NEW: Add AI Button Listener ---
-                DOM.personAiBioBtn = DOM.personWrapper.querySelector('#get-ai-bio-btn');
-                DOM.personAiBioContainer = DOM.personWrapper.querySelector('#ai-bio-container');
-                if (DOM.personAiBioBtn) {
-                    DOM.personAiBioBtn.addEventListener('click', (e) => {
-                        const btn = e.currentTarget;
-                        App.handleGetAiBio(
-                            btn.dataset.personId,
-                            btn.dataset.personName
-                        );
-                    });
-                }
-            },
-
-
+            // Add AI Button Listener
+            DOM.personAiBioBtn = DOM.personWrapper.querySelector('#get-ai-bio-btn');
+            DOM.personAiBioContainer = DOM.personWrapper.querySelector('#ai-bio-container');
+            if (DOM.personAiBioBtn) {
+                 DOM.personAiBioBtn.addEventListener('click', (e) => {
+                    const btn = e.currentTarget;
+                    App.handleGetAiBio(
+                        btn.dataset.personId,
+                        btn.dataset.personName
+                    );
+                });
+            }
+        },
             /* --- Rendering Functions --- */
 
              // Renders a grid of TMDB movie/TV cards
@@ -2478,6 +3326,7 @@
                      const posterPath = item.poster_path;
                      const posterUrl = posterPath ? `${config.IMAGE_BASE_URL}${posterPath}` : null;
                      const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
+                     const genreIds = item.genre_ids || [];
 
                      // Create card elements
                      const colDiv = document.createElement('div');
@@ -2489,54 +3338,61 @@
                      cardLink.title = title; // Tooltip with full title
 
                      // Image or Placeholder
-                     const imageHtml = posterUrl
-                         ? `<img src="${posterUrl}" class="card-img-top" alt="${title} Poster" loading="lazy">`
-                         : `<div class="card-img-placeholder d-flex align-items-center justify-content-center"><i class="bi bi-film fs-1"></i></div>`;
-
+                     const imageHtml = posterUrl ? `<img src="${posterUrl}" class="card-img-top" alt="${title} Poster" loading="lazy">` : `<div class="card-img-placeholder d-flex align-items-center justify-content-center"><i class="bi bi-film fs-1"></i></div>`;
                      // Card Body
-                     const bodyHtml = `
-                         <div class="card-body d-flex flex-column flex-grow-1 p-3">
-                             <h3 class="card-title fs-6 fw-medium mb-2">${title}</h3>
-                             ${rating && parseFloat(rating) > 0
-                                 ? `<span class="card-rating mt-auto"><i class="bi bi-star-fill me-1"></i>${rating}</span>` // Rating at bottom
-                                 : '<span class="card-rating text-muted small mt-auto">NR</span>' // Or NR at bottom
-                             }
-                         </div>`;
+                     const bodyHtml = `<div class="card-body d-flex flex-column flex-grow-1 p-3"> <h3 class="card-title fs-6 fw-medium mb-2">${title}</h3> ${rating && parseFloat(rating) > 0 ? `<span class="card-rating mt-auto"><i class="bi bi-star-fill me-1"></i>${rating}</span>` : '<span class="card-rating text-muted small mt-auto">NR</span>'} </div>`;
 
 
                       // --- NEW: Add Watchlist Button ---
-                    const isInList = Watchlist.isInWatchlist(item.id, itemType);
+                    const isInWatchlist = Watchlist.isInWatchlist(item.id, itemType);
                     const watchlistBtnHtml = `
-                        <button class="btn watchlist-btn ${isInList ? 'in-watchlist' : ''}"
-                                title="${isInList ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
-                                aria-label="${isInList ? 'Remove from Watchlist' : 'Add to Watchlist'}"
-                                data-item-id="${item.id}"
-                                data-item-type="${itemType}"
-                                data-item-title="${Utils.escapeHtml(item.title || item.name || '')}"
-                                data-item-poster="${item.poster_path || null}"
-                                data-item-backdrop="${item.backdrop_path || null}"
+                        <button class="btn action-btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}"
+                            title="${isInWatchlist ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
+                            aria-label="${isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}"
+                            data-item-id="${item.id}" data-item-type="${itemType}"
+                            data-item-title="${Utils.escapeHtml(item.title || item.name || '')}" data-item-poster="${item.poster_path || null}"
+                            data-item-backdrop="${item.backdrop_path || null}" data-item-rating="${item.vote_average || null}"
+                            style="top: 0.6rem; right: 0.6rem;">
+                            <i class="bi ${isInWatchlist ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
+                        </button>`;
+
+                        const isFavorite = Favorites.isFavorite(item.id, itemType);
+                        const likeBtnHtml = `
+                            <button class="btn action-btn like-btn ${isFavorite ? 'is-favorite' : ''}"
+                                title="${isFavorite ? 'Favorited (Click to unfavorite)' : 'Add to Favorites'}"
+                                aria-label="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}"
+                                data-item-id="${item.id}" data-item-type="${itemType}"
+                                data-item-title="${Utils.escapeHtml(item.title || item.name || '')}" data-item-poster="${item.poster_path || null}"
                                 data-item-rating="${item.vote_average || null}"
-                                >
-                            <i class="bi ${isInList ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
-                        </button>
-                    `;
+                                data-item-genres="${JSON.stringify(genreIds)}"> 
+                                <i class="bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}"></i>
+                            </button>`;
 
                     cardLink.innerHTML = imageHtml + bodyHtml;
                     cardLink.style.position = 'relative'; // Needed for absolute positioning of button
-                    cardLink.innerHTML += watchlistBtnHtml; // Append button HTM
+                    cardLink.innerHTML += watchlistBtnHtml + likeBtnHtml ; // Append button HTM
                     colDiv.appendChild(cardLink);
                     containerElement.appendChild(colDiv);
 
-                     // Add listener AFTER appending
-                     const addedButton = colDiv.querySelector('.watchlist-btn');
-                    if (addedButton) {
-                        addedButton.addEventListener('click', (e) => {
-                            e.preventDefault(); // Prevent link navigation
-                            e.stopPropagation(); // Prevent card click event if any
+                    // Add listener AFTER appending
+                    const addedWatchlistButton = colDiv.querySelector('.watchlist-btn');
+                    if (addedWatchlistButton) {
+                        addedWatchlistButton.addEventListener('click', (e) => {
+                            e.preventDefault(); e.stopPropagation();
                             App.handleAddOrRemoveWatchlist(e.currentTarget);
                         });
                     }
+
+                    // Add listener for the NEW like button
+                    const addedLikeButton = colDiv.querySelector('.like-btn');
+                    if (addedLikeButton) {
+                        addedLikeButton.addEventListener('click', (e) => {
+                           e.preventDefault(); e.stopPropagation();
+                           App.handleAddOrRemoveFavorite(e.currentTarget); // Call new handler
+                        });
+                    }
                 });
+                App.initializeTooltips(containerElement); 
             },
 
              // Renders the Hero section item
@@ -2796,11 +3652,12 @@
 
             // Renders episodes into a specific season pane
              renderSeasonEpisodes: (episodes, paneElement, tvId, seasonNum) => {
-                 if (!paneElement || !episodes || episodes.length === 0) {
-                    if (paneElement) paneElement.innerHTML = '<p class="text-muted p-3">No episode data available for this season.</p>';
+                if (!paneElement) return;
+                paneElement.innerHTML = ''; // Clear spinner
+                 if (!episodes || episodes.length === 0) {
+                    paneElement.innerHTML = '<p class="text-muted p-3">No episode data available for this season.</p>';
                     return;
                  }
-                 paneElement.innerHTML = ''; // Clear spinner
 
                  episodes.sort((a,b) => a.episode_number - b.episode_number).forEach(ep => {
                      const stillUrl = ep.still_path ? `${config.STILL_BASE_URL}${ep.still_path}` : 'https://via.placeholder.com/240x135/1a1d24/666?text=No+Still';
@@ -3148,7 +4005,8 @@
                 const container = DOM.personWrapper?.querySelector('#ai-bio-container'); // Select dynamically
                 const button = DOM.personWrapper?.querySelector('#get-ai-bio-btn'); // Select dynamically
 
-                if (!container || !button) return;
+                
+                if (container) container.innerHTML = Utils.getSpinnerHTML("Generating highlight...", false);
 
                 // Indicate loading
                 container.innerHTML = Utils.getSpinnerHTML("Generating highlight...", false);
@@ -3213,4 +4071,3 @@
 
         // --- Start the Application ---
         document.addEventListener('DOMContentLoaded', App.init);
-
