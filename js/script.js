@@ -1,4 +1,4 @@
-   // --- Configuration ---
+     // --- Configuration ---
         const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
@@ -21,6 +21,12 @@
                     id: 'continue-watching', // Special ID to identify it
                     display_style: 'horizontal_backdrop'
                      // No 'endpoint' or 'type' needed here
+                },
+                { // <<< NEW SECTION >>>
+                    title: "Popular on AuraStream", // Or "Your Most Viewed"
+                    id: 'most-viewed', // Special ID
+                    display_style: 'horizontal_poster', // Or vertical 'default'
+                    max_items: 15 // How many top items to show
                 },
                 {
                     title: "Latest Trailers",
@@ -150,6 +156,13 @@
             watchlistGrid: document.getElementById('watchlist-grid'), // NEW
             clearWatchlistBtn: document.getElementById('clear-watchlist-btn'),
 
+            connectionExplorerModal: document.getElementById('connectionExplorerModal'),
+            connectionGraphContainer: document.getElementById('connection-graph-container'),
+            connectionGraphLoading: document.getElementById('connection-graph-loading'),
+            connectionGraphError: document.getElementById('connection-graph-error'),
+            connectionExplorerTitle: document.getElementById('connectionExplorerModalLabel'), // To set title
+
+
             // Music View
             spotifyStatusArea: document.getElementById('spotify-status-area'),
             spotifyStatusText: document.getElementById('spotify-status-text'),
@@ -187,9 +200,12 @@
             visualizerAnalyser: null,
             visualizerSource: null, // MediaElementAudioSourceNode
             visualizerDataArray: null, // Uint8Array
+            isGraphLoading: false,
             visualizerRafId: null, // requestAnimationFrame ID
             isVisualizerSetup: false,
             isVisualizerConnected: false,
+            visNetworkInstance: null, // Reference to the vis.js Network
+            currentExplorerItem: null, // { id: ..., type: ... } for the graph
             // Helper function to check if token is valid
             hasValidSpotifyAppToken: () => !!(State.spotifyAppAccessToken && State.spotifyAppTokenExpiresAt && Date.now() < State.spotifyAppTokenExpiresAt),
         };
@@ -200,6 +216,7 @@
             tooltips: [], // Store tooltip instances if needed for cleanup
             tabs: [], // Store tab instances if needed
             trailerModal: null,
+            connectionModal: null,
         };
 
         const Watchlist = {
@@ -715,6 +732,16 @@
                  // Return directly as they are usually in a flex container
                  return logosHtml;
              },
+
+            setElementVisibility: (element, isVisible) => {
+                if (element) {
+                    element.classList.toggle('d-none', !isVisible);
+                    // Optional: Set aria-hidden for accessibility
+                    element.setAttribute('aria-hidden', String(!isVisible));
+                } else {
+                  // console.warn("Attempted to set visibility on null element");
+                }
+            },
 
              // Format date string (e.g., "Jan 1, 2023")
             formatAirDate: (dateString) => {
@@ -1549,110 +1576,179 @@
             }
         };
 
-    
 
 
         // --- Main App Module ---
         const App = {
             init: () => {
-                console.log("App Init...");
-                // Initialize Bootstrap components
-                bsInstances.navbarCollapse = DOM.navbarMenu ? new bootstrap.Collapse(DOM.navbarMenu, { toggle: false }) : null;
-                App.initializeTooltips(document.body); // Initialize tooltips globally if needed
+               console.log("🚀 App Init Starting..."); // Use an emoji for fun!
 
-                // Initial data loading
-                App.loadTmdbGenres(); // Load genres for dropdown/mapping
-         
+                // --- 1. Essential Initializations (Must Happen First) ---
+                 try {
+                    console.log("  Initializing Bootstrap components...");
+                    bsInstances.navbarCollapse = DOM.navbarMenu ? new bootstrap.Collapse(DOM.navbarMenu, { toggle: false }) : null;
 
-                ContinueWatching.load(); // Load continue watching list
-                Watchlist.load(); // Load watchlist
+                    console.log("  Initializing global tooltips...");
+                    App.initializeTooltips(document.body);
 
-                Favorites.load(); // <<< NEW: Load Favorites
-                Analytics.init(); // <<< NEW: Initialize Analytics module 
+                    // Initialize Trailer Modal Instance
+                    if (DOM.trailerModalElement) {
+                       console.log("  Initializing Trailer Modal...");
+                       bsInstances.trailerModal = new bootstrap.Modal(DOM.trailerModalElement);
+                       DOM.trailerModalElement.addEventListener('hidden.bs.modal', () => {
+                           if (DOM.trailerModalIframe) DOM.trailerModalIframe.src = 'about:blank';
+                       });
+                    } else { console.warn("  Trailer Modal element not found."); }
 
-                // Set up Router
-                Router.updateView(); // Initial view based on hash or default
-                window.addEventListener('hashchange', Router.handleHashChange);
+             // Initialize Connection Explorer Modal
+             if (DOM.connectionExplorerModal) {
+                  console.log("  Initializing Connection Modal & listeners...");
+                  bsInstances.connectionModal = new bootstrap.Modal(DOM.connectionExplorerModal);
+                  DOM.connectionExplorerModal.addEventListener('shown.bs.modal', () => {
+                     if (State.currentExplorerItem && State.isGraphLoading) {
+                         console.log("[Modal Event] 'shown' triggered, loading graph for:", State.currentExplorerItem);
+                         App.loadAndDisplayConnections(State.currentExplorerItem);
+                     } else {
+                         console.warn("[Modal Event] 'shown' triggered without active item/loading state.");
+                         if(!State.isGraphLoading && DOM.connectionGraphLoading) Utils.setElementVisibility(DOM.connectionGraphLoading, false);
+                     }
+                  });
+                  DOM.connectionExplorerModal.addEventListener('hidden.bs.modal', () => {
+                      console.log("[Modal Event] 'hidden' triggered, cleaning up graph.");
+                      App.destroyVisNetwork();
+                      State.currentExplorerItem = null;
+                      State.isGraphLoading = false;
+                      // Reset internal states safely
+                       if (DOM.connectionGraphContainer) DOM.connectionGraphContainer.innerHTML = '';
+                       Utils.setElementVisibility(DOM.connectionGraphContainer, false);
+                       Utils.setElementVisibility(DOM.connectionGraphError, false);
+                       Utils.setElementVisibility(DOM.connectionGraphLoading, false);
+                  });
+              } else { console.warn("  Connection Explorer Modal element not found."); }
 
-                // --- Event Listeners ---
-                // TMDB Search
-                DOM.tmdbSearchForm?.addEventListener('submit', App.handleTmdbSearchSubmit);
-                DOM.tmdbSearchInput?.addEventListener('input', Utils.debounce(App.handleTmdbSearchInput, 400)); // Debounced input search
-                DOM.clearTmdbSearchResultsBtn?.addEventListener('click', App.clearTmdbSearch);
+        } catch (error) {
+             console.error("💥 ERROR during essential UI initialization:", error);
+             // Display a user-facing error if critical UI fails?
+             // e.g., document.body.innerHTML = "<h2>Application failed to initialize. Please refresh.</h2>";
+             return; // Stop initialization if basic UI components fail
+        }
 
-                // Pagination
-                DOM.loadMoreGenreBtn?.addEventListener('click', App.handleLoadMoreGenres);
-                DOM.loadMoreNetworkBtn?.addEventListener('click', App.handleLoadMoreNetworkResults);
 
-                // Network Carousel
-                DOM.networkPrevBtn?.addEventListener('click', App.handleNetworkScrollPrev);
-                DOM.networkNextBtn?.addEventListener('click', App.handleNetworkScrollNext);
-                DOM.networkLogosContainer?.addEventListener('scroll', Utils.debounce(App.updateNetworkScrollButtons, 100)); // Check buttons on scroll
-
-                // Initialize Trailer Modal Instance
-                if (DOM.trailerModalElement) {
-                    bsInstances.trailerModal = new bootstrap.Modal(DOM.trailerModalElement);
-                    // Add listener to clear iframe src when modal is hidden
-                    DOM.trailerModalElement.addEventListener('hidden.bs.modal', () => {
-                        if (DOM.trailerModalIframe) {
-                             DOM.trailerModalIframe.src = 'about:blank'; // Clear src to stop video
-                        }
-                    });
-                }
-
-                // Spotify Search
-                DOM.spotifySearchForm?.addEventListener('submit', App.handleSpotifySearchSubmit);
-
-                 // Visualizer Demo Controls
-                DOM.startVisualizerButton?.addEventListener('click', Visualizer.startDemo);
-                DOM.demoAudioElement?.addEventListener('play', () => Visualizer.start(DOM.demoAudioElement));
-                DOM.demoAudioElement?.addEventListener('pause', Visualizer.stop);
-                DOM.demoAudioElement?.addEventListener('ended', Visualizer.stop);
-
-                // General UI Listeners
-                 // Close navbar collapse on link click
-                document.querySelectorAll('#navbarNav .nav-link:not(.dropdown-toggle), #navbarNav .dropdown-item').forEach(link => {
-                    link.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
-                });
-
-                document.querySelector('.nav-link[href="#livesports"]')?.addEventListener('click', () => {
-                     // Ensure bsInstances.navbarCollapse is initialized
-                    if (!bsInstances.navbarCollapse && DOM.navbarMenu) {
-                        bsInstances.navbarCollapse = new bootstrap.Collapse(DOM.navbarMenu, { toggle: false });
+        // --- 2. Initialize Firebase (with Try/Catch) ---
+        try {
+            if (typeof firebase !== 'undefined' && typeof firebase.initializeApp === 'function') {
+                console.log("  Initializing Firebase...");
+                firebaseApp = firebase.initializeApp(firebaseConfig); // Use firebaseConfig defined elsewhere
+                db = firebase.firestore(); // Get Firestore instance
+                console.log("  ✅ Firebase Initialized Successfully.");
+                // <<< --- ADD THE TEST CODE HERE --- >>>
+                (async () => { // Use an async IIFE to await the get()
+                    try {
+                        console.log("  [Firebase Test] Attempting basic read...");
+                        const testDoc = await db.collection('testCollection').doc('testDoc').get(); // Use distinct names
+                        console.log(`  [Firebase Test] Basic read successful. Document 'testDoc' exists: ${testDoc.exists}`);
+                    } catch (testError){
+                        console.error("  [Firebase Test] Basic read FAILED:", testError);
                     }
-                    bsInstances.navbarCollapse?.hide();
+                })();
+                // <<< --- END TEST CODE --- >>>
+            } else {
+                console.warn("  Firebase SDK not fully loaded. Backend features (Global Views) will be disabled.");
+                Utils.showToast("Global features unavailable (Service Load Error).", "warning");
+            }
+        } catch (error) {
+            console.error("💥 Firebase initialization FAILED:", error);
+            db = null; // Ensure db is null if init fails
+            Utils.showToast("Failed to connect to backend services. Global features disabled.", "danger");
+        }
+
+        // --- 3. Load Local Data & Init Modules ---
+        try {
+            console.log("  Loading local storage data...");
+            Watchlist.load();
+            ContinueWatching.load();
+            Favorites.load();
+            // REMOVED ViewTracker.load(); - Use Firebase now
+
+            console.log("  Initializing Analytics...");
+            Analytics.init(); // Analytics might rely on genre data, but calculates lazily
+
+        } catch (error) {
+             console.error("💥 ERROR loading local data or initializing modules:", error);
+             // Depending on the error, decide if the app can continue
+        }
+
+        // --- 4. Initial API Calls & UI Setup ---
+        // These can often run even if Firebase failed (degraded experience)
+         try {
+             console.log("  Starting initial API calls & theme setup...");
+             App.loadTmdbGenres(); // Essential for analytics and genre pages - loads async
+             App.applySavedTheme(); // Apply theme early
+             App.addThemeSwitcherListeners();
+             App.resizeVisualizerCanvas();
+             API.getSpotifyAppToken().catch(() => {}); // Start Spotify auth early, ignore errors here
+
+         } catch (error) {
+              console.error("💥 ERROR during initial API calls/UI setup:", error);
+         }
+
+
+        // --- 5. Setup Routing and Event Listeners ---
+        try {
+             console.log("  Setting up Router and Event Listeners...");
+             Router.updateView(); // Initial view based on hash or default
+             window.addEventListener('hashchange', Router.handleHashChange);
+
+            // TMDB Search Listeners
+            DOM.tmdbSearchForm?.addEventListener('submit', App.handleTmdbSearchSubmit);
+            DOM.tmdbSearchInput?.addEventListener('input', Utils.debounce(App.handleTmdbSearchInput, 400));
+            DOM.clearTmdbSearchResultsBtn?.addEventListener('click', App.clearTmdbSearch);
+
+            // Pagination Listeners
+            DOM.loadMoreGenreBtn?.addEventListener('click', App.handleLoadMoreGenres);
+            DOM.loadMoreNetworkBtn?.addEventListener('click', App.handleLoadMoreNetworkResults);
+
+            // Network Carousel Listeners
+            DOM.networkPrevBtn?.addEventListener('click', App.handleNetworkScrollPrev);
+            DOM.networkNextBtn?.addEventListener('click', App.handleNetworkScrollNext);
+            DOM.networkLogosContainer?.addEventListener('scroll', Utils.debounce(App.updateNetworkScrollButtons, 100), { passive: true });
+
+            // Spotify Search Listener
+            DOM.spotifySearchForm?.addEventListener('submit', App.handleSpotifySearchSubmit);
+
+             // Visualizer Listeners
+             DOM.startVisualizerButton?.addEventListener('click', Visualizer.startDemo);
+             DOM.demoAudioElement?.addEventListener('play', () => Visualizer.start(DOM.demoAudioElement));
+             DOM.demoAudioElement?.addEventListener('pause', Visualizer.stop);
+             DOM.demoAudioElement?.addEventListener('ended', Visualizer.stop);
+
+             // General UI Listeners
+             document.querySelectorAll('#navbarNav .nav-link:not(.dropdown-toggle), #navbarNav .dropdown-item').forEach(link => {
+                 link.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
+             });
+             // Specific listeners for nav links if needed (e.g., analytics, livesports)
+             DOM.analyticsNavLink?.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
+             document.querySelector('.nav-link[href="#livesports"]')?.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
+
+
+            // Watchlist Clear Listener
+            DOM.clearWatchlistBtn?.addEventListener('click', App.handleClearWatchlist);
+
+            // Resize Listener (debounced)
+            window.addEventListener('resize', Utils.debounce(() => {
+                App.resizeVisualizerCanvas();
+                App.updateNetworkScrollButtons();
+                State.horizontalScrollContainers?.forEach(({ container, prevBtn, nextBtn }) => {
+                    App.updateHScrollButtons(container, prevBtn, nextBtn);
                 });
+            }, 150));
 
-                document.querySelector('.nav-link[href="#analytics"]')?.addEventListener('click', (e) => {
-                    // No special action needed here unless you want to force reload data
-                    // Analytics.updateAnalyticsDisplay(); // Might already be handled by router
-                    bsInstances.navbarCollapse?.hide();
-                });
+        } catch(error) {
+            console.error("💥 ERROR setting up event listeners:", error);
+        }
 
-                // Resize listener for visualizer and network buttons
-                window.addEventListener('resize', Utils.debounce(() => {
-                    App.resizeVisualizerCanvas();
-                    App.updateNetworkScrollButtons(); // Update network carousel buttons
-
-                    // Update ALL horizontal scroll section buttons
-                    State.horizontalScrollContainers?.forEach(({ container, prevBtn, nextBtn }) => {
-                         App.updateHScrollButtons(container, prevBtn, nextBtn);
-                     });
-
-                }, 150));
-
-                Watchlist.load(); 
-                DOM.clearWatchlistBtn?.addEventListener('click', App.handleClearWatchlist);
-
-                App.applySavedTheme(); // Apply theme from localStorage on load
-                App.addThemeSwitcherListeners();
-
-                // Initial setup calls
-                App.resizeVisualizerCanvas(); // Set initial canvas size
-                API.getSpotifyAppToken().catch(() => {}); // Start fetching Spotify token early
-
-                console.log("App Init Complete.");
-            },
+        console.log("✅ App Init Complete.");
+        }, 
 
             applyTheme: (themeName) => {
                 const body = document.body;
@@ -2384,103 +2480,282 @@
              },
 
              loadHomeSections: async () => {
-                 if (!DOM.homeContentSectionsContainer) return;
-                 DOM.homeContentSectionsContainer.innerHTML = ''; // Clear previous sections
-                 State.horizontalScrollContainers = []; // Reset for resize listener
+        console.log("[Home Sections] Starting load (Firebase Version)...");
+        const mainContainer = DOM.homeContentSectionsContainer;
+        if (!mainContainer) {
+            console.error("[Home Sections] Main container (#home-content-sections) not found!");
+            return;
+        }
 
-                 for (const section of config.HOME_SECTIONS) {
-                     // --- Special handling for Continue Watching ---
-                     if (section.id === 'continue-watching') {
-                         if (ContinueWatching.getList().length > 0) {
-                             const sectionDiv = document.createElement('section');
-                             sectionDiv.className = 'content-section mb-5';
-                             sectionDiv.id = 'continue-watching-section';
-                             const isHorizontal = true; // Always horizontal
-                             sectionDiv.innerHTML = `
-                                 <h2 class="section-title">${Utils.escapeHtml(section.title)}</h2>
-                                 <div class="horizontal-scroll-wrapper">
-                                     <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
-                                     <div class="horizontal-card-container">
-                                         ${Utils.getSkeletonHorizontalCardHTML(4)} {/* Skeleton Here */}
-                                     </div>
-                                     <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
-                                 </div>`;
-                             DOM.homeContentSectionsContainer.appendChild(sectionDiv);
-                             // Load content specifically for this section (will replace skeleton)
-                             App.loadContinueWatchingSection(sectionDiv); // Make sure this function clears skeleton first
+        // 1. Clear Container & Reset State
+        mainContainer.innerHTML = Utils.getSpinnerHTML("Loading content sections...", true);
+        State.horizontalScrollContainers = [];
+        await new Promise(resolve => setTimeout(resolve, 50)); // Allow spinner to render
+        mainContainer.innerHTML = ''; // Clear spinner
+
+        // --- Prepare Promises for sections that require async checks BEFORE rendering structure ---
+        let continueWatchingPromise = ContinueWatching.getList(); // Get list sync (already loaded in init)
+        let mostViewedCheckPromise = (async () => { // Wrap Firestore check in async IIFE
+            if (!db) return []; // Firestore not ready
+            try {
+                 const querySnapshot = await db.collection("viewCounts").limit(1).get(); // Check if *any* document exists
+                 return querySnapshot.empty ? [] : [{}]; // Return non-empty array if views exist
+             } catch(e){ console.error("Firestore check failed:", e); return []; }
+        })();
+
+
+        // 2. Iterate through Section Configurations
+        for (const sectionConfig of config.HOME_SECTIONS) {
+            console.log(`[Home Sections] Processing config: "${sectionConfig.title}"`);
+            let shouldCreateSection = false;
+            let sectionDiv = null; // Will be created or found
+
+            // --- Handle Special Section Logic ---
+            if (sectionConfig.id === 'continue-watching') {
+                if (continueWatchingPromise.length > 0) { // Use loaded list
+                     console.log(`[Home Sections] Creating "Continue Watching" section.`);
+                     shouldCreateSection = true;
+                     sectionDiv = document.createElement('section');
+                     sectionDiv.id = 'continue-watching-section';
+                 } else {
+                     console.log(`[Home Sections] Skipping "Continue Watching" (list is empty).`);
+                 }
+            } else if (sectionConfig.id === 'most-viewed') {
+                console.log('[Home Sections] Processing "Most Viewed" section (HTML expected).');
+                sectionDiv = document.getElementById('most-viewed-section'); // Find existing
+                if (!sectionDiv) {
+                    console.warn('[Home Sections] Pre-defined HTML section "most-viewed-section" not found.');
+                } else {
+                     const mostViewedExists = (await mostViewedCheckPromise).length > 0; // Check result of Firestore query
+                     if (mostViewedExists) {
+                        console.log('[Home Sections] Global views found, "Most Viewed" section will be populated.');
+                         shouldCreateSection = false; // Structure exists, just need to make visible & load
+                         Utils.setElementVisibility(sectionDiv, true); // Make it visible now
+                         const container = sectionDiv.querySelector('.most-viewed-container');
+                         if(container){ // Add skeletons before load
+                             const isHorizontal = container.classList.contains('horizontal-card-container');
+                             container.innerHTML = isHorizontal ? Utils.getSkeletonHorizontalCardHTML(5) : Utils.getSkeletonCardHTML(6);
                          }
-                         continue;
+                         // Load function will be called below if sectionDiv is valid
+                     } else {
+                         console.log('[Home Sections] No global views tracked, hiding "Most Viewed" section.');
+                         Utils.setElementVisibility(sectionDiv, false); // Ensure it's hidden
+                         shouldCreateSection = false; // Do not proceed further
                      }
+                 }
+            } else if (sectionConfig.endpoint) {
+                // Standard sections are always created (might show 'no results' later)
+                console.log(`[Home Sections] Creating standard section: "${sectionConfig.title}"`);
+                shouldCreateSection = true;
+                sectionDiv = document.createElement('section');
+            } else {
+                // Skip misconfigured sections
+                console.warn(`[Home Sections] Skipping section "${sectionConfig.title}" - Invalid config.`);
+            }
 
-                     // --- Generic Section Loading ---
-                     const sectionDiv = document.createElement('section');
-                     sectionDiv.className = 'content-section mb-5';
-                     let contentContainerHtml;
-                     let isHorizontal = section.display_style === 'horizontal_backdrop';
 
-                     // *** Add Skeletons Here ***
-                     const skeletonHtml = isHorizontal
-                         ? Utils.getSkeletonHorizontalCardHTML(5) // Adjust count
-                         : Utils.getSkeletonCardHTML(6); // Adjust count
+            // --- If section should be displayed (created or found & visible) ---
+            if (sectionDiv && (shouldCreateSection || sectionConfig.id === 'most-viewed')) {
 
-                     if (isHorizontal) {
-                         contentContainerHtml = `
-                             <div class="horizontal-scroll-wrapper">
-                                 <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
-                                 <div class="horizontal-card-container">${skeletonHtml}</div>
-                                 <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
-                             </div>`;
-                     } else { /* Vertical Layout */
-                         contentContainerHtml = `<div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">${skeletonHtml}</div>`;
-                     }
-                     sectionDiv.innerHTML = `<h2 class="section-title">${Utils.escapeHtml(section.title)}</h2>${contentContainerHtml}`;
-                     DOM.homeContentSectionsContainer.appendChild(sectionDiv);
+                 // Common setup for sections that *will* be added or populated
+                 sectionDiv.className = sectionDiv.className || 'content-section mb-5'; // Add default class if needed
+                 let isHorizontal = sectionConfig.display_style?.startsWith('horizontal');
+                 let containerSelector = sectionConfig.id === 'continue-watching' ? '.continue-watching-container'
+                                     : sectionConfig.id === 'most-viewed' ? '.most-viewed-container'
+                                     : isHorizontal ? '.horizontal-card-container' : '.row';
+                 let skeletonHtml = '';
 
-                     // Fetch and Render (will replace skeletons)
-                     try {
-                         const data = await API.fetchTMDB(section.endpoint, { page: 1 });
-                         const resultsContainer = isHorizontal
-                             ? sectionDiv.querySelector('.horizontal-card-container')
-                             : sectionDiv.querySelector('.row');
+                 // --- Build Inner Structure (If section was dynamically created) ---
+                 if (shouldCreateSection) { // Only build if we created it dynamically
+                     if (sectionConfig.id === 'continue-watching') {
+                         skeletonHtml = Utils.getSkeletonHorizontalCardHTML(Math.min(continueWatchingPromise.length, 5));
+                         sectionDiv.innerHTML = `
+                            <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
+                            <div class="horizontal-scroll-wrapper">
+                                <button class="btn h-scroll-btn prev disabled"><i class="bi bi-chevron-left"></i></button>
+                                <div class="horizontal-card-container continue-watching-container">${skeletonHtml}</div>
+                                <button class="btn h-scroll-btn next disabled"><i class="bi bi-chevron-right"></i></button>
+                            </div>`;
+                     } else { // Standard endpoint section
+                         const skeletonCount = isHorizontal ? 5 : 6;
+                         skeletonHtml = isHorizontal ? Utils.getSkeletonHorizontalCardHTML(skeletonCount) : Utils.getSkeletonCardHTML(skeletonCount);
+                         sectionDiv.innerHTML = `
+                             <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
+                             ${isHorizontal ? `
+                                <div class="horizontal-scroll-wrapper">
+                                    <button class="btn h-scroll-btn prev disabled"><i class="bi bi-chevron-left"></i></button>
+                                    <div class="horizontal-card-container">${skeletonHtml}</div>
+                                    <button class="btn h-scroll-btn next disabled"><i class="bi bi-chevron-right"></i></button>
+                                </div>
+                             ` : `
+                                <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">${skeletonHtml}</div>
+                             `}
+                         `;
+                    }
+                 }
 
-                         if (data && data.results && resultsContainer) {
-                             // *** Render functions should clear container first ***
-                             if (isHorizontal) {
-                                 App.renderHorizontalCards(data.results.slice(0, 20), resultsContainer, section.type || null, section.show_trailer_button || false);
-                                 // ... rest of horizontal scroll setup ...
-                                  const scrollWrapper = sectionDiv.querySelector('.horizontal-scroll-wrapper');
-                                  const prevBtn = scrollWrapper?.querySelector('.h-scroll-btn.prev');
-                                  const nextBtn = scrollWrapper?.querySelector('.h-scroll-btn.next');
-                                 if (resultsContainer && prevBtn && nextBtn) {
-                                     // Avoid adding duplicate listeners if somehow re-run
-                                     if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
-                                         State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
-                                         resultsContainer.addEventListener('scroll', Utils.debounce(() => { App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);}, 100), { passive: true });
-                                         prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
-                                         nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
+                 // Append *dynamically created* sections to the DOM
+                  if (shouldCreateSection && !sectionDiv.parentNode) {
+                       mainContainer.appendChild(sectionDiv);
+                  }
+
+
+                // --- Trigger Asynchronous Load Function for the Section ---
+                if (sectionConfig.id === 'continue-watching') {
+                     App.loadContinueWatchingSection(sectionDiv); // Function loads data and replaces skeleton
+                } else if (sectionConfig.id === 'most-viewed') {
+                     App.loadMostViewedSection(sectionDiv, sectionConfig); // Function loads data and replaces skeleton
+                } else if (sectionConfig.endpoint) {
+                     // Load standard section using IIFE
+                    (async (currentSectionDiv, currentConfig, currentContainerSelector, isH) => {
+                         try {
+                             console.log(`[Home Sections][Async Load] Fetching standard data for "${currentConfig.title}"...`);
+                             const data = await API.fetchTMDB(currentConfig.endpoint, { page: 1 });
+                             const resultsContainer = currentSectionDiv.querySelector(currentContainerSelector);
+
+                             if (data?.results && resultsContainer) {
+                                if(data.results.length > 0){
+                                     if (isH) {
+                                         App.renderHorizontalCards(data.results.slice(0, 20), resultsContainer, currentConfig.type || null, currentConfig.show_trailer_button || false);
+                                          // --- Setup horizontal scroll ---
+                                          const scrollWrapper = currentSectionDiv.querySelector('.horizontal-scroll-wrapper');
+                                          const prevBtn = scrollWrapper?.querySelector('.h-scroll-btn.prev');
+                                          const nextBtn = scrollWrapper?.querySelector('.h-scroll-btn.next');
+                                          if (resultsContainer && prevBtn && nextBtn) {
+                                              if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
+                                                   State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
+                                                   resultsContainer.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn), 100), { passive: true });
+                                                   prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
+                                                   nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
+                                              }
+                                              App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn); // Update buttons immediately
+                                          }
+                                          // -----------------------------
+                                     } else { // Vertical
+                                         App.renderTmdbCards(data.results.slice(0, 12), resultsContainer, currentConfig.type || null, false);
                                      }
-                                     App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn); // Update initially
+                                 } else { // No API results
+                                      console.log(`[Home Sections][Async Load] No results for "${currentConfig.title}".`);
+                                      if(resultsContainer) resultsContainer.innerHTML = '<p class="text-muted px-3 col-12">No content found.</p>';
+                                      if(isH){ App.updateHScrollButtons(resultsContainer, currentSectionDiv.querySelector('.prev'), currentSectionDiv.querySelector('.next'));}
                                  }
-                             } else {
-                                 App.renderTmdbCards(data.results.slice(0, 12), resultsContainer, section.type || null, false);
-                             }
-                         } else { /* No results handling */
-                            if(resultsContainer) resultsContainer.innerHTML = '<p class="text-muted px-3 col-12">No content found.</p>';
-                             if (isHorizontal) { /* Update buttons even if no results */
-                                const scrollWrapper = sectionDiv.querySelector('.horizontal-scroll-wrapper');
-                                const prevBtn = scrollWrapper?.querySelector('.h-scroll-btn.prev');
-                                const nextBtn = scrollWrapper?.querySelector('.h-scroll-btn.next');
-                                if(resultsContainer && prevBtn && nextBtn) App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
+                             } else { // API Error or invalid data
+                                throw new Error(`Invalid data received for "${currentConfig.title}".`);
                             }
+                         } catch (error) {
+                             console.error(`[Home Sections][Async Load] Error loading "${currentConfig.title}":`, error);
+                             const resultsContainer = currentSectionDiv.querySelector(currentContainerSelector);
+                             if (resultsContainer) resultsContainer.innerHTML = Utils.getErrorHTML(`Could not load "${currentConfig.title}".`);
+                             if(isH){ App.updateHScrollButtons(resultsContainer, currentSectionDiv.querySelector('.prev'), currentSectionDiv.querySelector('.next'));} // Update buttons on error too
                          }
-                     } catch (error) { /* Error handling */
-                          console.error(`Failed to load section ${section.title}:`, error);
-                         const resultsContainer = isHorizontal ? sectionDiv.querySelector('.horizontal-card-container') : sectionDiv.querySelector('.row');
-                         if(resultsContainer) resultsContainer.innerHTML = Utils.getErrorHTML(`Could not load ${section.title}.`);
-                     }
-                 } // End loop
-             },
+                    })(sectionDiv, sectionConfig, containerSelector, isHorizontal); // Pass current context to IIFE
+                 } // End standard endpoint handler
 
+            } // End if (sectionDiv is valid)
+
+        } // End for loop
+
+        console.log("[Home Sections] Finished setting up all section structures and initiated async loads.");
+    }, 
+   
+             
+    loadMostViewedSection: async (sectionDiv, sectionConfig) => {
+        const container = sectionDiv.querySelector('.most-viewed-container');
+        if (!container) { /* ... handle missing container error ... */ return; }
+        const isHorizontal = container.classList.contains('horizontal-card-container');
+        const maxItems = sectionConfig.max_items || (isHorizontal ? 15 : 12);
+        const skeletonCount = isHorizontal ? 5 : 6;
+
+        console.log('[Most Viewed Load] Loading global most viewed items from Firestore...');
+        // Skeletons should have already been added by loadHomeSections
+
+        if (!db) { // Check if Firestore is initialized
+            container.innerHTML = Utils.getErrorHTML("Database service unavailable.");
+            if (isHorizontal) App.updateHScrollButtons(container, sectionDiv.querySelector('.prev'), sectionDiv.querySelector('.next'));
+            return;
+        }
+
+        try {
+            // --- Query Firestore ---
+            const querySnapshot = await db.collection("viewCounts")
+                .orderBy("viewCount", "desc") // Order by count
+                .limit(maxItems) // Limit to top N
+                .get();
+            // ---------------------
+
+            if (querySnapshot.empty) {
+                console.log('[Most Viewed Load] No view data found in Firestore.');
+                container.innerHTML = `<p class="text-muted px-3 col-12">Be the first to watch something popular!</p>`;
+                 if(isHorizontal){ App.updateHScrollButtons(container, sectionDiv.querySelector('.prev'), sectionDiv.querySelector('.next'));}
+                return;
+            }
+
+            // Extract data needed for TMDB lookup
+            const topItemsData = querySnapshot.docs.map(doc => ({
+                id: doc.data().tmdbId, // Assumes you store 'tmdbId' field
+                type: doc.data().type,   // Assumes you store 'type' field
+                count: doc.data().viewCount // Get the count
+            }));
+
+             console.log('[Most Viewed Load] Fetched top items from Firestore:', topItemsData);
+
+
+            // --- Fetch TMDB Details for these items (Similar to before) ---
+            const itemDetailPromises = topItemsData.map(viewData =>
+                API.fetchTMDB(`/${viewData.type}/${viewData.id}`).catch(err => {
+                    console.warn(`[Most Viewed Load] Failed to fetch TMDB details for ${viewData.type}-${viewData.id}`, err);
+                    return null; // Return null on error
+                })
+            );
+            const detailedItems = (await Promise.all(itemDetailPromises))
+                                      .filter(item => item !== null); // Filter out failed fetches
+
+            if (detailedItems.length === 0) {
+                 throw new Error("Could not fetch details for popular items from TMDB.");
+            }
+            // -----------------------------------------------------------
+
+            // Combine TMDB details with view counts (Optional, if displaying count)
+             const itemsToRender = detailedItems.map(item => {
+                  const type = item.title ? 'movie' : 'tv';
+                  // Find the original view data to get the count back
+                  const originalViewData = topItemsData.find(v => v.id === item.id && v.type === type);
+                  return {
+                       ...item,
+                       media_type: type,
+                       viewCount: originalViewData ? originalViewData.count : '?', // Add count back
+                   };
+              });
+
+            // --- Render using appropriate function (replace skeletons) ---
+             console.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items.`);
+             if (isHorizontal) {
+                 App.renderHorizontalCards(itemsToRender, container, null, false);
+                 // Setup scroll for THIS specific section
+                 const scrollWrapper = sectionDiv.querySelector('.horizontal-scroll-wrapper');
+                 const prevBtn = scrollWrapper?.querySelector('.h-scroll-btn.prev');
+                 const nextBtn = scrollWrapper?.querySelector('.h-scroll-btn.next');
+                 if (container && prevBtn && nextBtn) {
+                      if (!State.horizontalScrollContainers.some(c => c.container === container)) {
+                          State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
+                          container.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(container, prevBtn, nextBtn), 100), { passive: true });
+                          prevBtn.addEventListener('click', () => App.handleHScrollPrev(container));
+                          nextBtn.addEventListener('click', () => App.handleHScrollNext(container));
+                      }
+                      App.updateHScrollButtons(container, prevBtn, nextBtn);
+                  }
+             } else {
+                 App.renderTmdbCards(itemsToRender, container, null, false);
+                 // If you want to show counts on vertical cards, add logic here
+             }
+            // --------------------------------------------------------------
+
+        } catch (error) {
+            console.error("[Most Viewed Load] Error fetching or processing items:", error);
+            container.innerHTML = Utils.getErrorHTML(`Could not display popular items: ${error.message}`);
+            if(isHorizontal){ App.updateHScrollButtons(container, sectionDiv.querySelector('.prev'), sectionDiv.querySelector('.next'));}
+        }
+    }, 
               // --- NEW: Function to specifically load and render Continue Watching ---
               loadContinueWatchingSection: (sectionDiv) => {
                 if (!sectionDiv) {
@@ -2938,38 +3213,44 @@
              },
 
             // --- Network Functions ---
-             renderNetworkLogos: async () => {
-                 if (!DOM.networkLogosContainer) return;
-                 DOM.networkLogosContainer.innerHTML = ''; // Clear previous
+            renderNetworkLogos: async () => { // Ensure this is async if it wasn't already
+    if (!DOM.networkLogosContainer) {
+         console.warn("Network logos container not found.");
+         return;
+     }
+    DOM.networkLogosContainer.innerHTML = ''; // Clear previous
 
-                 if (!config.CURATED_WATCH_PROVIDERS || config.CURATED_WATCH_PROVIDERS.length === 0) {
-                     DOM.networkLogosContainer.innerHTML = '<p class="text-muted small px-3">No curated networks available.</p>';
-                     App.updateNetworkScrollButtons(); // Update buttons (will be disabled)
-                     return;
-                 }
+    if (!config.CURATED_WATCH_PROVIDERS || config.CURATED_WATCH_PROVIDERS.length === 0) {
+        DOM.networkLogosContainer.innerHTML = '<p class="text-muted small px-3">No networks defined.</p>';
+        App.updateNetworkScrollButtons();
+        return;
+    }
 
-                config.CURATED_WATCH_PROVIDERS.forEach(provider => {
-                     const logoUrl = provider.logo ? `${config.LOGO_BASE_URL}${provider.logo}` : 'https://via.placeholder.com/100x50/1a1d24/666?text=No+Logo';
-                     const item = document.createElement('div');
-                     item.className = 'network-logo-item';
-                     item.dataset.providerId = provider.id; // Store ID for click handling
-                     item.dataset.providerName = provider.name;
-                     item.innerHTML = `
-                         <img src="${logoUrl}" alt="${Utils.escapeHtml(provider.name)}" loading="lazy" title="${Utils.escapeHtml(provider.name)}">
-                         <span>${Utils.escapeHtml(provider.name)}</span>
-                     `;
-                     item.addEventListener('click', App.handleNetworkLogoClick);
-                     DOM.networkLogosContainer.appendChild(item);
-                });
+    // --- Loop ONCE to create and append ---
+    config.CURATED_WATCH_PROVIDERS.forEach(provider => {
+        const logoPath = provider.logo;
+        // Handle potential absolute URLs vs relative paths needing IMAGE_BASE_URL/LOGO_BASE_URL
+        const logoUrl = logoPath
+            ? (logoPath.startsWith('/') ? `${config.LOGO_BASE_URL}${logoPath}` : logoPath) // Check if path starts with '/'
+            : 'https://via.placeholder.com/100x50/1a1d24/666?text=No+Logo';
 
-                config.CURATED_WATCH_PROVIDERS.forEach(provider => {
-                    // ... (logo item creation) ...
-                     DOM.networkLogosContainer.appendChild(item);
-                 });
+        const item = document.createElement('div'); // <<< Create the 'item' div
+        item.className = 'network-logo-item';
+        item.dataset.providerId = provider.id;
+        item.dataset.providerName = provider.name;
+        item.innerHTML = `
+            <img src="${logoUrl}" alt="${Utils.escapeHtml(provider.name)}" loading="lazy" title="${Utils.escapeHtml(provider.name)}">
+            <span>${Utils.escapeHtml(provider.name)}</span>
+        `;
+        item.addEventListener('click', App.handleNetworkLogoClick);
+        DOM.networkLogosContainer.appendChild(item); // <<< Append the created 'item'
+    });
+    // --- REMOVE THE DUPLICATE LOOP THAT WAS HERE ---
 
-                 // Update scroll buttons visibility/state AFTER logos are added
-                 App.updateNetworkScrollButtons();
-             },
+    // Update scroll buttons AFTER logos are added
+    App.updateNetworkScrollButtons();
+},
+          
 
              handleNetworkLogoClick: (event) => {
                  const providerId = event.currentTarget.dataset.providerId;
@@ -3086,8 +3367,8 @@
                 DOM.networkNextBtn.classList.toggle('disabled', !canScroll || scrollLeft >= (scrollWidth - clientWidth - tolerance));
 
                 // Optional: Make buttons slightly more visible if scrollable, even without hover
-                // DOM.networkPrevBtn.classList.toggle('visible', !DOM.networkPrevBtn.classList.contains('disabled'));
-                // DOM.networkNextBtn.classList.toggle('visible', !DOM.networkNextBtn.classList.contains('disabled'));
+                DOM.networkPrevBtn.classList.toggle('visible', !DOM.networkPrevBtn.classList.contains('disabled'));
+                DOM.networkNextBtn.classList.toggle('visible', !DOM.networkNextBtn.classList.contains('disabled'));
             },
 
             /* --- NEW Person Page Functions --- */
@@ -3218,6 +3499,17 @@
             </div>
             `;
 
+            const connectionButtonHtml = `
+            <div class="mt-4"> 
+                <button class="btn btn-outline-info btn-connection-explorer"
+                        data-item-id="${personData.id}"
+                        data-item-type="person"
+                        data-item-title="${Utils.escapeHtml(personData.name || '')}">
+                    <i class="bi bi-diagram-3-fill me-1"></i> Show Connections
+                </button>
+            </div>
+            `;
+
             // Known For Section (Filmography)
             // ... (rest of your code for known for, setting background, post-render actions) ...
             if (knownCredits.length > 0) {
@@ -3231,8 +3523,6 @@
                 }
 
             DOM.personWrapper.innerHTML = personHtml;
-
-
             // --- Post-Render Actions ---
 
             // Set Background Image Effect
@@ -3286,7 +3576,402 @@
                     );
                 });
             }
+
+            const infoContainer = DOM.personWrapper.querySelector('.person-info'); // Find container
+            if (infoContainer) {
+                const btnDiv = document.createElement('div');
+                btnDiv.innerHTML = connectionButtonHtml.trim();
+                const connectionButton = btnDiv.firstChild;
+                connectionButton.addEventListener('click', App.handleShowConnectionsClick);
+                infoContainer.appendChild(connectionButton); // Append button to info section
+            }
+
+            App.initializeTooltips(DOM.personWrapper);
         },
+
+        // --- NEW Connection Explorer Methods ---
+
+        handleShowConnectionsClick: (event) => {
+        console.log("--- handleShowConnectionsClick TRIGGERED ---");
+        const button = event.currentTarget;
+        const { itemId, itemType, itemTitle } = button.dataset;
+
+        // Basic validation
+        if (!itemId || !itemType) {
+             console.error("Connection button missing required data- attributes.");
+             Utils.showToast("Cannot show connections for this item.", "warning");
+             return;
+         }
+        // Check if modal instance exists
+        if (!bsInstances.connectionModal) {
+             console.error("Connection Modal instance not initialized.");
+             Utils.showToast("Connection explorer component error.", "danger");
+             return;
+        }
+        // Prevent multiple rapid clicks from starting parallel loads
+        if (State.isGraphLoading) {
+            console.warn("Graph loading already in progress.");
+            return;
+        }
+
+        // Store context and set loading flag
+        State.currentExplorerItem = { id: parseInt(itemId), type: itemType, title: itemTitle };
+        State.isGraphLoading = true; // <<< SET LOADING FLAG
+
+        // Prepare modal UI for loading state *before* showing
+        console.log("[Modal Prep] Setting title and showing loading state.");
+        if (DOM.connectionExplorerTitle) DOM.connectionExplorerTitle.textContent = `Connections for ${itemTitle || 'Item'}`;
+        Utils.setElementVisibility(DOM.connectionGraphContainer, false);
+        Utils.setElementVisibility(DOM.connectionGraphError, false);
+        Utils.setElementVisibility(DOM.connectionGraphLoading, true); // <<< SHOW LOADING
+        if (DOM.connectionGraphContainer) DOM.connectionGraphContainer.innerHTML = ''; // Clear old canvas
+        App.destroyVisNetwork(); // Destroy just in case
+
+        console.log("[Modal Prep] Showing Bootstrap modal.");
+        bsInstances.connectionModal.show();
+        // >>> Data loading now happens in the 'shown.bs.modal' event handler <<<
+    },
+
+
+    loadAndDisplayConnections: async ({ id, type }) => {
+        console.log(`--- loadAndDisplayConnections STARTED for ${type}/${id} ---`);
+        const container = DOM.connectionGraphContainer;
+        const loadingEl = DOM.connectionGraphLoading;
+        const errorEl = DOM.connectionGraphError;
+
+        // Elements check - should have been caught earlier if null, but good practice
+        if (!container || !loadingEl || !errorEl) {
+           console.error("Modal graph elements missing in loadAndDisplayConnections!");
+           State.isGraphLoading = false; // Reset flag
+           return;
+        }
+        // *** Visibility is now handled by the 'shown' event and this function's completion ***
+
+        try {
+            console.log(`[Graph Load] Fetching data for ${type}/${id}...`);
+            let appendData = (type === 'person') ? ['combined_credits'] : ['credits', 'similar'];
+            const itemData = await API.fetchTMDB(`/${type}/${id}`, { append_to_response: appendData.join(',') });
+
+            if (!itemData) throw new Error("Could not fetch item data from API.");
+
+            console.log("[Graph Load] Creating graph data...");
+            const graphData = App.createGraphData(itemData);
+            // console.log("[Graph Load] Graph Data:", graphData); // Keep if needed
+
+            if (!graphData || graphData.nodes.length <= 1) {
+                throw new Error("No significant connections found to visualize.");
+            }
+
+            console.log("[Graph Load] Calling initializeVisNetwork...");
+            // initializeVisNetwork now handles its own errors more gracefully
+            App.initializeVisNetwork(graphData);
+
+            // Only show container if instance was *successfully* created
+            if (State.visNetworkInstance) {
+                console.log("[Graph Load] Success, showing graph container.");
+                // --- SET VISIBILITY ON SUCCESS ---
+                Utils.setElementVisibility(container, true);
+                Utils.setElementVisibility(loadingEl, false);
+                Utils.setElementVisibility(errorEl, false);
+            } else {
+                // Initialization must have failed if instance is null here
+                 console.error("[Graph Load] visNetworkInstance is null after initialization attempt.");
+                 // The error should be displayed by initializeVisNetwork's catch block
+                 // Just ensure loading is hidden if error element isn't shown for some reason
+                 Utils.setElementVisibility(loadingEl, false);
+                 Utils.setElementVisibility(errorEl, !DOM.connectionGraphError?.classList.contains('d-none')); // Show error if not already visible
+            }
+
+        } catch (error) {
+            console.error("[Graph Load] Error:", error);
+            // --- SET VISIBILITY ON ERROR ---
+            Utils.setElementVisibility(loadingEl, false);
+            Utils.setElementVisibility(errorEl, true);
+            Utils.setElementVisibility(container, false);
+            if (errorEl) errorEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i><span>Error loading connections: ${Utils.escapeHtml(error.message)}</span>`;
+        } finally {
+            State.isGraphLoading = false; // <<< RESET LOADING FLAG
+            console.log(`--- loadAndDisplayConnections FINISHED for ${type}/${id} ---`);
+        }
+    },
+
+    createGraphData: (itemData) => {
+        const nodes = new vis.DataSet();
+        const edges = new vis.DataSet();
+        const type = itemData.title ? 'movie' : (itemData.name && itemData.known_for_department) ? 'person' : 'tv'; // Determine type
+
+        // --- Central Node ---
+        const centralNodeId = `${type}-${itemData.id}`;
+        let centralNodeLabel = Utils.escapeHtml(itemData.title || itemData.name);
+        if (type !== 'person') {
+             const year = (itemData.release_date || itemData.first_air_date || '').substring(0, 4);
+             if(year) centralNodeLabel += `\n(${year})`; // Add year to label
+        }
+        let centralNodeImage = null;
+        if (type === 'person') centralNodeImage = itemData.profile_path ? `${config.PROFILE_BASE_URL.replace('h632','w185')}${itemData.profile_path}` : null;
+        else centralNodeImage = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : null;
+
+        nodes.add({
+            id: centralNodeId,
+            label: centralNodeLabel,
+            shape: centralNodeImage ? 'image' : 'ellipse',
+            image: centralNodeImage || undefined, // Use image if available
+            group: type, // Group by type (movie, tv, person)
+            size: centralNodeImage ? 35 : 25, // Larger size for image nodes
+            font: { size: 16, face: 'Poppins', color: ChartColors.textLight },
+            borderWidth: 3,
+            color: {
+                 border: type === 'movie' ? ChartColors.secondary : (type === 'tv' ? ChartColors.primary : ChartColors.tertiary),
+                 background: ChartColors.surface,
+                 highlight: { border: ChartColors.textLight, background: ChartColors.getCssVar('--border-color')},
+                 hover: { border: ChartColors.textLight, background: ChartColors.getCssVar('--border-color')}
+            },
+            title: `<h4>${Utils.escapeHtml(itemData.title || itemData.name)}</h4>(${type})` // HTML Tooltip
+        });
+
+        // --- Connections ---
+        let credits = itemData.credits || itemData.combined_credits; // Use combined_credits for person
+
+        // Add Cast (Limit N)
+        const castLimit = 8;
+        credits?.cast?.slice(0, castLimit).forEach(person => {
+            if (!person.id) return;
+            const personNodeId = `person-${person.id}`;
+            if (!nodes.get(personNodeId)) { // Add node only if it doesn't exist
+                nodes.add({
+                    id: personNodeId,
+                    label: Utils.escapeHtml(person.name),
+                    shape: person.profile_path ? 'image' : 'dot',
+                    image: person.profile_path ? `${config.PROFILE_BASE_URL.replace('h632','w185')}${person.profile_path}` : undefined,
+                    group: 'person', size: person.profile_path ? 25 : 15,
+                    color: { border: ChartColors.tertiary, background: ChartColors.surface },
+                    font: { size: 12, color: ChartColors.textMedium },
+                    title: `<b>${Utils.escapeHtml(person.name)}</b><br>as ${Utils.escapeHtml(person.character || '(Character)')}`
+                });
+            }
+            // Add edge from Person to Movie/TV
+             edges.add({ from: personNodeId, to: centralNodeId, arrows: 'to', color: { color: ChartColors.transparent(ChartColors.tertiary, 0.5), highlight: ChartColors.tertiary }, dashes: true });
+        });
+
+        // Add Director/Creator (if movie/tv)
+        if (type !== 'person') {
+            const director = credits?.crew?.find(p => p.job === 'Director');
+            const creator = type === 'tv' ? credits?.crew?.find(p => p.department === 'Creator' || p.job === 'Creator') : null;
+            const keyPerson = director || creator; // Prioritize Director
+
+            if (keyPerson && keyPerson.id) {
+                 const keyPersonNodeId = `person-${keyPerson.id}`;
+                if (!nodes.get(keyPersonNodeId)) { // Add node only if it doesn't exist
+                    nodes.add({
+                        id: keyPersonNodeId,
+                        label: Utils.escapeHtml(keyPerson.name),
+                        shape: keyPerson.profile_path ? 'image' : 'star', // Use star shape for director/creator without image
+                        image: keyPerson.profile_path ? `${config.PROFILE_BASE_URL.replace('h632','w185')}${keyPerson.profile_path}` : undefined,
+                        group: 'person', size: keyPerson.profile_path ? 28 : 20,
+                        color: { border: ChartColors.secondaryAccent, background: ChartColors.surface },
+                        font: { size: 13, color: ChartColors.textLight },
+                        title: `<b>${Utils.escapeHtml(keyPerson.name)}</b><br>(${Utils.escapeHtml(keyPerson.job)})`
+                    });
+                }
+                 // Add edge from Key Person to Movie/TV (different style)
+                 edges.add({ from: keyPersonNodeId, to: centralNodeId, arrows: 'to', color: { color: ChartColors.secondaryAccent, highlight: ChartColors.secondaryAccent }, width: 2 });
+            }
+        }
+
+        // Add Similar Items (if movie/tv)
+        if (type !== 'person') {
+            const similarLimit = 5;
+            itemData.similar?.results?.slice(0, similarLimit).forEach(similarItem => {
+                if (!similarItem.id) return;
+                const similarType = similarItem.media_type || type; // Assume same type if media_type missing
+                if (similarType === 'person') return; // Skip people in similar results
+
+                const similarNodeId = `${similarType}-${similarItem.id}`;
+                 if (!nodes.get(similarNodeId)) { // Add node only if it doesn't exist
+                     const similarTitle = Utils.escapeHtml(similarItem.title || similarItem.name);
+                     const similarYear = (similarItem.release_date || similarItem.first_air_date || '').substring(0, 4);
+                     nodes.add({
+                         id: similarNodeId,
+                         label: `${similarTitle}${similarYear ? `\n(${similarYear})` : ''}`,
+                         shape: similarItem.poster_path ? 'image' : 'ellipse',
+                         image: similarItem.poster_path ? `${config.IMAGE_BASE_URL}${similarItem.poster_path}` : undefined,
+                         group: similarType, size: similarItem.poster_path ? 30 : 20,
+                         color: { border: similarType === 'movie' ? ChartColors.secondary : ChartColors.primary, background: ChartColors.surface, opacity: 0.8 },
+                         font: { size: 12, color: ChartColors.textMedium },
+                         title: `<b>${similarTitle}</b><br>(Similar ${similarType})`
+                     });
+                 }
+                 // Add edge from Central Node to Similar Item (dashed)
+                 edges.add({ from: centralNodeId, to: similarNodeId, dashes: true, arrows: 'to', color: { color: ChartColors.transparent(ChartColors.textMedium, 0.4), highlight: ChartColors.textMedium } });
+            });
+        }
+
+        // Add Known For (if person)
+        if (type === 'person') {
+             const knownForLimit = 8;
+             credits?.cast // Prioritize things they acted in
+                 ?.filter(c => c.poster_path && (c.media_type === 'movie' || c.media_type === 'tv'))
+                 .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+                 .slice(0, knownForLimit)
+                 .forEach(knownForItem => {
+                     if (!knownForItem.id) return;
+                     const itemType = knownForItem.media_type;
+                     const itemNodeId = `${itemType}-${knownForItem.id}`;
+                     if (!nodes.get(itemNodeId)) { // Add node only if it doesn't exist
+                         const itemTitle = Utils.escapeHtml(knownForItem.title || knownForItem.name);
+                         const itemYear = (knownForItem.release_date || knownForItem.first_air_date || '').substring(0, 4);
+                         nodes.add({
+                             id: itemNodeId,
+                             label: `${itemTitle}${itemYear ? `\n(${itemYear})` : ''}`,
+                             shape: knownForItem.poster_path ? 'image' : 'ellipse',
+                             image: knownForItem.poster_path ? `${config.IMAGE_BASE_URL}${knownForItem.poster_path}` : undefined,
+                             group: itemType, size: knownForItem.poster_path ? 30 : 20,
+                             color: { border: itemType === 'movie' ? ChartColors.secondary : ChartColors.primary, background: ChartColors.surface },
+                             font: { size: 12, color: ChartColors.textMedium },
+                             title: `<b>${itemTitle}</b><br>(${itemType}, as ${Utils.escapeHtml(knownForItem.character || '?')})`
+                         });
+                     }
+                     // Add edge from Person to Known For item
+                     edges.add({ from: centralNodeId, to: itemNodeId, arrows: 'to', color: { color: ChartColors.transparent(ChartColors.tertiary, 0.5), highlight: ChartColors.tertiary } });
+                 });
+         }
+
+
+        return { nodes, edges };
+    },
+
+
+    initializeVisNetwork: (graphData) => {
+        console.log("--- initializeVisNetwork STARTED ---"); 
+        const container = DOM.connectionGraphContainer;
+        if (!container) { console.error("[Graph Init] Container missing!"); return; }
+        App.destroyVisNetwork(); // Destroy previous instance if any
+
+        const options = {
+            nodes: {
+                borderWidth: 2,
+                borderWidthSelected: 4,
+                shapeProperties: {
+                    useBorderWithImage: true
+                },
+                 font: { // Default font settings
+                     color: ChartColors.textLight,
+                     face: 'Inter',
+                     strokeWidth: 0, // No text stroke
+                 },
+                 imagePadding: 4, // Padding around image inside node border
+            },
+            edges: {
+                width: 1.5,
+                color: {
+                    color: ChartColors.transparent(ChartColors.textMedium, 0.4), // Default edge color
+                    highlight: ChartColors.primary,
+                    hover: ChartColors.secondary,
+                    inherit: false // Don't inherit color from nodes
+                },
+                smooth: {
+                    enabled: true,
+                    type: "continuous", // Or 'dynamic', 'cubicBezier' etc.
+                    roundness: 0.5
+                },
+                arrows: { to: { enabled: true, scaleFactor: 0.7 } }
+            },
+            physics: {
+                enabled: true,
+                solver: 'barnesHut', // Good general-purpose physics solver
+                barnesHut: {
+                    gravitationalConstant: -15000, // Adjust repulsion strength
+                    centralGravity: 0.1, // Pull towards center
+                    springLength: 150, // Desired edge length
+                    springConstant: 0.05,
+                    damping: 0.15, // Settle faster
+                    avoidOverlap: 0.3 // Avoid node overlap
+                },
+                stabilization: { // Speed up initial layout
+                    iterations: 1000,
+                    fit: true
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 200,
+                navigationButtons: true, // Show zoom/fit buttons
+                keyboard: true,
+            },
+            layout: {
+                 improvedLayout: true // Use improved layout algorithm
+            }
+        };
+
+        const rect = container.getBoundingClientRect();
+        console.log(`[Graph Init] Container Dimensions: Width=${rect.width}, Height=${rect.height}`);
+        if (rect.width <= 0 || rect.height <= 0) {
+             console.warn("[Graph Init] Container has zero dimensions! Vis.js rendering may fail or be incorrect.");
+        }
+
+        if (!DOM.connectionGraphContainer) {
+             console.error("[Graph] Graph container missing in initializeVisNetwork");
+             return; // Don't try to initialize
+         }
+        App.destroyVisNetwork();
+
+        try {
+             State.visNetworkInstance = new vis.Network(DOM.connectionGraphContainer, graphData, options);
+
+            // <<< ADD REDRAW AFTER DELAY >>>
+            setTimeout(() => {
+                if (State.visNetworkInstance) {
+                    console.log("[Graph Init] Redrawing network...");
+                    State.visNetworkInstance.redraw();
+                }
+            }, 100); // Redraw after 100ms
+            // <<< ADD STABILIZE CALL >>>
+            console.log("[Graph Init] Stabilizing network...");
+            State.visNetworkInstance.stabilize(); // Trigger physics calculation explicitly
+             // --- Optional: Add Click Listener ---
+             State.visNetworkInstance.on("click", (params) => {
+                 if (params.nodes.length > 0) {
+                    const clickedNodeId = params.nodes[0];
+                    const nodeData = graphData.nodes.get(clickedNodeId); // Get node data
+                    console.log("Clicked node:", clickedNodeId, nodeData);
+
+                    // Example: Navigate to details page if it's a movie/tv node
+                    const [type, id] = clickedNodeId.split('-');
+                    if ((type === 'movie' || type === 'tv') && id && clickedNodeId !== State.currentExplorerItem.id) { // Don't navigate if clicking central node
+                         location.hash = `#details=${type}/${id}`;
+                         bsInstances.connectionModal?.hide(); // Hide modal on navigation
+                    } else if (type === 'person' && id && clickedNodeId !== State.currentExplorerItem.id) {
+                         location.hash = `#person=${id}`;
+                         bsInstances.connectionModal?.hide();
+                    }
+                    // TODO: Implement graph expansion logic here if desired later
+                }
+            });
+
+        } catch (error) {
+             console.error("Error initializing vis.Network:", error);
+             State.visNetworkInstance = null;
+             App.destroyVisNetwork(); 
+             Utils.setElementVisibility(DOM.connectionGraphContainer, false);
+             Utils.setElementVisibility(DOM.connectionGraphError, true);
+             if(DOM.connectionGraphError) DOM.connectionGraphError.textContent = `Graph Init Error: ${error.message}`;
+             throw new Error(`Graph library failed: ${error.message}`);
+            }
+        console.log("--- initializeVisNetwork FINISHED ---");
+    },
+
+    destroyVisNetwork: () => {
+        if (State.visNetworkInstance) {
+            State.visNetworkInstance.destroy();
+            State.visNetworkInstance = null;
+            console.log("vis.Network destroyed.");
+        }
+         // Also clear the container's content
+         if(DOM.connectionGraphContainer) DOM.connectionGraphContainer.innerHTML = '';
+    },
+
+
+
             /* --- Rendering Functions --- */
 
              // Renders a grid of TMDB movie/TV cards
@@ -3448,6 +4133,16 @@
                  const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
                  const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
 
+                // --- Add Connection Explorer Button near Actions ---
+                const connectionButtonHtml = `
+                    <button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2"
+                       data-item-id="${itemData.id}"
+                       data-item-type="${type}"
+                       data-item-title="${Utils.escapeHtml(itemData.title || itemData.name || '')}">
+                       <i class="bi bi-diagram-3-fill me-1"></i> Show Connections
+                    </button>
+                 `;
+
                  // Extract credits
                  const credits = itemData.credits;
                  const director = credits?.crew?.find(p => p.job === 'Director')?.name;
@@ -3457,9 +4152,11 @@
                  // Similar items
                  const similarList = itemData.similar?.results?.slice(0, 12) || [];
 
-                 // Watch Providers (US Flatrate only)
-                 const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
+                
+                // Watch Providers (US Flatrate only)
+                const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
 
+                const actionsContainerSelector = '.details-actions';
                  let detailsHtml = `
                      <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
                      <div class="container details-content-overlay">
@@ -3591,6 +4288,18 @@
                      firstTab?.click();
                  }
 
+                // Add listener for the connection button *after* rendering
+                const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
+                if (actionsContainer) {
+                   // Create button element and add listener
+                   const btnDiv = document.createElement('div'); // Temporary div
+                   btnDiv.innerHTML = connectionButtonHtml.trim();
+                   const connectionButton = btnDiv.firstChild;
+                   connectionButton.addEventListener('click', App.handleShowConnectionsClick);
+                   actionsContainer.appendChild(connectionButton); // Append the button
+                }
+
+
                 // --- NEW: Add AI Button Listener ---
                 DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn');
                 DOM.detailsAiInsightContainer = DOM.detailsWrapper.querySelector('#ai-insight-container');
@@ -3719,13 +4428,54 @@
                  });
              },
 
+             recordGlobalView: async (type, id) => {
+                if (!db) { // Check if Firestore is initialized
+                   console.warn("Firestore not available, cannot record global view.");
+                    return;
+                 }
+             if (!type || !id) return;
+
+            const docId = `${type}-${id}`; // e.g., "movie-12345"
+            const viewDocRef = db.collection("viewCounts").doc(docId);
+
+             console.log(`[Global Views] Incrementing count for ${docId}...`);
+
+            try {
+                // Use a transaction or batched write for potential future enhancements,
+                // but FieldValue.increment is atomic and usually sufficient for a counter.
+                 await viewDocRef.set({
+                    // Use set with merge:true to create the document if it doesn't exist
+                    // or update it if it does.
+                    type: type,
+                    tmdbId: parseInt(id),
+                    viewCount: firebase.firestore.FieldValue.increment(1), // Atomically increments
+                    lastViewed: firebase.firestore.FieldValue.serverTimestamp() // Track last view time
+                }, { merge: true }); // Merge ensures we don't overwrite type/id if doc exists
+
+                console.log(`[Global Views] Successfully recorded view for ${docId}`);
+                } catch (error) {
+                     console.error(`[Global Views] Error recording view for ${docId}:`, error);
+                    // Optionally retry or log this error to a monitoring service in production
+                }
+            },
+
              // Sets the iframe source based on selected provider and context
              setStreamingSource: (sourceIndex) => {
                  const provider = config.STREAMING_PROVIDERS[sourceIndex];
                  const { itemId, itemType, currentSeason, currentEpisode } = State.moviePlayerContext;
 
                  if (!provider || !itemId || !itemType || !DOM.playerIframe || !DOM.playerIframePlaceholder) return;
-
+                 App.recordGlobalView(itemType, itemId);
+                try {
+                    let episodeIdentifier = null;
+                    if (itemType === 'tv' && currentSeason && currentEpisode) {
+                       episodeIdentifier = `s${currentSeason}-e${currentEpisode}`;
+                    }
+                    // Record the view *when a source is successfully selected/loaded*
+                    ViewTracker.recordView(itemType, itemId, episodeIdentifier);
+                } catch (e) {
+                    console.error("Error during view tracking:", e);
+                }
                  const url = provider.urlFormat(itemId, itemType, currentSeason, currentEpisode);
 
                  if (url && DOM.playerIframe) {
