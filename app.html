@@ -18,6 +18,7 @@
 <body>
 
    
+   
     <!-- Navbar -->
     <header class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-dark">
@@ -122,6 +123,19 @@
                                      <i class="bi bi-chevron-right"></i>
                                  </button>
                              </div>
+                        </section>
+
+                        <section id="most-viewed-section" class="content-section mb-5" style="display: none;"> <!-- Start hidden -->
+                            <h2 class="section-title">Popular on AuraStream</h2>
+                            <div class="horizontal-scroll-wrapper">
+                                <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
+                                <!-- Container where JS will add cards or skeletons -->
+                                <div class="horizontal-card-container most-viewed-container">
+                                    <!-- JS will add content here -->
+                                    <div class="initial-placeholder p-3 text-muted small">(Loading popular items...)</div> <!-- Optional placeholder -->
+                                </div>
+                                <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
+                            </div>
                         </section>
 
                         <!-- Existing Home Sections (Trending, Popular etc.) -->
@@ -311,10 +325,39 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content bg-transparent border-0">
                  <div class="modal-header">
-                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">  <i class="bi bi-x-lg fs-4"></i></button>
                  </div>
                 <div class="modal-body">
                     <iframe id="trailerModalIframe" height="450" src="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Explorer Modal -->
+    <div class="modal fade" id="connectionExplorerModal" tabindex="-1" aria-labelledby="connectionExplorerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-fullscreen-lg-down modal-dialog-scrollable">
+            <div class="modal-content bg-secondary text-light">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title" id="connectionExplorerModalLabel">Connection Explorer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="connection-graph-loading" class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading graph...</span>
+                        </div>
+                    </div>
+                    <div id="connection-graph-container" style="width: 100%; height: 75vh; display: none;">
+                        <!-- vis.js network will render here -->
+                    </div>
+                    <div id="connection-graph-error" class="p-4 text-center text-warning" style="display: none;">
+                        Could not load connection data.
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                     <small class="text-muted me-auto">Powered by vis.js & TMDB</small>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -332,7 +375,15 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- vis.js Network CSS -->
+    <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" type="text/css" />
+    <!--Firebase-->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <!-- Add this JS library AFTER Chart.js and BEFORE your main app script -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/firebase.js"></script>
     <script src="js/analytics.js"></script>
 </body>
 </html>
