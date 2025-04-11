@@ -1,4 +1,4 @@
- /* --- CSS Reset & Base Styles --- */
+       /* --- CSS Reset & Base Styles --- */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -1091,18 +1091,30 @@ body.theme-light .dropdown-item:focus {
     position: absolute;
     top: -10px;
     right: -10px;
+    width: 20px;
+    height: 20px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    border: 1px solid var(--border-color);
+    font-size: large;
     z-index: 1056;
-    background: rgba(30, 30, 30, 0.8);
+    background: var(--gradient-primary);
+    color: var(--text-light);
     border-radius: 50%;
     padding: 0.6em;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    opacity: 0.8;
-    transition: opacity 0.2s ease, background-color 0.2s ease;
-    filter: invert(1) grayscale(100%) brightness(200%);
+   
+}
+
+#trailerModal .btn-close i {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    transition: color 0.2s ease;
 }
 
 #trailerModal .btn-close:hover {
-    background: rgba(0, 0, 0, 0.9);
+    background: var(--danger-color);
     opacity: 1;
 }
 
@@ -2464,5 +2476,309 @@ body.theme-light .dropdown-item:focus {
 }
 #recent-favorites-list .skeleton-card .skeleton-card-body {
     display: none; /* Hide body elements for image-only skeleton */
+}
+
+
+/* Add these styles to your main <style> block */
+#connectionExplorerModal .modal-dialog {
+    /* Ensure the dialog itself can utilize height within the viewport limits */
+    /* Using max-height and height helps push sizing down */
+    max-height: 90vh;
+    height: 85vh; /* Use a slightly smaller viewport height to allow for margins */
+    display: flex; /* Essential for controlling internal heights */
+    flex-direction: column;
+    margin: 1.75rem auto; /* Standard Bootstrap large modal margin */
+}
+
+#connectionExplorerModal .modal-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    flex-grow: 1; /* Allow content to fill dialog height */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent content overflow */
+    box-shadow: var(--shadow-lg); /* Add some shadow */
+}
+
+
+#connectionExplorerModal .modal-header,
+#connectionExplorerModal .modal-footer {
+    border-color: var(--border-color) !important;
+    flex-shrink: 0; /* Prevent header/footer from shrinking */
+}
+
+#connectionExplorerModal .modal-body {
+    padding: 0; /* Remove body padding */
+    display: flex; /* Make body a flex container */
+    flex-direction: column; /* Stack children vertically */
+    flex-grow: 1; /* Make body take remaining vertical space */
+    overflow: hidden; /* Prevent scrollbars on the body itself */
+    background-color: var(--bg-primary); /* Match graph background */
+    position: relative; /* Needed for positioning overlay loading/error */
+}
+
+/* --- Graph Container --- */
+#connection-graph-container {
+    width: 100%;
+    flex-grow: 1; /* CRITICAL: Allow graph container to fill available flex space */
+    min-height: 200px; /* Ensure a minimum size */
+    display: none; /* Initially hidden - JS controls visibility via d-none */
+    overflow: hidden;
+    cursor: grab;
+}
+#connection-graph-container:active {
+    cursor: grabbing;
+}
+
+/* --- Loading and Error States (Overlay within modal-body) --- */
+#connection-graph-loading,
+#connection-graph-error {
+    /* Absolute position to overlay */
+    position: absolute;
+    inset: 0; /* Cover entire modal body */
+    display: flex; /* Use flex for centering content */
+    flex-direction: column; /* Stack icon/spinner and text */
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(var(--bg-primary-rgb), 0.9); /* Semi-transparent overlay */
+    z-index: 10; /* Ensure they are above the container if both shown briefly */
+    padding: 2rem;
+    text-align: center;
+    /* JS will toggle d-none */
+}
+
+
+/* --- Connection Explorer Modal Layout --- */
+
+#connectionExplorerModal .modal-dialog {
+    /* Ensure the dialog itself can utilize height within the viewport limits */
+    /* Using max-height and height helps push sizing down */
+    max-height: 90vh;
+    height: 85vh; /* Use a slightly smaller viewport height to allow for margins */
+    display: flex; /* Essential for controlling internal heights */
+    flex-direction: column;
+    margin: 1.75rem auto; /* Standard Bootstrap large modal margin */
+}
+
+#connectionExplorerModal .modal-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    flex-grow: 1; /* Allow content to fill dialog height */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent content overflow */
+    box-shadow: var(--shadow-lg); /* Add some shadow */
+}
+
+#connectionExplorerModal .modal-header,
+#connectionExplorerModal .modal-footer {
+    border-color: var(--border-color) !important;
+    flex-shrink: 0; /* Prevent header/footer from shrinking */
+}
+
+#connectionExplorerModal .modal-body {
+    padding: 0; /* Remove body padding */
+    display: flex; /* Make body a flex container */
+    flex-direction: column; /* Stack children vertically */
+    flex-grow: 1; /* Make body take remaining vertical space */
+    overflow: hidden; /* Prevent scrollbars on the body itself */
+    background-color: var(--bg-primary); /* Match graph background */
+    position: relative; /* Needed for positioning overlay loading/error */
+}
+
+/* --- Graph Container --- */
+#connection-graph-container {
+    width: 100%;
+    flex-grow: 1; /* CRITICAL: Allow graph container to fill available flex space */
+    min-height: 200px; /* Ensure a minimum size */
+    display: none; /* Initially hidden - JS controls visibility via d-none */
+    overflow: hidden;
+    cursor: grab;
+}
+#connection-graph-container:active {
+    cursor: grabbing;
+}
+
+/* --- Loading and Error States (Overlay within modal-body) --- */
+#connection-graph-loading,
+#connection-graph-error {
+    /* Absolute position to overlay */
+    position: absolute;
+    inset: 0; /* Cover entire modal body */
+    display: flex; /* Use flex for centering content */
+    flex-direction: column; /* Stack icon/spinner and text */
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(var(--bg-primary-rgb), 0.9); /* Semi-transparent overlay */
+    z-index: 10; /* Ensure they are above the container if both shown briefly */
+    padding: 2rem;
+    text-align: center;
+    /* JS will toggle d-none */
+}
+
+#connection-graph-error {
+    display: none; /* Hidden initially */
+    color: var(--tertiary-accent);
+}
+
+#connection-graph-error i { /* Optional icon */
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+#connection-graph-loading .spinner-border {
+     width: 3rem;
+     height: 3rem;
+}
+
+/* Styling for vis.js nodes (can be overridden in JS options) */
+.vis-network .vis-node {
+    font-family: var(--font-family-base);
+    font-size: 13px;
+    color: var(--text-light) !important; /* Force text color */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+}
+.vis-network .vis-node.vis-label {
+     color: var(--text-light) !important;
+}
+
+/* Style image nodes */
+.vis-network .vis-node.vis-shape.vis-image {
+     border: 2px solid var(--border-color);
+     background-color: var(--surface-color); /* Fallback bg */
+     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.vis-network .vis-node.vis-shape.vis-image.vis-hover {
+     border-color: var(--primary-accent);
+}
+.vis-network .vis-node.vis-shape.vis-image.vis-selected {
+     border-color: var(--secondary-accent);
+     box-shadow: 0 0 15px rgba(var(--secondary-accent-rgb), 0.5);
+}
+
+/* Style edges */
+.vis-network .vis-edge {
+    /* Default edge styles can be set here or in JS options */
+}
+
+/* Ensure loading spinner is centered */
+#connection-graph-loading {
+    background-color: var(--bg-primary);
+}
+
+/* Style for the trigger button on details page */
+.btn-connection-explorer {
+    /* Add specific styles if needed, e.g., */
+    /* margin-top: 1rem; */
+}
+
+
+/* --- Most Viewed Section Styles --- */
+#most-viewed-section {
+    /* Initially hidden by inline style, JS will show it */
+}
+
+/* Container within the section for horizontal cards */
+#most-viewed-section .most-viewed-container {
+    /* These styles apply to the `.horizontal-card-container` inside */
+    display: flex;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    overflow-y: hidden; /* Hide vertical scrollbar */
+    padding-bottom: 1.5rem; /* Space for scrollbar + card hover */
+    margin-bottom: -1.5rem; /* Compensate padding */
+    gap: 1rem; /* Space between cards */
+    scroll-snap-type: x mandatory; /* Optional: Makes scrolling snap to cards */
+    scroll-behavior: smooth;
+    scrollbar-width: thin; /* Firefox scrollbar style */
+    scrollbar-color: var(--primary-accent) rgba(var(--surface-rgb), 0.5); /* Firefox scrollbar color */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Webkit scrollbar styles */
+#most-viewed-section .most-viewed-container::-webkit-scrollbar {
+    height: 8px;
+}
+#most-viewed-section .most-viewed-container::-webkit-scrollbar-track {
+    background: rgba(var(--surface-rgb), 0.5);
+    border-radius: 4px;
+}
+#most-viewed-section .most-viewed-container::-webkit-scrollbar-thumb {
+    background-color: var(--primary-accent);
+    border-radius: 4px;
+    border: 2px solid transparent; /* Creates padding around thumb */
+    background-clip: content-box; /* Important for border */
+}
+#most-viewed-section .most-viewed-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--secondary-accent);
+}
+
+
+/* Styling for cards inside the "Most Viewed" horizontal container */
+/* Leveraging the existing .h-card styles is ideal */
+#most-viewed-section .h-card {
+    /* Inherits most styles from the general .h-card rule */
+    flex: 0 0 auto; /* Prevent cards from shrinking */
+    width: 280px; /* Adjust width as needed for posters */
+    max-width: 75%; /* Prevent extremely wide cards on huge screens */
+    scroll-snap-align: start; /* For snap scrolling */
+    position: relative; /* For positioning view count */
+    /* Add any specific overrides if needed */
+}
+
+/* Add specific styles for the "Most Viewed" section cards if desired */
+#most-viewed-section .h-card .h-card-overlay {
+   /* Maybe make overlay slightly stronger */
+   background: linear-gradient(to top, rgba(var(--bg-primary-rgb), 0.95) 25%, rgba(var(--bg-primary-rgb), 0.7) 65%, transparent 100%);
+}
+
+
+/* View Count Badge Style (Optional - Only needed if implementing renderMostViewedCards) */
+/* Add this if you create the renderMostViewedCards function to show counts */
+/*
+#most-viewed-section .h-card .view-count-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 6;
+    background-color: rgba(var(--tertiary-accent-rgb), 0.85);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+}
+#most-viewed-section .h-card .view-count-badge i {
+    font-size: 0.8em;
+    margin-right: 0.2rem;
+    position: relative;
+    top: -1px;
+}
+*/
+
+/* Style the initial placeholder within the container */
+#most-viewed-section .initial-placeholder {
+    /* Style to fit nicely */
+    width: 100%;
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-medium);
+    font-style: italic;
+}
+
+
+
+
+/* Adjustments if the section title takes space */
+#most-viewed-section .section-title {
+     margin-bottom: 1.5rem; /* Add space below title */
+}
+
+/* Adjust skeletons if needed specifically for most-viewed */
+#most-viewed-section .skeleton-h-card {
+   width: 280px; /* Match card width */
 }
     
