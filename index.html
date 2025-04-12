@@ -3,297 +3,708 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-signin-client_id" content="886921214537-35pg2kb0qjfnd807cpjbk1bgi41dfhf5.apps.googleusercontent.com">
-    <meta name="description" content="AuraStream: Your unified universe for discovering, organizing, and connecting around movies, TV shows, and music. Powered by AI insights.">
+    <meta name="description" content="AuraStream - Discover your next favorite movie or TV show with real-time data and an immersive interface.">
 
-    <title>AuraStream - Unified Entertainment Universe</title>
+    <title>AuraStream | Your Entertainment Universe</title>
 
-    <!-- Preconnect for Performance -->
+    <!-- Preconnect & Preload (Enhances Performance) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://api.themoviedb.org">
+    <link rel="preconnect" href="https://image.tmdb.org">
 
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- AOS Animate On Scroll Library -->
+    <!-- AOS Animate On Scroll Library CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Navbar -->
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loader"><div></div><div></div><div></div></div>
+        <div class="loading-text">LOADING AURASTREAM</div>
+    </div>
+
+    <!-- Three.js Background Canvas & Noise Overlay -->
+    <canvas id="three-bg-canvas"></canvas>
+    <div class="noise-overlay"></div>
+
+    <!-- Custom Navbar -->
     <header>
-        <nav class="navbar navbar-expand-lg navbar-landing fixed-top navbar-dark">
-            <div class="container">
-                <a class="navbar-brand-landing" href="#">
-                    <i class="bi bi-activity"></i> AuraStream
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                    <!-- Main Nav Links -->
-                    <ul class="navbar-nav mb-2 mb-lg-0 mx-auto"> <!-- Use mx-auto for centering if needed -->
-                        <li class="nav-item"><a class="nav-link" href="#feature-showcase">Features</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#ai-spotlight">AI Insights</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#community-hub">Community</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#for-business">Partners</a></li>
-                    </ul>
-
-                    <!-- Mobile Auth Section (Inside Collapse) -->
-                    <div class="navbar-auth-mobile d-lg-none">
-                        <a href="app.html" id="launchAppButtonMobile" class="btn btn-launch-nav d-block w-75">Launch App</a>
-                        <div id="googleSignInButtonContainerMobile" class="logged-out-view w-100"></div>
-                        <div id="userInfoMobile" class="logged-in-view auth-hidden w-100">
-                            <img id="userPictureMobile" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="User Avatar">
-                            <span id="userNameMobile">User Name</span>
-                            <button id="signOutButtonMobile" class="btn btn-sm">Sign Out</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Desktop Auth Section (Outside Collapse) -->
-                <div class="navbar-right-section d-none d-lg-flex">
-                    <a href="app.html" id="launchAppButton" class="btn btn-launch-nav">Launch App</a>
-                    <div id="googleSignInButtonContainer" class="logged-out-view"></div>
-                    <div id="userInfo" class="logged-in-view auth-hidden">
-                        <img id="userPicture" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="User Avatar">
-                        <span id="userName">User Name</span>
-                        <button id="signOutButton" class="btn btn-sm">Sign Out</button>
-                    </div>
-                </div>
+        <nav class="landing-navbar fixed-top">
+            <a class="navbar-brand-landing" href="#">
+                <i class="bi bi-stars"></i> AuraStream
+            </a>
+            <div class="nav-links-desktop d-none d-lg-flex">
+                <ul class="navbar-nav flex-row"> <!-- Use Bootstrap nav classes -->
+                    <li class="nav-item"><a class="nav-link active" href="#hero">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#content-showcase">Discover</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#gallery-section">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#analytics-dashboard">Insights</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
+                </ul>
             </div>
+            <div class="nav-actions d-none d-lg-flex align-items-center"> <!-- Added align-items-center -->
+                 <div class="search-bar">
+                    <i class="bi bi-search"></i> <!-- Use Bootstrap Icon -->
+                    <input type="text" placeholder="Search..." id="nav-search-input">
+                 </div>
+                 <div id="auth-button-area">
+                      <!-- This button shows when LOGGED OUT -->
+                      <button type="button" class="btn btn-primary-gradient btn-nav-cta" data-bs-toggle="modal" data-bs-target="#launchAppModal" id="login-signup-button">
+                        Login / Sign Up
+                      </button>
+                       <!-- This group shows when LOGGED IN -->
+                      <div class="d-none align-items-center" id="user-info-area">
+                          <span id="user-identifier" class="me-2 text-light small" title="Logged In User">user@example.com</span>
+                          <button type="button" class="btn btn-secondary-outline btn-nav-cta" id="logout-button">
+                              Logout
+                          </button>
+                      </div>
+                   </div>
+           
+            </div>
+            <button class="mobile-menu-toggle d-lg-none" aria-label="Toggle navigation" id="mobile-menu-toggler">
+                 <i class="bi bi-list"></i>
+            </button>
         </nav>
+
+        <!-- Mobile Offcanvas Menu -->
+        <div class="offcanvas-menu" id="mobile-menu">
+            <button class="mobile-menu-toggle active" style="position: absolute; top: 1.5rem; right: 1.5rem;" aria-label="Close navigation" id="mobile-menu-close">
+                <i class="bi bi-x"></i>
+            </button>
+            <ul class="nav-links-mobile">
+                <li><a class="nav-link active" href="#hero">Home</a></li>
+                <li><a class="nav-link" href="#content-showcase">Discover</a></li>
+                <li><a class="nav-link" href="#features">Features</a></li>
+                <li><a class="nav-link" href="#gallery-section">Gallery</a></li>
+                <li><a class="nav-link" href="#analytics-dashboard">Insights</a></li>
+                <li><a class="nav-link" href="#faq">FAQ</a></li>
+            </ul>
+            <div class="mobile-search search-bar mt-4 mb-4"> <!-- Added margins -->
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Search..." id="mobile-search-input">
+            </div>
+             <div class="mobile-launch-cta mt-auto"> <!-- Ensure button is at bottom -->
+                 <button type="button" class="btn btn-primary-gradient btn-nav-cta w-100" data-bs-toggle="modal" data-bs-target="#launchAppModal">
+                     Launch App
+                 </button>
+             </div>
+        </div>
+        <div class="offcanvas-overlay" id="offcanvas-overlay"></div>
     </header>
 
-    <main>
-        <!-- Hero Section -->
-        <section id="hero">
-            <div class="container hero-content">
-                <h1 data-aos="fade-up" data-aos-delay="100">
-                    Your <span class="text-gradient">Entertainment Universe</span>, Unified.
-                </h1>
-                <p class="lead" data-aos="fade-up" data-aos-delay="200">
-                    Stop juggling apps. AuraStream brings movie & TV discovery, watchlist management, personalized recommendations, community connection, and music discovery into one seamless, intelligent experience.
-                </p>
-                <div class="hero-cta-buttons" data-aos="fade-up" data-aos-delay="300">
-                    <a href="app.html" class="btn btn-landing btn-landing-primary btn-lg">
-                       Enter AuraStream <i class="bi bi-stars ms-2"></i>
-                    </a>
-                     <a href="#feature-showcase" class="btn btn-landing btn-landing-secondary btn-lg">
-                        Explore Features <i class="bi bi-arrow-down-circle ms-2"></i>
-                     </a>
-                </div>
-                 <p class="hero-subtext" data-aos="fade-up" data-aos-delay="400">
-                     <i class="bi bi-check-circle-fill"></i> Universal Search <i class="bi bi-dot mx-1"></i> Smart Watchlist <i class="bi bi-dot mx-1"></i> AI Recommendations <i class="bi bi-dot mx-1"></i> Community Hub <i class="bi bi-dot mx-1"></i> Music Integration
-                 </p>
-            </div>
-        </section>
+    <!-- Main Content Wrapper -->
+    <div class="landing-wrapper">
+        <main>
 
-        <!-- How It Works Section -->
-         <section id="how-it-works" class="section section-darker">
-             <div class="container">
-                 <h2 class="text-center mb-5" data-aos="fade-up">Get Started in <span class="text-gradient">Seconds</span></h2>
-                 <div class="row text-center g-4 g-lg-5"> <!-- Increased gap -->
-                     <!-- Step 1 -->
-                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
-                         <div class="step-card">
-                             <div class="step-number">01</div>
-                             <div class="step-content">
-                                <i class="bi bi-search step-icon"></i>
-                                 <h3>Discover Effortlessly</h3>
-                                 <p>Search, browse genres, filter by network, or explore curated lists to find your next watch.</p>
+            <!-- Hero Section -->
+            <section id="hero" class="section">
+                 <div class="hero-background"><div class="hero-background-image" id="hero-bg-image"></div></div>
+                 <div class="container">
+                     <div class="row">
+                         <div class="col-lg-7 col-md-9">
+                             <div class="hero-content" data-aos="fade-right" data-aos-delay="200"> <!-- Adjusted delay -->
+                                 <h1 id="hero-title">Loading Universe...</h1>
+                                 <p class="lead" id="hero-overview">Discover, track, and discuss your favorite movies and TV shows like never before.</p>
+                                 <div class="hero-movie-info mb-4" id="hero-info-container"> <!-- Added mb-4 -->
+                                    <!-- Skeleton Loader for Info -->
+                                    <div class="hero-info-item skeleton-item" style="width: 90px;"></div>
+                                    <div class="hero-info-item skeleton-item" style="width: 70px;"></div>
+                                    <div class="hero-info-item skeleton-item" style="width: 130px;"></div>
+                                 </div>
+                                 <div class="hero-cta-buttons">
+                                     <button type="button" class="btn btn-primary-gradient btn-lg" id="hero-watch-trailer-btn" disabled>
+                                        <i class="bi bi-play-circle-fill"></i> Watch Trailer
+                                     </button>
+                                     <button type="button" class="btn btn-secondary-outline btn-lg conceptual-link" id="hero-more-info-btn" title="More Info (Concept)" disabled>
+                                         <i class="bi bi-info-circle"></i> More Info
+                                     </button>
+                                 </div>
                              </div>
                          </div>
                      </div>
-                     <!-- Step 2 -->
-                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
-                          <div class="step-card">
-                             <div class="step-number">02</div>
-                             <div class="step-content">
-                                 <i class="bi bi-bookmark-plus-fill step-icon"></i>
-                                 <h3>Organize & Track</h3>
-                                 <p>Add movies/shows to your universal watchlist, track progress, and see playback history.</p>
+                 </div>
+            </section>
+
+
+            <!-- Content Showcase Section -->
+            <section id="content-showcase" class="section section-angled-top section-angled-bottom">
+                 <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                 <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                 <div class="container-fluid position-relative" style="z-index: 10;">
+
+                    <!-- Trending Movies Shelf -->
+                    <div class="content-shelf" id="shelf-trending-movie" data-aos="fade-up">
+                        <div class="shelf-header"> <h3 class="shelf-title"><i class="bi bi-graph-up-arrow"></i> Trending Movies</h3> <a href="#browse-trending-movies" class="shelf-view-all conceptual-link" title="View All Trending Movies (Concept)">View All <i class="bi bi-chevron-right"></i></a> </div>
+                        <div class="horizontal-scroll-wrapper">
+                            <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous" aria-controls="trending-movies-scroll" aria-disabled="true"><i class="bi bi-chevron-left"></i></button>
+                            <div class="horizontal-scroll-container" id="trending-movies-scroll" role="region" aria-label="Trending Movies Carousel">
+                                <!-- JS will populate this -->
+                                <div class="loading-shelf-text"><div class="loading-spinner"></div> Loading Trending Movies...</div>
                             </div>
-                         </div>
-                     </div>
-                     <!-- Step 3 -->
-                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-                         <div class="step-card">
-                             <div class="step-number">03</div>
-                             <div class="step-content">
-                                 <i class="bi bi-link-45deg step-icon"></i>
-                                 <h3>Connect & Experience</h3>
-                                 <p>Launch content (via available sources), dive into actor details, explore music, and join community discussions.</p>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-             </div>
-         </section>
-
-        <!-- Feature Showcase (Tabs) -->
-        <section id="feature-showcase" class="section section-gradient section-lg">
-             <!-- Content remains largely the same, styles above handle enhancements -->
-             <div class="container">
-                 <h2 class="text-center mb-3" data-aos="fade-up">All Your Entertainment Needs, <span class="text-gradient">Met</span></h2>
-                 <p class="lead text-center mb-5" data-aos="fade-up" data-aos-delay="100">Explore the core pillars of the AuraStream experience.</p>
-                 <div class="feature-tabs" data-aos="fade-up" data-aos-delay="200">
-                     <ul class="nav nav-tabs justify-content-center border-0 mb-4" id="featureTab" role="tablist">
-                         <li class="nav-item" role="presentation"><button class="nav-link active" id="discover-tab" data-bs-toggle="tab" data-bs-target="#discover-pane" type="button" role="tab" aria-controls="discover-pane" aria-selected="true"><i class="bi bi-compass-fill me-2"></i>Discovery Engine</button></li>
-                         <li class="nav-item" role="presentation"><button class="nav-link" id="organize-tab" data-bs-toggle="tab" data-bs-target="#organize-pane" type="button" role="tab" aria-controls="organize-pane" aria-selected="false"><i class="bi bi-list-task me-2"></i>Smart Organization</button></li>
-                         <li class="nav-item" role="presentation"><button class="nav-link" id="connect-tab" data-bs-toggle="tab" data-bs-target="#connect-pane" type="button" role="tab" aria-controls="connect-pane" aria-selected="false"><i class="bi bi-people-fill me-2"></i>Connect & Share</button></li>
-                         <li class="nav-item" role="presentation"><button class="nav-link" id="music-tab" data-bs-toggle="tab" data-bs-target="#music-pane" type="button" role="tab" aria-controls="music-pane" aria-selected="false"><i class="bi bi-music-note-beamed me-2"></i>Music Integration</button></li>
-                     </ul>
-                     <div class="tab-content" id="featureTabContent">
-                         <div class="tab-pane fade show active feature-tab-pane" id="discover-pane" role="tabpanel" aria-labelledby="discover-tab" tabindex="0">
-                             <div class="row align-items-center g-5"> <div class="col-lg-6 feature-content order-lg-1 order-2" data-aos="fade-right" data-aos-delay="300"><h3>Find Your Next Obsession</h3> <p>Go beyond basic search. Explore trending titles, dive deep into genres, discover hidden gems by network or studio, and get AI-powered suggestions tailored just for you.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Comprehensive Movie & TV Database</li> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Actor/Director Deep Dives</li> <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Personalized AI Recommendations</li> </ul> </div> <div class="col-lg-6 feature-image order-lg-2 order-1" data-aos="fade-left" data-aos-delay="300"> <img src="images/interface.png" alt="AuraStream Discovery Interface" class="img-fluid rounded shadow-lg" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x350/111319/a0aec0?text=Discovery+Mockup';"> </div> </div>
-                         </div>
-                         <div class="tab-pane fade feature-tab-pane" id="organize-pane" role="tabpanel" aria-labelledby="organize-tab" tabindex="0">
-                             <div class="row align-items-center g-5"> <div class="col-lg-6 feature-content order-lg-1 order-2" data-aos="fade-right" data-aos-delay="300"><h3>Your Personal Command Center</h3> <p>Never lose track of what to watch again. Build your ultimate watchlist, see where everything is available to stream, track your viewing history, and pick up right where you left off.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Universal Watchlist (Movies & TV)</li> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> "Where to Watch" Integration</li> <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Viewing History & Progress Tracking</li> </ul> </div> <div class="col-lg-6 feature-image order-lg-2 order-1" data-aos="fade-left" data-aos-delay="300"> <img src="images/watchlist.png" alt="AuraStream Watchlist Management" class="img-fluid rounded shadow-lg" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x350/111319/a0aec0?text=Watchlist+Mockup';"> </div> </div>
-                         </div>
-                         <div class="tab-pane fade feature-tab-pane" id="connect-pane" role="tabpanel" aria-labelledby="connect-tab" tabindex="0">
-                             <div class="row align-items-center g-5"> <div class="col-lg-6 feature-content order-lg-1 order-2" data-aos="fade-right" data-aos-delay="300"><h3>Engage with Your Passion</h3> <p>AuraStream is more than just tracking; it's about connection. Share your thoughts, see what friends are watching, join discussions, and rate content within a vibrant community.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> User Profiles & Reviews</li> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Community Forums & Discussions</li> <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Activity Feeds & Social Sharing (Optional)</li> </ul> </div> <div class="col-lg-6 feature-image order-lg-2 order-1" data-aos="fade-left" data-aos-delay="300"> <img src="images/community.svg" alt="AuraStream Community Hub" class="img-fluid rounded shadow-lg" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x350/111319/a0aec0?text=Community+Mockup';"> </div> </div>
-                         </div>
-                         <div class="tab-pane fade feature-tab-pane" id="music-pane" role="tabpanel" aria-labelledby="music-tab" tabindex="0">
-                             <div class="row align-items-center g-5"> <div class="col-lg-6 feature-content order-lg-1 order-2" data-aos="fade-right" data-aos-delay="300"><h3>Feel the Soundtrack</h3> <p>Dive deeper into the auditory world of your favorite films and shows. Discover official soundtracks and related music directly within AuraStream, powered by Spotify integration.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Integrated Spotify Search</li> <li class="mb-2"><i class="bi bi-check-circle-fill text-gradient me-2"></i> Discover Official Soundtracks</li> <li><i class="bi bi-check-circle-fill text-gradient me-2"></i> Explore Themed Playlists & Related Artists</li> </ul> </div> <div class="col-lg-6 feature-image order-lg-2 order-1" data-aos="fade-left" data-aos-delay="300"> <img src="images/spotify.png" alt="AuraStream Spotify Integration" class="img-fluid rounded shadow-lg" onerror="this.onerror=null; this.src='https://via.placeholder.com/500x350/111319/a0aec0?text=Spotify+Mockup';"> </div> </div>
-                         </div>
-                     </div>
-                 </div>
-             </div>
-        </section>
-
-        <!-- AI Spotlight Section -->
-        <section id="ai-spotlight" class="section section-darker">
-             <!-- Content remains the same, styles above handle enhancements -->
-              <div class="container">
-                 <div class="row align-items-center g-5">
-                    <div class="col-lg-6" data-aos="fade-right">
-                        <span class="subheading text-gradient">Intelligent Features</span>
-                        <h2 class="mb-4">Beyond the Algorithm: <br><span class="text-gradient">AI-Enhanced Experience</span></h2>
-                        <p class="lead mb-5" style="font-size: 1.2rem;">AuraStream leverages cutting-edge AI not just for recommendations, but for deeper understanding and context.</p>
-                        <div class="ai-feature-item"> <i class="bi bi-stars ai-feature-icon"></i> <div class="ai-feature-text"> <h4>Contextual Insights</h4> <p>Get AI-generated summaries of complex plots, thematic analysis, or explanations of why you might like a specific title based on your history.</p> </div> </div>
-                        <div class="ai-feature-item"> <i class="bi bi-search-heart ai-feature-icon"></i> <div class="ai-feature-text"> <h4>Smarter Discovery</h4> <p>Move beyond simple genre matching. AI helps uncover connections between films, directors, and actors you might have missed.</p> </div> </div>
-                        <div class="ai-feature-item"> <i class="bi bi-graph-up-arrow ai-feature-icon"></i> <div class="ai-feature-text"> <h4>Personalized Mood Matching</h4> <p>(Future Concept) Find content based on your current mood or desired vibe, powered by AI analysis of themes and tone.</p> </div> </div>
-                    </div>
-                    <div class="col-lg-6" data-aos="fade-left" data-aos-delay="100">
-                        <div class="ai-image-container">
-                            <svg width="90%" height="90%" viewBox="0 0 400 350" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width: 450px; margin: auto; display: block;"> <defs> <linearGradient id="aiCoreGradient" x1="0%" y1="0%" x2="100%" y2="100%"> <stop offset="0%" style="stop-color:var(--primary-accent); stop-opacity:1" /> <stop offset="100%" style="stop-color:var(--secondary-accent); stop-opacity:1" /> </linearGradient> <filter id="aiGlow" x="-50%" y="-50%" width="200%" height="200%"> <feGaussianBlur stdDeviation="5" result="coloredBlur"/> <feMerge> <feMergeNode in="coloredBlur"/> <feMergeNode in="SourceGraphic"/> </feMerge> </filter> </defs> <style> .ai-bg-lines { stroke: var(--border-color); stroke-width: 0.8; opacity: 0.4; } .ai-connection-primary { stroke: #5a677c; stroke-width: 1.2; stroke-linecap: round; opacity: 0.7; } .ai-connection-highlight { stroke: url(#aiCoreGradient); stroke-width: 2; stroke-linecap: round; filter: url(#aiGlow); opacity: 0.85; } .ai-node-secondary { fill: var(--surface-color); stroke: #6b7280; stroke-width: 1; } .ai-node-highlight { fill: var(--bg-secondary); stroke: var(--secondary-accent); stroke-width: 1.5; } .ai-core-glow-bg { fill: var(--primary-accent); opacity: 0.15; filter: url(#aiGlow); } .ai-core { fill: url(#aiCoreGradient); } </style> <g opacity="0.2"> <line class="ai-bg-lines" x1="50" y1="10" x2="350" y2="10" /> <line class="ai-bg-lines" x1="40" y1="40" x2="360" y2="40" /> <line class="ai-bg-lines" x1="10" y1="80" x2="390" y2="80" /> <line class="ai-bg-lines" x1="10" y1="270" x2="390" y2="270" /> <line class="ai-bg-lines" x1="40" y1="310" x2="360" y2="310" /> <line class="ai-bg-lines" x1="50" y1="340" x2="350" y2="340" /> <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(100 0)" /> <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(150 0)" /> <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(250 0)" /> <line class="ai-bg-lines" x1="10" y1="10" x2="10" y2="340" transform="translate(300 0)" /> </g> <g transform="translate(200, 175)"> <circle class="ai-core-glow-bg" cx="0" cy="0" r="55"/> <circle class="ai-core" cx="0" cy="0" r="35"/> <line class="ai-connection-primary" x1="0" y1="0" x2="-100" y2="-80" /> <line class="ai-connection-primary" x1="0" y1="0" x2="-120" y2="30" /> <line class="ai-connection-primary" x1="0" y1="0" x2="-40" y2="100" /> <line class="ai-connection-highlight" x1="0" y1="0" x2="80" y2="-110" /> <line class="ai-connection-primary" x1="0" y1="0" x2="130" y2="-30" /> <line class="ai-connection-primary" x1="0" y1="0" x2="100" y2="90" /> <line class="ai-connection-primary" x1="0" y1="0" x2="20" y2="130" /> <path class="ai-connection-primary" d="M -100 -80 Q -110 0 -120 30" stroke-width="1" fill="none"/> <path class="ai-connection-primary" d="M -120 30 Q -70 70 -40 100" stroke-width="1" fill="none"/> <path class="ai-connection-primary" d="M 130 -30 Q 120 40 100 90" stroke-width="1" fill="none"/> <path class="ai-connection-highlight" d="M 80 -110 Q 120 -80 130 -30" stroke-width="1.5" fill="none" /> <path class="ai-connection-primary" d="M 100 90 Q 50 120 20 130" stroke-width="1" fill="none"/> <circle class="ai-node-secondary" cx="-100" cy="-80" r="10"/> <circle class="ai-node-secondary" cx="-120" cy="30" r="12"/> <circle class="ai-node-secondary" cx="-40" cy="100" r="8"/> <circle class="ai-node-highlight" cx="80" cy="-110" r="14"/> <circle class="ai-node-secondary" cx="130" cy="-30" r="10"/> <circle class="ai-node-secondary" cx="100" cy="90" r="11"/> <circle class="ai-node-secondary" cx="20" cy="130" r="9"/> </g> <title>AI Network Visualization</title> <desc>Abstract representation of interconnected nodes and data flow for AI-powered features.</desc> </svg>
+                            <button class="btn h-scroll-btn next" aria-label="Scroll Next" aria-controls="trending-movies-scroll" aria-disabled="false"><i class="bi bi-chevron-right"></i></button>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- Community Hub Section -->
-        <section id="community-hub" class="section section-primary">
-             <!-- Content remains the same, styles above handle enhancements -->
-             <div class="container">
-                 <h2 class="text-center mb-3" data-aos="fade-up">Join the <span class="text-gradient">Conversation</span></h2>
-                 <p class="lead text-center mb-5" data-aos="fade-up" data-aos-delay="100">Connect with fellow movie buffs and TV fanatics.</p>
-                 <div class="row g-4 justify-content-center">
-                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="150"> <div class="community-card"> <div class="community-content"> <i class="bi bi-chat-square-quote-fill community-icon"></i> <h4>Discuss & Debate</h4> <p>Dive into spoiler-filled (or safe!) discussions for every movie and episode. Share your theories and hot takes.</p> <div class="avatar-stack"> <img src="https://img.icons8.com/fluency/50/user-male-circle.png" alt="User Avatar" title="User 1"> <img src="https://img.icons8.com/ios-filled/50/user-male-circle.png" alt="User Avatar" title="User 3"> </div> </div> </div> </div>
-                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="250"> <div class="community-card"> <div class="community-content"> <i class="bi bi-star-fill community-icon" style="color: var(--secondary-accent);"></i> <h4>Rate & Review</h4> <p>Contribute your own ratings and detailed reviews. Help others discover great content and see community consensus.</p> <div class="avatar-stack"> <img src="https://img.icons8.com/color/48/circled-user-male-skin-type-6--v1.png" alt="User Avatar" title="User 4"> <img src="https://img.icons8.com/color/48/gender-neutral-user.png" alt="User Avatar" title="User 5"> </div> </div> </div> </div>
-                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="350"> <div class="community-card"> <div class="community-content"> <i class="bi bi-person-plus-fill community-icon"></i> <h4>Follow & Connect</h4> <p>Follow friends or cinephiles you admire. See their activity, share recommendations, and build your network.</p> <div class="avatar-stack"> <img src="https://img.icons8.com/metro/26/gender-neutral-user.png" alt="User Avatar" title="User 6"> <img src="https://img.icons8.com/color/48/user-female-skin-type-1-2.png" alt="User Avatar" title="User 7"> <img src="https://img.icons8.com/glyph-neue/64/gender-neutral-user.png" alt="User Avatar" title="User 8"> <img src="https://img.icons8.com/color/48/circled-user-male-skin-type-4--v1.png" alt="User Avatar" title="User 9"> </div> </div> </div> </div>
+                     <!-- Popular TV Shelf -->
+                     <div class="content-shelf" id="shelf-popular-tv" data-aos="fade-up" data-aos-delay="100">
+                         <div class="shelf-header"> <h3 class="shelf-title"><i class="bi bi-fire"></i> Popular TV Shows</h3> <a href="#browse-popular-tv" class="shelf-view-all conceptual-link" title="View All Popular TV Shows (Concept)">View All <i class="bi bi-chevron-right"></i></a> </div>
+                         <div class="horizontal-scroll-wrapper">
+                            <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous" aria-controls="popular-tv-scroll" aria-disabled="true"><i class="bi bi-chevron-left"></i></button>
+                            <div class="horizontal-scroll-container" id="popular-tv-scroll" role="region" aria-label="Popular TV Shows Carousel">
+                               <div class="loading-shelf-text"><div class="loading-spinner"></div> Loading Popular Shows...</div>
+                            </div>
+                            <button class="btn h-scroll-btn next" aria-label="Scroll Next" aria-controls="popular-tv-scroll" aria-disabled="false"><i class="bi bi-chevron-right"></i></button>
+                         </div>
+                     </div>
+
+                    <!-- Top Rated Movies Shelf -->
+                    <div class="content-shelf" id="shelf-toprated-movie" data-aos="fade-up" data-aos-delay="200">
+                         <div class="shelf-header"> <h3 class="shelf-title"><i class="bi bi-star-fill"></i> Top Rated Movies</h3> <a href="#browse-toprated-movies" class="shelf-view-all conceptual-link" title="View All Top Rated Movies (Concept)">View All <i class="bi bi-chevron-right"></i></a> </div>
+                         <div class="horizontal-scroll-wrapper">
+                             <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous" aria-controls="toprated-movies-scroll" aria-disabled="true"><i class="bi bi-chevron-left"></i></button>
+                             <div class="horizontal-scroll-container" id="toprated-movies-scroll" role="region" aria-label="Top Rated Movies Carousel">
+                                <div class="loading-shelf-text"><div class="loading-spinner"></div> Loading Top Rated Movies...</div>
+                             </div>
+                             <button class="btn h-scroll-btn next" aria-label="Scroll Next" aria-controls="toprated-movies-scroll" aria-disabled="false"><i class="bi bi-chevron-right"></i></button>
+                         </div>
+                     </div>
+
                  </div>
-                 <div class="text-center mt-5 pt-3" data-aos="fade-up" data-aos-delay="400">
-                     <a href="#hero" class="btn btn-landing btn-landing-secondary btn-lg">Explore Community <i class="bi bi-arrow-right ms-2"></i></a>
+            </section>
+
+            <!-- Features Section -->
+            <section id="features" class="section section-angled-top section-angled-bottom">
+                 <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                 <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                 <div class="container position-relative" style="z-index: 10;">
+                     <h2 class="text-center mb-4" data-aos="fade-up">Why <span class="text-gradient">AuraStream</span> Is Different</h2>
+                      <p class="lead text-center mb-5 pb-3" data-aos="fade-up" data-aos-delay="100">We're building the ultimate platform for true entertainment lovers.</p>
+                     <div class="feature-grid">
+                          <article class="feature-item" data-aos="fade-up" data-aos-delay="200"> <i class="bi bi-compass-fill feature-icon"></i> <h4>Unified Discovery</h4> <p>Stop juggling apps. Find any movie or show across services with one powerful search.</p> </article>
+                          <article class="feature-item" data-aos="fade-up" data-aos-delay="300"> <i class="bi bi-stars feature-icon"></i> <h4>Hyper-Personalized</h4> <p>Our smart system learns your taste, suggesting hidden gems and perfect next watches.</p> </article>
+                          <article class="feature-item" data-aos="fade-up" data-aos-delay="400"> <i class="bi bi-collection-play-fill feature-icon"></i> <h4>Seamless Tracking</h4> <p>Effortlessly manage your watchlist, track progress, and know where to stream instantly.</p> </article>
+                          <article class="feature-item" data-aos="fade-up" data-aos-delay="500"> <i class="bi bi-people-fill feature-icon"></i> <h4>Vibrant Community</h4> <p>Connect with fans, share reviews, discover curated lists, and join discussions (Coming Soon!).</p> </article>
+                          <article class="feature-item" data-aos="fade-up" data-aos-delay="600"> <i class="bi bi-calendar-check-fill feature-icon"></i> <h4>Release Radar</h4> <p>Never miss a premiere. Get notified about new episodes, movies, and arrivals (Coming Soon!).</p> </article>
+                          <article class="feature-item" data-aos="fade-up" data-aos-delay="700"> <i class="bi bi-phone-fill feature-icon"></i> <h4>Cross-Device Sync</h4> <p>Your watchlist, progress, and recommendations stay synced across all platforms.</p> </article>
+                          <!-- Video Feature Placeholder/Demo -->
+                          <article class="feature-item video-feature-demo" data-aos="fade-up" data-aos-delay="700">
+                            <i class="bi bi-play-btn-fill feature-icon"></i> <!-- Optional: Icon for the feature -->
+                            <h4>Interactive Preview</h4>
+                            <p>See AuraStream in action with a quick interface demo.</p>
+                            <!-- The Video Container -->
+                            <div id="intro-overlay">
+                              <video autoplay muted playsinline preload="auto" id="intro-video">
+                                  <source src="brand.mp4" type="video/mp4" />
+                                  Your browser does not support the video tag.
+                              </video>
+                              <!-- THIS BUTTON MUST EXIST WITH THIS EXACT ID -->
+                              <button id="skip-intro-button">Skip Intro <i class="bi bi-skip-forward-fill ms-1"></i></button>
+                             </div>
+                      
+                          </article>
+                        </div>
                  </div>
-             </div>
-        </section>
+             </section>
 
-        <!-- Testimonials Section -->
-        <section id="testimonials" class="section section-gradient">
-            <!-- Content remains the same, styles above handle enhancements -->
-            <div class="container">
-                 <h2 class="text-center mb-5" data-aos="fade-up">Trusted by <span class="text-gradient">Enthusiasts</span> Like You</h2>
-                 <div class="row g-4">
-                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100"> <div class="testimonial-card"> <div class="testimonial-header"> <img src="https://img.icons8.com/officel/80/circled-user-female-skin-type-3.png" alt="Sarah L"> <div class="testimonial-info"> <strong>Sarah L.</strong> <span>Film Blogger</span> </div> </div> <blockquote>"AuraStream finally solved my 'too many lists' problem! Having watchlist, history, AND community reviews in one place is a game-changer. The AI insights are surprisingly accurate too."</blockquote> </div> </div>
-                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200"> <div class="testimonial-card"> <div class="testimonial-header"> <img src="https://img.icons8.com/officel/80/circled-user-male-skin-type-4.png" alt="David M"> <div class="testimonial-info"> <strong>David M.</strong> <span>Casual Viewer</span> </div> </div> <blockquote>"Love how easy it is to see *where* I can actually watch something. The Spotify integration for soundtracks is a brilliant touch I didn't know I needed."</blockquote> </div> </div>
-                     <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300"> <div class="testimonial-card"> <div class="testimonial-header"> <img src="https://img.icons8.com/puffy-filled/32/gender-neutral-user.png" alt="Aisha B"> <div class="testimonial-info"> <strong>Aisha B.</strong> <span>Software Developer</span> </div> </div> <blockquote>"Clean UI, responsive, and integrates data sources effectively. Appreciate the transparency from the developer. Excited to see how the community features grow!"</blockquote> </div> </div>
+    
+
+             <!-- Trailer Feature Section -->
+             <section id="trailer-feature" class="section section-angled-top section-angled-bottom">
+                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                  <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                  <div class="container position-relative" style="z-index: 10;">
+                       <div class="trailer-feature-container">
+                           <div class="trailer-text-content" data-aos="fade-right">
+                               <h2 class="mb-3">Featured Trailer</h2>
+                               <h3 id="trailer-feature-title"><span class="trailer-loading-placeholder">Loading Title...</span></h3>
+                               <p id="trailer-feature-desc"><span class="trailer-loading-placeholder">Loading description...</span></p>
+                               <button class="btn btn-secondary-outline conceptual-link" id="trailer-feature-more-info" disabled title="More Info (Concept)"><i class="bi bi-film me-2"></i> View Movie Details</button>
+                           </div>
+                           <div class="trailer-visual" data-aos="fade-left" data-aos-delay="200">
+                              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" class="trailer-thumbnail-img" id="trailer-feature-thumbnail" alt="Trailer Thumbnail Loading...">
+                              <button class="btn btn-play trailer-play-button" id="trailer-feature-play-btn" aria-label="Play Featured Trailer" disabled><i class="bi bi-play-fill"></i></button>
+                           </div>
+                       </div>
+                  </div>
+             </section>
+
+             <!-- =================================== -->
+             <!-- ===== 3D Gallery Section START ===== -->
+             <!-- =================================== -->
+             <section id="gallery-section" class="section section-angled-top section-angled-bottom">
+                 <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                 <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+
+                 <div class="galaxy-bg"></div>
+
+                 <div class="container">
+                     <div class="section-heading" data-aos="fade-up">
+                         <h2>Experience <span class="text-gradient">AuraStream</span> UI</h2>
+                         <div class="glow-line"></div>
+                         <p class="lead">Explore our futuristic interface with immersive visuals and seamless integration across all your content.</p>
+                     </div>
+
+                     <!-- 3D Gallery Container -->
+                     <div class="gallery-3d-container" data-aos="fade-up" data-aos-delay="200">
+                         <div class="gallery-3d-stage" id="galleryStage">
+                             <!-- Card 1: Home Interface -->
+                             <div class="gallery-card" data-index="0" data-name="Home Interface">
+                                 <div class="card-front">
+                                     <img src="https://picsum.photos/seed/aurahome/640/420" alt="AuraStream Home Interface" class="card-image" loading="lazy">
+                                     <div class="card-overlay"></div>
+                                     <div class="card-content">
+                                         <span class="card-tag">Dashboard</span>
+                                         <h3 class="card-title">Home Interface</h3>
+                                         <p class="card-description">Your personalized hub for discovering content.</p>
+                                     </div>
+                                 </div>
+                             </div>
+                             <!-- Card 2: Recommendations -->
+                             <div class="gallery-card" data-index="1" data-name="Smart Recommendations">
+                                 <div class="card-front">
+                                     <img src="https://picsum.photos/seed/aurarecs/640/420" alt="AuraStream Recommendations" class="card-image" loading="lazy">
+                                     <div class="card-overlay"></div>
+                                     <div class="card-content">
+                                         <span class="card-tag">AI Powered</span>
+                                         <h3 class="card-title">Smart Suggestions</h3>
+                                         <p class="card-description">AI algorithms suggest perfect content matches.</p>
+                                     </div>
+                                 </div>
+                             </div>
+                             <!-- Card 3: Watchlist -->
+                             <div class="gallery-card" data-index="2" data-name="Watchlist Feature">
+                                 <div class="card-front">
+                                     <img src="https://picsum.photos/seed/aurawatch/640/420" alt="AuraStream Watchlist" class="card-image" loading="lazy">
+                                     <div class="card-overlay"></div>
+                                     <div class="card-content">
+                                         <span class="card-tag">Organization</span>
+                                         <h3 class="card-title">Watchlist</h3>
+                                         <p class="card-description">Keep track of everything you want to watch easily.</p>
+                                     </div>
+                                 </div>
+                             </div>
+                             <!-- Card 4: Detail View -->
+                             <div class="gallery-card" data-index="3" data-name="Detailed View">
+                                 <div class="card-front">
+                                     <img src="https://picsum.photos/seed/auradetail/640/420" alt="AuraStream Detail View" class="card-image" loading="lazy">
+                                     <div class="card-overlay"></div>
+                                     <div class="card-content">
+                                         <span class="card-tag">Info</span>
+                                         <h3 class="card-title">Detailed View</h3>
+                                         <p class="card-description">Get all the info, cast, crew, and streaming options.</p>
+                                     </div>
+                                 </div>
+                             </div>
+                             <!-- Card 5: Community (Concept) -->
+                             <div class="gallery-card" data-index="4" data-name="Community Hub">
+                                 <div class="card-front">
+                                     <img src="https://picsum.photos/seed/auracomm/640/420" alt="AuraStream Community Hub" class="card-image" loading="lazy">
+                                     <div class="card-overlay"></div>
+                                     <div class="card-content">
+                                         <span class="card-tag">Connect</span>
+                                         <h3 class="card-title">Community Hub</h3>
+                                         <p class="card-description">Connect with fans, share reviews, and discuss.</p>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div> <!-- / gallery-3d-stage -->
+                     </div> <!-- / gallery-3d-container -->
+
+                     <!-- Navigation Controls -->
+                     <div class="gallery-nav" data-aos="fade-up" data-aos-delay="300">
+                         <button class="nav-btn prev-btn" id="prevBtn" aria-label="Previous Gallery Item"><i class="bi bi-chevron-left"></i></button>
+                         <div class="gallery-dots" id="galleryDots">
+                             <button class="dot active" data-index="0" aria-label="Go to slide 1"></button>
+                             <button class="dot" data-index="1" aria-label="Go to slide 2"></button>
+                             <button class="dot" data-index="2" aria-label="Go to slide 3"></button>
+                             <button class="dot" data-index="3" aria-label="Go to slide 4"></button>
+                             <button class="dot" data-index="4" aria-label="Go to slide 5"></button>
+                         </div>
+                         <button class="nav-btn next-btn" id="nextBtn" aria-label="Next Gallery Item"><i class="bi bi-chevron-right"></i></button>
+                     </div>
+
+                 </div> <!-- / .container -->
+
+                 <!-- Fullscreen Modal -->
+                 <div class="fullscreen-modal" id="fullscreenModal">
+                     <div class="modal-content">
+                         <button class="modal-close" id="modalClose" aria-label="Close fullscreen image"><i class="bi bi-x"></i></button>
+                         <div class="modal-image-container">
+                           <img src="" alt="Gallery Image Fullscreen" class="modal-image" id="modalImageFs">
+                         </div>
+                         <div class="modal-caption" id="modalCaptionFs">Image Caption</div>
+                     </div>
                  </div>
-             </div>
-        </section>
+             </section>
+             <!-- ================================= -->
+             <!-- ===== 3D Gallery Section END ===== -->
+             <!-- ================================= -->
 
-        <!-- For Business / Partners Section -->
-        <section id="for-business" class="section section-darker">
-            <!-- Content remains the same, styles above handle enhancements -->
-            <div class="container">
-                 <h2 class="text-center mb-5" data-aos="fade-up">Partner with <span class="text-gradient">AuraStream</span></h2>
-                 <div class="business-content" data-aos="fade-up" data-aos-delay="100">
-                     <div class="business-text"> <h3>Unlock Opportunities</h3> <p class="text-medium">AuraStream offers unique partnership possibilities for content creators, distributors, advertisers, and data analysts. Leverage our engaged community and rich dataset.</p> <ul class="list-unstyled mt-4"> <li class="mb-2"><i class="bi bi-graph-up text-secondary-accent me-2"></i> Audience Insights & Analytics</li> <li class="mb-2"><i class="bi bi-megaphone-fill text-secondary-accent me-2"></i> Targeted Content Promotion</li> <li><i class="bi bi-hdd-stack-fill text-secondary-accent me-2"></i> Data Licensing & API Access</li> </ul> <a href="partnerships.html" class="btn-link-arrow mt-4 d-inline-block">Learn More About Partnerships <i class="bi bi-arrow-right"></i></a> </div>
-                         <img src="images/sm.svg" alt="Studio logo" class="source-logo">
-                         <img src="https://vidsrc.domains/vidsrc-logo-light.svg?t=1688251159" alt="Streaming Service Logo" class="source-logo">
-                         <img src="images/analytics.svg" alt="Analytics Firm Logo" class="source-logo">
+             <!-- ====================================== -->
+             <!-- ===== Analytics Dashboard Section ===== -->
+             <!-- ====================================== -->
+             <section id="analytics-dashboard" class="section section-angled-top section-angled-bottom">
+                 <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                 <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+
+                 <div class="container position-relative" style="z-index: 10;">
+                     <h2 class="text-center mb-4" data-aos="fade-up">AuraStream <span class="text-gradient">Insights</span></h2>
+                     <p class="lead text-center mb-5 pb-3" data-aos="fade-up" data-aos-delay="100">
+                         Explore the data behind the entertainment universe. See what's trending, popular, and highly-rated.
+                     </p>
+
+                     <div class="analytics-grid">
+
+                         <!-- Card 1: Key Metrics (KPIs) -->
+                         <div class="analytics-card kpi-card" data-aos="fade-up" data-aos-delay="200">
+                             <h4>Platform Overview</h4>
+                             <div class="kpi-grid">
+                                 <div class="kpi-item">
+                                     <span class="kpi-value" id="kpi-total-titles">~</span>
+                                     <span class="kpi-label">Titles Tracked</span>
+                                 </div>
+                                 <div class="kpi-item">
+                                     <span class="kpi-value" id="kpi-active-users">~</span>
+                                     <span class="kpi-label">Active Users</span>
+                                 </div>
+                                 <div class="kpi-item">
+                                     <span class="kpi-value" id="kpi-avg-rating"><i class="bi bi-star-fill text-warning"></i> ~</span>
+                                     <span class="kpi-label">Avg. Rating</span>
+                                 </div>
+                                  <div class="kpi-item">
+                                      <span class="kpi-value" id="kpi-community-posts">~</span>
+                                      <span class="kpi-label">Discussions</span>
+                                  </div>
+                             </div>
+                         </div>
+
+                         <!-- Card 2: Genre Distribution (Simulated Donut Chart) -->
+                         <div class="analytics-card" data-aos="fade-up" data-aos-delay="300">
+                             <h4>Popular Genres (Movies)</h4>
+                             <div class="chart-container simulated-donut-chart" id="genre-donut-chart">
+                                 <!-- Simulated using CSS conic-gradient -->
+                                 <div class="donut-chart-visual"></div>
+                                 <ul class="chart-legend">
+                                     <li><span class="legend-color" style="background-color: var(--primary-accent);"></span>Action</li>
+                                     <li><span class="legend-color" style="background-color: var(--secondary-accent);"></span>Sci-Fi</li>
+                                     <li><span class="legend-color" style="background-color: var(--tertiary-accent);"></span>Comedy</li>
+                                     <li><span class="legend-color" style="background-color: #ffc107;"></span>Drama</li>
+                                      <li><span class="legend-color" style="background-color: #4caf50;"></span>Other</li>
+                                 </ul>
+                             </div>
+                         </div>
+
+                         <!-- Card 3: Trending Score (Simulated Gauge) -->
+                         <div class="analytics-card" data-aos="fade-up" data-aos-delay="400">
+                              <h4>Weekly Trend Score</h4>
+                              <div class="chart-container simulated-gauge-chart">
+                                 <div class="gauge-wrap">
+                                      <div class="gauge-fill" id="gauge-fill-element" style="transform: rotate(0.5turn)"></div> <!-- JS will update -->
+                                      <div class="gauge-cover">
+                                           <span class="gauge-value" id="gauge-value-element">0%</span>
+                                           <span class="gauge-label">Trending</span>
+                                      </div>
+                                 </div>
+                                 <p class="chart-subtext">Based on recent activity.</p>
+                              </div>
+                         </div>
+
+                          <!-- Card 4: Release Year Trend (Simulated Area Chart) -->
+                         <div class="analytics-card large-card" data-aos="fade-up" data-aos-delay="250">
+                             <h4>Content Releases Over Time (Conceptual)</h4>
+                             <div class="chart-container simulated-area-chart">
+                                 <div class="area-chart-visual">
+                                      <svg viewBox="0 0 100 30" preserveAspectRatio="none">
+                                         <polyline fill="rgba(var(--primary-accent-rgb), 0.2)" stroke="var(--primary-accent)" stroke-width="0.5" points="0,25 10,20 20,22 30,15 40,18 50,12 60,16 70,10 80,14 90,8 100,12 100,30 0,30" />
+                                      </svg>
+                                 </div>
+                                  <div class="chart-axis-labels"><span>'20</span><span>'21</span><span>'22</span><span>'23</span><span>'24</span></div>
+                             </div>
+                         </div>
+
+                         <!-- Card 5: Popular Actors -->
+                         <div class="analytics-card" data-aos="fade-up" data-aos-delay="350">
+                             <h4>Most Popular Actors</h4>
+                             <div class="list-container scrollable-list" id="top-actors-list">
+                                 <!-- JS will populate this -->
+                                 <div class="loading-placeholder">Loading actors...</div>
+                             </div>
+                         </div>
+
+                          <!-- Card 6: Top Networks/Studios (Simulated Bar Chart) -->
+                          <div class="analytics-card" data-aos="fade-up" data-aos-delay="450">
+                             <h4>Top Production Networks (Sample)</h4>
+                             <div class="chart-container simulated-bar-chart" id="network-bar-chart">
+                                 <!-- JS will populate this -->
+                                 <div class="loading-placeholder">Loading networks...</div>
+                             </div>
+                         </div>
+
+                     </div> <!-- /.analytics-grid -->
+                 </div> <!-- /.container -->
+             </section>
+             <!-- ==================================== -->
+             <!-- ===== Analytics Dashboard END ===== -->
+             <!-- ==================================== -->
+
+             <!-- Available Everywhere Section -->
+             <section id="available-everywhere" class="section section-angled-top section-angled-bottom">
+                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                  <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                  <div class="container position-relative" style="z-index: 10;">
+                      <div class="row align-items-center g-5">
+                         <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                              <h2 class="mb-4">Your Universe, <span class="text-gradient">Everywhere</span>.</h2>
+                              <p class="lead mb-4">Access AuraStream seamlessly on your desktop, tablet, or mobile browser. Dedicated apps are launching soon!</p>
+                              <ul class="platform-list">
+                                  <li><i class="bi bi-display-fill"></i> Web Browser (Current Focus)</li>
+                                  <li><i class="bi bi-tablet-landscape-fill"></i> Tablet Responsive</li>
+                                  <li><i class="bi bi-apple"></i> Native iOS App <span class="coming-soon">Planned</span></li>
+                                  <li><i class="bi bi-android2"></i> Native Android App <span class="coming-soon">Planned</span></li>
+                                   <li><i class="bi bi-tv-fill"></i> TV App Support <span class="coming-soon">Future</span></li>
+                              </ul>
+                              <button type="button" class="btn btn-secondary-outline mt-3 conceptual-link" title="Platform Details (Concept)">
+                                  View Platform Roadmap
+                              </button>
+                          </div>
+                         <div class="col-lg-6 order-lg-1 text-center" data-aos="zoom-in-right">
+                             <div class="device-graphic-placeholder">
+                                <i class="bi bi-phone-stack"></i>
+                                <span>Conceptual Device Mockup</span>
+                                <small class="mt-2 opacity-75">Imagine AuraStream adapting to every screen.</small>
+                             </div>
+                         </div>
+                      </div>
+                  </div>
+             </section>
+
+             <!-- FAQ Section -->
+             <section id="faq" class="section section-angled-top section-angled-bottom">
+                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                  <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                  <div class="container position-relative" style="z-index: 10; max-width: 900px;"> <!-- Adjusted max-width -->
+                     <h2 class="text-center mb-5" data-aos="fade-up">Answers to Your <span class="text-gradient">Burning Questions</span></h2>
+                      <div class="accordion faq-accordion" id="faqAccordionLanding" data-aos="fade-up" data-aos-delay="100">
+                          <div class="accordion-item">
+                              <h3 class="accordion-header" id="faqH1">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC1" aria-expanded="false" aria-controls="faqC1">What exactly IS AuraStream?</button>
+                              </h3>
+                              <div id="faqC1" class="accordion-collapse collapse" aria-labelledby="faqH1" data-bs-parent="#faqAccordionLanding">
+                                  <div class="accordion-body">AuraStream is your ultimate entertainment command center. It helps you discover movies and TV shows across various streaming services using real-time data, track what you've watched, manage your watchlist, and explore related content. Think of it as a super-powered TV guide and discovery tool.</div>
+                              </div>
+                          </div>
+                          <div class="accordion-item">
+                              <h3 class="accordion-header" id="faqH2">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC2" aria-expanded="false" aria-controls="faqC2">Do I watch movies directly ON AuraStream?</button>
+                              </h3>
+                              <div id="faqC2" class="accordion-collapse collapse" aria-labelledby="faqH2" data-bs-parent="#faqAccordionLanding">
+                                  <div class="accordion-body">No, AuraStream itself doesn't host or stream video content due to legal and licensing reasons. We primarily focus on discovery and tracking. We provide information and potentially deep links (where available and permitted) to the actual streaming services where you can watch the content (like Netflix, Hulu, etc.), assuming you have a subscription.</div>
+                              </div>
+                          </div>
+                          <div class="accordion-item">
+                              <h3 class="accordion-header" id="faqH3">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC3" aria-expanded="false" aria-controls="faqC3">Is AuraStream free to use?</button>
+                              </h3>
+                              <div id="faqC3" class="accordion-collapse collapse" aria-labelledby="faqH3" data-bs-parent="#faqAccordionLanding">
+                                  <div class="accordion-body">The core features presented on this landing page – discovery, tracking, watchlist management – are based on freely available APIs (like TMDb). This demonstration itself is free. Future development might include premium features, but the goal is to keep core discovery accessible.</div>
+                              </div>
+                          </div>
+                          <div class="accordion-item">
+                              <h3 class="accordion-header" id="faqH4">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC4" aria-expanded="false" aria-controls="faqC4">What data sources power AuraStream?</button>
+                              </h3>
+                              <div id="faqC4" class="accordion-collapse collapse" aria-labelledby="faqH4" data-bs-parent="#faqAccordionLanding">
+                                  <div class="accordion-body">We primarily use The Movie Database (TMDb) API for movie/show metadata, posters, cast information, ratings, and trending data. This product uses the TMDb API but is not endorsed or certified by TMDb. All data usage complies with TMDb's terms of service.</div>
+                              </div>
+                          </div>
+                           <div class="accordion-item">
+                              <h3 class="accordion-header" id="faqH5">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC5" aria-expanded="false" aria-controls="faqC5">Is the 'Community' feature active?</button>
+                              </h3>
+                              <div id="faqC5" class="accordion-collapse collapse" aria-labelledby="faqH5" data-bs-parent="#faqAccordionLanding">
+                                  <div class="accordion-body">The community features (user reviews, lists, following others) mentioned in the 'Features' section are conceptual for this landing page demonstration and are not currently implemented. Building a full community requires significant backend infrastructure.</div>
+                              </div>
+                          </div>
+                      </div>
+                      <p class="text-center mt-5 text-muted" data-aos="fade-up">Still curious? Check the project <a href="https://github.com/MEDELBOU3/AuraStream-Concept" target="_blank" rel="noopener noreferrer" class="text-gradient fw-bold">on GitHub</a>.</p>
+                  </div>
+             </section>
+
+             <!-- Final CTA Section -->
+             <section id="final-cta" class="section section-lg">
+                 <div class="container text-center" data-aos="zoom-in-up">
+                      <h2>Ready to <span class="text-gradient">Explore</span> Your Entertainment?</h2>
+                     <p class="lead"> Stop searching, start experiencing. Launch the AuraStream concept today for a smarter, more connected way to discover and enjoy the content you love. </p>
+                     <button type="button" class="btn btn-cta-final btn-lg" data-bs-toggle="modal" data-bs-target="#launchAppModal">
+                         Launch Concept App <i class="bi bi-rocket-takeoff-fill ms-2"></i>
+                      </button>
                  </div>
-             </div>
-        </section>
+             </section>
 
-        <!-- FAQ Section -->
-         <section id="faq" class="section section-primary">
-             <!-- Content remains the same, styles above handle enhancements -->
-             <div class="container" style="max-width: 900px;">
-                 <h2 class="text-center mb-5" data-aos="fade-up">Frequently Asked <span class="text-gradient">Questions</span></h2>
-                 <div class="accordion faq-accordion" id="faqAccordion" data-aos="fade-up" data-aos-delay="100">
-                     <div class="accordion-item"> <h2 class="accordion-header" id="headingOne"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne"> Is AuraStream free to use? </button> </h2> <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion"> <div class="accordion-body"> Yes, the core features of AuraStream, including discovery, watchlist management, basic community interaction, and music search, are currently planned to be free. Advanced features or premium tiers might be considered in the future. </div> </div> </div>
-                     <div class="accordion-item"> <h2 class="accordion-header" id="headingTwo"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"> Does AuraStream host movies or TV shows? </button> </h2> <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion"> <div class="accordion-body"> No, AuraStream does not host any streamable content itself. It acts as a central hub to discover content and find where it's legally available to watch on various third-party streaming services. We provide links and embedded players where possible via official APIs. </div> </div> </div>
-                     <div class="accordion-item"> <h2 class="accordion-header" id="headingThree"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree"> What data sources does AuraStream use? </button> </h2> <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion"> <div class="accordion-body"> AuraStream primarily utilizes APIs from The Movie Database (TMDb) for movie/TV show information, Spotify for music integration, Google's Gemini for AI insights, and aggregates "where to watch" data from various provider APIs (like JustWatch, subject to availability and terms). </div> </div> </div>
-                     <div class="accordion-item"> <h2 class="accordion-header" id="headingFour"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour"> How does the Community feature work? </button> </h2> <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion"> <div class="accordion-body"> Users can create profiles, rate and review content, participate in discussion forums tied to specific movies/shows, follow other users, and see activity feeds. Community features require user registration. </div> </div> </div>
-                     <div class="accordion-item"> <h2 class="accordion-header" id="headingFive"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive"> Who developed AuraStream? </button> </h2> <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion"> <div class="accordion-body"> AuraStream is a concept project developed by Mohamed El-bouanani, a Computer Science student, as a portfolio piece showcasing full-stack web development skills and integration of various technologies and APIs. </div> </div> </div>
-                 </div>
-             </div>
-        </section>
+         </main>
+     </div> <!-- /.landing-wrapper -->
 
-        <!-- Data Sources Strip -->
-        <section id="data-sources">
-             <!-- Content remains the same, styles above handle enhancements -->
-             <div class="container text-center">
-                 <p class="small text-light mb-4 fw-bold" data-aos="fade-up">Powered by Leading Data Sources & APIs</p>
-                 <div class="source-logos-container" data-aos="fade-up" data-aos-delay="100">
-                     <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" title="The Movie Database (TMDb)"> <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="TMDb Logo" class="source-logo"> </a>
-                     <a href="https://developer.spotify.com/" target="_blank" rel="noopener noreferrer" title="Spotify API"> <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_White.png" alt="Spotify Logo" class="source-logo source-logo-spotify"> </a>
-                     <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" title="Google AI - Gemini API"> <img src="https://seeklogo.com/images/G/google-ai-logo-996E85F6FD-seeklogo.com.png" alt="Google AI Logo" class="source-logo" style="max-height: 45px;"> </a>
-                     <span class="source-logo text-light" title="Data Aggregation (e.g., JustWatch)"> Watch Providers </span>
-                     <span class="source-logo text-light"> + More </span>
-                 </div>
-             </div>
-        </section>
-
-        <!-- Final CTA -->
-        <section id="final-cta" class="section section-xl">
-            <!-- Content remains the same, styles above handle enhancements -->
-             <div class="container" data-aos="zoom-in-up">
-                 <h2>Ready to Unify Your Entertainment?</h2>
-                 <p> Experience the seamless flow of discovery, organization, and connection. Launch AuraStream now and rediscover the joy of movies and TV. </p>
-                 <a href="app.html" class="btn btn-landing btn-cta-final btn-lg"> Launch AuraStream App <i class="bi bi-box-arrow-in-right ms-2"></i> </a>
-             </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer>
-        <!-- Content remains the same, styles above handle enhancements -->
+     <!-- Footer -->
+     <footer class="landing-footer">
          <div class="container footer-content">
-             <div class="footer-logo" data-aos="fade-up"> <a class="navbar-brand-landing" href="#"> <i class="bi bi-activity"></i> AuraStream </a> </div>
-             <div class="footer-links" data-aos="fade-up" data-aos-delay="100"> <a href="#feature-showcase">Features</a> <a href="#ai-spotlight">AI Insights</a> <a href="#community-hub">Community</a> <a href="#faq">FAQ</a> <a href="#for-business">Partners</a> <a href="#" title="Coming Soon">Blog</a> <a href="#" title="About the Concept">About Us</a> <a href="#" title="Contact Information">Contact</a> </div>
-             <div class="footer-social" data-aos="fade-up" data-aos-delay="200"> <a href="https://x.com/Simo_Elbou3" target="_blank" rel="noopener noreferrer" title="Twitter / X"><i class="bi bi-twitter-x"></i></a> <a href="https://github.com/MEDELBOU3" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="bi bi-github"></i></a> <a href="https://www.linkedin.com/in/elbou-simo-644820282/" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="bi bi-linkedin"></i></a> <a href="https://discord.com/users/1185698051210346547" target="_blank" rel="noopener noreferrer" title="Discord Profile"><i class="bi bi-discord"></i></a> <a href="https://www.instagram.com/simo_elb_3?igsh=MTVsYnlvZTlpaWVxdw==" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="bi bi-instagram"></i></a> </div>
-             <div class="footer-legal text-center text-muted" data-aos="fade-up" data-aos-delay="300"> <p>© 2025 AuraStream Concept by Mohamed El-bouanani. All rights reserved (Concept Work).</p> <p>Data sourced from TMDb, Spotify, Google Gemini, and other providers under their respective terms. AuraStream does not claim ownership of third-party content or data.</p> <p><a href="#" title="Placeholder">Privacy Policy</a> | <a href="#" title="Placeholder">Terms of Service</a> | <a href="#hero">Back to Top</a></p> </div>
+              <div class="footer-column">
+                  <a class="navbar-brand-landing d-block mb-3" href="#"> <i class="bi bi-stars"></i> AuraStream </a>
+                  <p style="font-size: 0.85rem;">Your portal to the entertainment universe. Discover, track, and connect.</p>
+              </div>
+              <div class="footer-column">
+                  <h4>Quick Links</h4>
+                  <ul>
+                      <li><a href="#hero"><i class="bi bi-chevron-right"></i> Home</a></li>
+                      <li><a href="#content-showcase"><i class="bi bi-chevron-right"></i> Discover</a></li>
+                      <li><a href="#features"><i class="bi bi-chevron-right"></i> Features</a></li>
+                      <li><a href="#gallery-section"><i class="bi bi-chevron-right"></i> Gallery</a></li>
+                      <li><a href="#faq"><i class="bi bi-chevron-right"></i> FAQ</a></li>
+                  </ul>
+              </div>
+              <div class="footer-column">
+                  <h4>Explore (Conceptual)</h4>
+                  <ul>
+                      <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link"><i class="bi bi-chevron-right"></i> Movies</button></li>
+                      <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link"><i class="bi bi-chevron-right"></i> TV Shows</button></li>
+                      <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link"><i class="bi bi-chevron-right"></i> Community Hub</button></li>
+                      <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link"><i class="bi bi-chevron-right"></i> Blog / News</button></li>
+                  </ul>
+              </div>
+              <div class="footer-column">
+                  <h4>Connect</h4>
+                  <div class="footer-social">
+                      <a href="https://github.com/MEDELBOU3/AuraStream-Concept" class="social-icon" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="bi bi-github"></i></a>
+                      <a href="#" class="social-icon conceptual-link" target="_blank" rel="noopener noreferrer" title="Twitter / X"><i class="bi bi-twitter-x"></i></a>
+                      <a href="#" class="social-icon conceptual-link" target="_blank" rel="noopener noreferrer" title="Discord"><i class="bi bi-discord"></i></a>
+                  </div>
+                  <p style="margin-top: 1rem; font-size: 0.85rem;">Follow the project's development.</p>
+              </div>
          </div>
-     </footer>
+          <div class="footer-bottom">
+               <p>© <span id="copy-year"></span> AuraStream Concept by MEDELBOU3. All Rights Reserved.</p>
+               <p>Movie data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDb</a>. This product uses the TMDb API but is not endorsed or certified by TMDb.</p>
+               <p><button type="button" class="btn btn-link p-0 conceptual-link footer-link-bottom">Privacy Policy</button> | <button type="button" class="btn btn-link p-0 conceptual-link footer-link-bottom">Terms of Service</button></p>
+          </div>
+      </footer>
 
-    <!-- JS Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <!-- Google Identity Services Library MUST be loaded before our script uses it -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+     <!-- Launch App Modal -->
+     <div class="modal fade" id="launchAppModal" tabindex="-1" aria-labelledby="launchAppModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="launchAppModalLabel"><i class="bi bi-stars me-2"></i> Enter AuraStream</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="auth-modal-close-button"></button>
+              </div>
+              <div class="modal-body">
+                  <!-- Nav tabs -->
+                  <ul class="nav nav-pills nav-fill mb-3" id="authTabs" role="tablist">
+                      <li class="nav-item" role="presentation">
+                          <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-panel" type="button" role="tab" aria-controls="login-panel" aria-selected="true">Login</button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                          <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup-panel" type="button" role="tab" aria-controls="signup-panel" aria-selected="false">Sign Up</button>
+                      </li>
+                  </ul>
 
+                  <!-- Tab panes -->
+                  <div class="tab-content" id="authTabsContent">
+                      <!-- Login Panel -->
+                      <div class="tab-pane fade show active" id="login-panel" role="tabpanel" aria-labelledby="login-tab">
+                          <form id="login-form">
+                              <div class="mb-3">
+                                  <label for="login-email" class="form-label">Email address</label>
+                                  <input type="email" class="form-control form-control-lg" id="login-email" placeholder="name@example.com" required>
+                              </div>
+                              <div class="mb-3">
+                                  <label for="login-password" class="form-label">Password</label>
+                                  <input type="password" class="form-control form-control-lg" id="login-password" placeholder="Password" required>
+                              </div>
+                              <div class="d-grid mb-3">
+                                   <button type="submit" class="btn btn-primary-gradient btn-lg">Login</button>
+                              </div>
+                          </form>
+                          <div class="text-center text-muted my-3">OR</div>
+                          <div class="d-grid">
+                              <button type="button" class="btn btn-light btn-lg border" id="google-login-button">
+                                  <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Login with Google
+                              </button>
+                          </div>
+                      </div>
+
+                      <!-- Sign Up Panel -->
+                      <div class="tab-pane fade" id="signup-panel" role="tabpanel" aria-labelledby="signup-tab">
+                           <form id="signup-form">
+                              <div class="mb-3">
+                                  <label for="signup-email" class="form-label">Email address</label>
+                                  <input type="email" class="form-control form-control-lg" id="signup-email" placeholder="name@example.com" required>
+                              </div>
+                              <div class="mb-3">
+                                  <label for="signup-password" class="form-label">Password</label>
+                                  <input type="password" class="form-control form-control-lg" id="signup-password" placeholder="Choose a strong password" required minlength="6">
+                                   <div class="form-text">Minimum 6 characters</div>
+                              </div>
+                               <!-- Optional: Confirm Password
+                               <div class="mb-3">
+                                   <label for="signup-confirm-password" class="form-label">Confirm Password</label>
+                                   <input type="password" class="form-control form-control-lg" id="signup-confirm-password" placeholder="Re-enter password" required>
+                               </div>
+                               -->
+                              <div class="d-grid mb-3">
+                                   <button type="submit" class="btn btn-success btn-lg">Sign Up</button>
+                              </div>
+                          </form>
+                           <div class="text-center text-muted my-3">OR</div>
+                           <div class="d-grid">
+                               <button type="button" class="btn btn-light btn-lg border" id="google-signup-button">
+                                   <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Sign Up with Google
+                               </button>
+                           </div>
+                      </div>
+                  </div>
+                   <!-- Error Message Area -->
+                   <div id="auth-error-message" class="alert alert-danger mt-3 d-none" role="alert"></div>
+              </div> <!-- /modal-body -->
+          </div>
+      </div>
+  </div>
+     <!-- Trailer Modal -->
+     <div class="modal fade" id="trailer-modal" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content">
+              <button type="button" class="modal-close-video" data-bs-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+              <div class="modal-body">
+                  <div class="video-container">
+                      <!-- The ID here is also important -->
+                      <iframe id="trailer-iframe" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+
+     <!-- === VENDOR LIBRARIES (Ensure these load) === -->
+     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+     <script defer src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+      <script defer src="https://unpkg.com/bs5-toast@1.0.0/dist/bs5-toast.min.js"></script>
+     <!-- THREE.js (Load synchronously as it's needed early for background) -->
+     
+     <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+ 
+     <!-- === FIREBASE SDKs === -->
+     <!-- Replace with the latest version numbers from the Firebase docs if needed -->
+     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+ 
 
     <!-- Enhanced Landing Page Application JS -->
     <script src="app.js"></script>
