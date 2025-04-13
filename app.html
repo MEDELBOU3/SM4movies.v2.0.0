@@ -76,6 +76,23 @@
                        <i class="bi bi-spotify me-2" style="color: var(--spotify-green); font-size: 1.2rem;"></i>
                        <span id="spotify-auth-nav-message">Checking Spotify...</span>
                     </div>
+                     <div id="app-login-prompt">
+                        <a href="index.html" class="btn btn-primary">Login / Sign Up</a>
+                    </div>
+                
+                    <!-- Logged IN View -->
+                    <div class="d-none align-items-center" id="app-user-info-area">
+                        <!-- Avatar Placeholder -->
+                        <div id="app-user-avatar" class="user-avatar me-2" title="User Profile">
+                             <!-- Use the same classes as landing page for consistency if desired -->
+                             <span id="app-user-avatar-initials"></span>
+                             <img id="app-user-avatar-image" src="" alt="Profile" class="d-none" />
+                        </div>
+                        <span id="app-user-display-name" class="me-3 text-light small fw-medium"></span>
+                        <button type="button" class="btn btn-secondary-outline btn-sm" id="app-logout-button">
+                          Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
