@@ -1750,6 +1750,43 @@
         console.log("✅ App Init Complete.");
         }, 
 
+              handleAuthReady: (user, dbInstance) => {
+                  console.log(`✅ App.handleAuthReady received. User: ${user ? user.email : 'None'}, DB: ${dbInstance ? 'Ready' : 'Unavailable'}`);
+                  State.currentUser = user; // Store user state within App if needed
+         // Make dbInstance available within App scope if preferred,
+         // though `appDb` is already available globally from firebase-app.js
+         // App.db = dbInstance;
+
+         if (user && dbInstance) {
+            // User is logged in AND Firestore is ready
+            // Now is the safe time to:
+             // 1. Load data that DEPENDS on the user (e.g., fetch user-specific recommendations)
+             // fetchUserSpecificData(user.uid, dbInstance);
+             // 2. Enable features requiring login/db
+             // enablePremiumFeatures();
+             // 3. Trigger initial view update via Router *now* that we know auth state
+              Router.updateView();
+
+             console.log("🚀 App is fully ready for authenticated user.");
+
+         } else if (user && !dbInstance) {
+              // Logged in, but DB failed? Less likely if init was okay
+             console.warn("App Ready, user logged in BUT Firestore is unavailable!");
+             // Allow navigation but show warnings for DB features?
+             Router.updateView(); // Update view based on auth anyway
+              Utils.showToast("Data features (like view tracking) are unavailable.", "warning");
+
+         } else {
+              // User is logged out (handled by firebase-app.js redirect/UI)
+             // No specific App actions needed here if redirect happens,
+             // but if guest mode allowed, maybe load public content here.
+             console.log("App Ready, user is logged out.");
+             // Potentially load default/public content
+              Router.updateView(); // Update view for guest state if applicable
+         }
+
+     },
+
             applyTheme: (themeName) => {
                 const body = document.body;
                 // Remove any existing theme classes
