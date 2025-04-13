@@ -1,10 +1,4 @@
- /**
-       * AuraStream Landing Page Script v9.2 (Fully Developed & Integrated)
-       * Includes: Intro Video, Enhanced 3D BG/Gallery, API Key Validation, Feature Player, Full Error Handling.
-       */
-  
-      // --- Main Application Object ---
-      const AuraStreamApp = {
+  const AuraStreamApp = {
   
           // --- Configuration ---
           config: {
@@ -51,7 +45,7 @@
                 storageBucket: "sm4movies.firebasestorage.app",
                 messagingSenderId: "277353836953",
                 appId: "1:277353836953:web:85e02783526c7cb58de308",
-                measurementId: "G-690RSNJ2Q2"
+                //measurementId: "G-690RSNJ2Q2"
               }
           },
   
@@ -309,7 +303,7 @@
 
                 return true; // Firebase setup successful
 
-            } catch (error) {
+                } catch (error) {
                 utils.error("Firebase initialization failed:", error);
                 alert("Could not initialize Firebase authentication. Features requiring login will be unavailable.");
                 // Update UI to reflect auth failure?
@@ -1013,34 +1007,65 @@
                     utils.log(`Handling Google ${action} attempt...`);
                     this.clearAuthError();
 
-                    if (!auth) { this.showAuthError("Auth service not available."); return; }
-                    if (typeof firebase === 'undefined' || !firebase.auth.GoogleAuthProvider) {
-                        this.showAuthError("Google Auth Provider not available.");
-                        utils.error("firebase.auth.GoogleAuthProvider is undefined. Ensure Firebase Auth SDK is loaded.");
+                    // 1. Check if Firebase Auth is initialized
+                    if (!auth) {
+                        this.showAuthError("Auth service not available. Please refresh.");
+                        utils.error("handleGoogleAuth called before Firebase Auth was ready.");
+                        return;
+                    }
+                    // 2. Check if Google Auth Provider class is available from SDK
+                    if (typeof firebase === 'undefined' || !firebase.auth || !firebase.auth.GoogleAuthProvider) {
+                        this.showAuthError("Google Auth Provider could not be loaded. Check network or scripts.");
+                        utils.error("firebase.auth.GoogleAuthProvider is undefined.");
                         return;
                     }
 
-
+                    // 3. Create Google Auth Provider instance
                     const provider = new firebase.auth.GoogleAuthProvider();
-                    // Optional: Add custom parameters if needed
-                    // provider.addScope('profile');
-                    // provider.addScope('email');
+                    // Optional: Add scopes if you need more than basic profile/email
+                    // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+                    // Optional: Custom parameters
+                    // provider.setCustomParameters({
+                    //   'login_hint': 'user@example.com'
+                    // });
 
                     utils.log("Initiating Google Sign-In with Popup...");
+
+                    // 4. Call Firebase signInWithPopup
                     auth.signInWithPopup(provider)
                         .then((result) => {
-                            // This gives you a Google Access Token. You can use it to access the Google API.
+                            // This gives you a Google Access Token if needed (rarely used directly)
                             // const credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
-                            // const token = credential.accessToken;
+                            // const token = credential?.accessToken;
+
                             // The signed-in user info.
                             const user = result.user;
+
+                            // Check if it's a new user during a signup flow (optional check)
+                            // const isNewUser = result.additionalUserInfo?.isNewUser;
+                            // if (isSignup && !isNewUser) {
+                            //     utils.warn(`Google Login attempted during Signup flow for existing user: ${user.email}`);
+                            //     // Decide how to handle - maybe log them in anyway or show message
+                            // }
+
                             utils.log(`Firebase Google ${action} SUCCESS: ${user.email}`);
-                            // onAuthStateChanged handles state/UI. Close modal & redirect.
+
+                            // onAuthStateChanged handles actual state update.
+                            // Close modal and redirect.
                             AuraStreamApp.modules.modals.closeAuthModal();
                             window.location.href = AuraStreamApp.config.AUTH_REDIRECT_URL;
+
                         }).catch((error) => {
+                            // Handle Errors here.
                             utils.error(`Firebase Google ${action} FAILED:`, error);
-                            this.showAuthError(this.mapFirebaseError(error));
+                            // Log specific details
+                            console.error("Error Code:", error.code);
+                            console.error("Error Message:", error.message);
+                            // The credential used - may be null.
+                            // const email = error.customData?.email;
+                            // const credential = firebase.auth.GoogleAuthProvider.credentialFromError(error);
+
+                            this.showAuthError(this.mapFirebaseError(error)); // Show user-friendly error
                         });
                 },
 
@@ -1135,7 +1160,11 @@
   
   
       // --- Start the Main Application ---
-      AuraStreamApp.init();        document.addEventListener('DOMContentLoaded', () => {
+      AuraStreamApp.init();
+   
+
+
+  document.addEventListener('DOMContentLoaded', () => {
         const AUTH_STORAGE_KEY = 'auraUser'; // Must match the key from the landing page script
         let currentUser = null;
 
