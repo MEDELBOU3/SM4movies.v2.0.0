@@ -8,10 +8,9 @@ const firebaseConfigApp = {
     appId: "1:277353836953:web:85e02783526c7cb58de308", // ***** REPLACE *****
 };
 
-// --- Global Variables for Services (needed elsewhere in app.html) ---
+// --- Global Variables for Services ---
 let appAuth;
-let appDb; // You said this is important for view counts
-// Add others like `appStorage` if needed in app.html
+let appDb; // Firestore instance for view tracking etc.
 
 // --- Helper function for initials ---
 function getAppInitials(name = '', email = '') {
@@ -26,22 +25,45 @@ function getAppInitials(name = '', email = '') {
 
 // --- Helper for simple HTML escaping ---
 function escapeHtmlSimple(unsafe) {
-     if (typeof unsafe !== 'string') return unsafe;
-     return unsafe
-          .replace(/&/g, "&")
-          .replace(/</g, "<")
-          .replace(/>/g, ">")
-          .replace(/"/g, """)
-          .replace(/'/g, "'");
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe
+         .replace(/&/g, "&") // Use &
+         .replace(/</g, "<")  // Use <
+         .replace(/>/g, ">")  // Use >
+         .replace(/"/g, " ") // Use "
+         .replace(/'/g, "'"); // Use '
 }
 
+// --- View Tracking Function Definition ---
+async function trackView(dbInstance, userId, contentId) {
+    // Check if Firestore is available and parameters are valid
+    if (!dbInstance) {
+        console.error("trackView Error: Firestore instance (appDb) is not available.");
+        return;
+    }
+    if (!userId || !contentId) {
+        console.error("trackView Error: Missing userId or contentId.");
+        return;
+    }
+    console.log(`Attempting to track view for content ${contentId} by user ${userId}`);
+    try {
+        const viewDocRef = dbInstance.collection('users').doc(userId).collection('views').doc(String(contentId));
+        await viewDocRef.set({
+            contentId: String(contentId),
+            lastWatched: firebase.firestore.FieldValue.serverTimestamp(),
+            count: firebase.firestore.FieldValue.increment(1)
+        }, { merge: true });
+        console.log(`Successfully tracked view for content ${contentId}`);
+    } catch (error) {
+        console.error(`Firestore Error: Failed to track view for content ${contentId}:`, error);
+    }
+}
 
 // --- Main app.html initialization logic ---
 document.addEventListener('DOMContentLoaded', () => {
     console.log("app.html: DOM Ready. Starting Firebase Auth check.");
-
     try {
-        // Initialize Firebase App (Safely, checks if already initialized)
+        // Initialize Firebase App
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfigApp);
             console.log("app.html: Firebase App Initialized.");
@@ -49,39 +71,34 @@ document.addEventListener('DOMContentLoaded', () => {
             firebase.app();
             console.log("app.html: Using existing Firebase App instance.");
         }
-
         // Get service instances
         appAuth = firebase.auth();
-        appDb = firebase.firestore(); // Important for your view tracking
+        appDb = firebase.firestore(); // Get Firestore for use by trackView etc.
         console.log("app.html: Firebase Auth and Firestore services obtained.");
 
-
-        // --- Get UI Element References for app.html ---
+        // Get UI Element References
         const appUserInfoArea = document.getElementById('app-user-info-area');
         const appUserAvatar = document.getElementById('app-user-avatar');
+        // ... other UI element gets ...
         const appUserAvatarInitials = document.getElementById('app-user-avatar-initials');
         const appUserAvatarImage = document.getElementById('app-user-avatar-image');
         const appUserDisplayName = document.getElementById('app-user-display-name');
         const appLogoutButton = document.getElementById('app-logout-button');
         const appLoginPrompt = document.getElementById('app-login-prompt');
 
-        // Validate critical UI elements exist
-        if (!appUserInfoArea || !appLoginPrompt || !appLogoutButton) {
-             console.error("app.html: CRITICAL UI elements (login prompt/user area/logout button) not found!");
-             // Optional: Prevent further app initialization if these are missing
-             // return;
+
+        if (!appUserInfoArea || !appLoginPrompt || !appLogoutButton /* Add others if critical */) {
+            console.error("app.html: CRITICAL UI elements missing! Auth UI cannot function.");
+            return; // Stop if core UI missing
         }
 
-        // --- Listen for Authentication State Changes ---
+        // Listen for Authentication State Changes
         appAuth.onAuthStateChanged(user => {
             console.log(`app.html: Auth state changed. User ${user ? 'is logged in' : 'is NOT logged in'}.`);
-
             if (user) {
                 // --- USER IS LOGGED IN ---
-                console.log(`app.html: Updating UI for user: ${user.displayName || user.email}`);
-
                 if (appUserInfoArea) appUserInfoArea.classList.remove('d-none');
-                if (appLoginPrompt) appLoginPrompt.classList.add('d-none'); // Hide login prompt
+                if (appLoginPrompt) appLoginPrompt.classList.add('d-none');
 
                 if (appUserDisplayName) {
                     const displayName = user.displayName || user.email;
@@ -89,82 +106,76 @@ document.addEventListener('DOMContentLoaded', () => {
                     appUserDisplayName.title = `Logged in as: ${escapeHtmlSimple(user.email)}`;
                 }
 
-                // Update Avatar (Ensure elements exist)
+                // Update Avatar
                 if (appUserAvatar && appUserAvatarImage && appUserAvatarInitials) {
                     const photoURL = user.photoURL;
-                    if (photoURL) {
-                        appUserAvatarImage.src = photoURL;
-                        appUserAvatarImage.alt = `${user.displayName || user.email}'s profile`;
-                        appUserAvatarImage.classList.remove('d-none');
-                        appUserAvatarInitials.classList.add('d-none');
-                        appUserAvatarInitials.textContent = '';
-                    } else {
-                        const initials = getAppInitials(user.displayName, user.email);
-                        appUserAvatarInitials.textContent = initials;
-                        appUserAvatarInitials.classList.remove('d-none');
-                        appUserAvatarImage.classList.add('d-none');
-                        appUserAvatarImage.src = '';
-                        appUserAvatarImage.alt = '';
+                    if (photoURL) { /* ... display image ... */
+                         appUserAvatarImage.src = photoURL;
+                         appUserAvatarImage.alt = `${user.displayName || user.email}'s profile`;
+                         appUserAvatarImage.classList.remove('d-none');
+                         appUserAvatarInitials.classList.add('d-none');
+                         appUserAvatarInitials.textContent = '';
+                    } else { /* ... display initials ... */
+                         const initials = getAppInitials(user.displayName, user.email);
+                         appUserAvatarInitials.textContent = initials;
+                         appUserAvatarInitials.classList.remove('d-none');
+                         appUserAvatarImage.classList.add('d-none');
+                         appUserAvatarImage.src = '';
+                         appUserAvatarImage.alt = '';
                     }
                 }
 
-                // Setup Logout Button Listener (Only add once)
+                // Setup Logout Button
                 if (appLogoutButton && !appLogoutButton.hasAttribute('data-listener-attached')) {
                     appLogoutButton.classList.remove('d-none');
-                    appLogoutButton.addEventListener('click', () => {
-                         console.log("app.html: Logout button clicked. Signing out...");
-                         appAuth.signOut().then(() => {
-                              console.log("app.html: Sign out successful.");
-                         }).catch(error => {
-                              console.error("app.html: Error signing out:", error);
-                              alert("Logout failed.");
-                         });
+                    appLogoutButton.addEventListener('click', () => { /* ... sign out logic ... */
+                        console.log("app.html: Logout button clicked. Signing out...");
+                        appAuth.signOut().then(() => {
+                            console.log("app.html: Sign out successful.");
+                        }).catch(error => {
+                            console.error("app.html: Error signing out:", error);
+                            alert("Logout failed.");
+                        });
                     });
                     appLogoutButton.setAttribute('data-listener-attached', 'true');
                 } else if (appLogoutButton) {
-                    appLogoutButton.classList.remove('d-none'); // Ensure it's visible if elements found
+                    appLogoutButton.classList.remove('d-none');
                 }
 
-                // *** YOUR VIEW TRACKING LOGIC CAN NOW USE `appDb` AND `user` HERE ***
-                // Example: Track views based on a loaded movie ID
-                // if (appDb) {
-                //    trackContentView(appDb, user.uid, currentlyViewedMovieId);
-                // }
-                // Call your app's main movie loading function if it hasn't run yet
-                // loadMainAppContent(user, appDb); // Example
+                // --- CALL VIEW TRACKING FROM ELSEWHERE WHEN NEEDED ---
+                // Example - if you have a global function that runs when a movie loads:
+                // globalMovieLoadHandler = (movieId) => {
+                //     if (appAuth && appAuth.currentUser && appDb) {
+                //         trackView(appDb, appAuth.currentUser.uid, movieId);
+                //     }
+                // };
+                // globalMovieLoadHandler(currentMovieId);
+
             } else {
                 // --- USER IS LOGGED OUT ---
-                console.log("app.html: User not logged in. Hiding user elements, showing login prompt.");
+                // ... handle logged out UI / redirect ...
+                 console.log("app.html: User not logged in. Handling redirect or guest UI.");
                  if (appUserInfoArea) appUserInfoArea.classList.add('d-none');
-                 if (appLogoutButton) appLogoutButton.classList.add('d-none'); // Ensure logout is hidden
-                 if (appLoginPrompt) appLoginPrompt.classList.remove('d-none'); // Ensure login prompt is visible
-                 // Optional: Clear elements' content if they exist
+                 if (appLogoutButton) appLogoutButton.classList.add('d-none');
+                 if (appLoginPrompt) appLoginPrompt.classList.remove('d-none');
                  if (appUserDisplayName) appUserDisplayName.textContent = 'Guest';
-                 if (appUserAvatar && appUserAvatarImage && appUserAvatarInitials) {
-                     appUserAvatarInitials.textContent = '?';
-                     appUserAvatarInitials.classList.remove('d-none'); // Show default '?'
-                      appUserAvatarImage.classList.add('d-none');
-                     appUserAvatarImage.src = '';
-                 }
+                 if (appUserAvatarInitials) appUserAvatarInitials.textContent = '?'; // Reset initials
 
-                 // Optional: Force Redirect for Protected Apps
-                 // Uncomment this if app.html should not be viewable when not logged in
-                  console.log("app.html: Redirecting to index.html (Landing/Login Page)...");
-                 // window.location.replace('index.html'); // Adjust file name as needed
-
-                 // Optional: Inform user
-                  // alert("You need to be logged in to view this content.");
-
+                  // --- Redirect if necessary ---
+                  // Use replace to avoid back button issues
+                  // Check if already on index to prevent loop (adjust path if landing isn't index.html)
+                  if (!window.location.pathname.endsWith('/') && !window.location.pathname.includes('index.html')) {
+                       console.warn("Redirecting to index.html as user is not logged in.");
+                      window.location.replace('index.html');
+                  }
             }
         }); // End onAuthStateChanged
-    } catch (e) { // Catch errors during Initialization or Listener setup
-        console.error("app.html: Firebase Initialization/Auth listener failed:", e);
-         alert("Authentication service failed to load. The app might not work correctly.");
-        // Update UI to show error state
-        if (appLoginPrompt) {
-            appLoginPrompt.innerHTML = `<span class="text-danger">Auth Error: Failed to load authentication.</span>`;
-             appLoginPrompt.classList.remove('d-none');
-        }
+
+    } catch (e) { // Catch errors during initialization
+        console.error("app.html: Critical error during Firebase setup:", e);
+         alert("App initialization failed. Please refresh.");
+        // Show an error state
+         if (appLoginPrompt) appLoginPrompt.textContent = 'Error loading app.';
         if (appUserInfoArea) appUserInfoArea.classList.add('d-none');
     }
 }); // End DOMContentLoaded
