@@ -1,244 +1,160 @@
-/**
- * Firebase Initialization & Auth Handling for app.html
- *
- * This script should be loaded ONLY in app.html.
- * It initializes Firebase using the shared config and listens for
- * the persistent authentication state set by the landing page.
- * It also initializes Firestore for use within app.html.
- */
-
-(function() {
-  'use strict';
-
-  // --- 1. Firebase Configuration ---
-  // IMPORTANT: MUST match the configuration used on your landing page.
-  const firebaseConfig = {
-      apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4", // ***** REPLACE *****
-      authDomain: "sm4movies.firebaseapp.com",           // ***** REPLACE *****
-      projectId: "sm4movies",                      // ***** REPLACE *****
-      storageBucket: "sm4movies.appspot.com",       // ***** REPLACE *****
-      messagingSenderId: "277353836953",           // ***** REPLACE *****
-      appId: "1:277353836953:web:85e02783526c7cb58de308" // ***** REPLACE *****
-      // measurementId: "G-XXXXXX" // Optional
+// --- Add near the top of your main <script> ---
+const firebaseConfig = {
+    apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4",
+    authDomain: "sm4movies.firebaseapp.com",
+    projectId: "sm4movies",
+    storageBucket: "sm4movies.firebasestorage.app",
+    messagingSenderId: "277353836953",
+    appId: "1:277353836953:web:85e02783526c7cb58de308",
+    measurementId: "G-690RSNJ2Q2"
   };
 
-  // --- 2. Global Variables for Firebase Services ---
-  let appAuth = null;
-  let appDb = null;   // Firestore database instance
 
-  // --- 3. Utility Function ---
-  function getAppInitials(name = '', email = '') {
-      if (name && name.trim().length > 0) {
-          const parts = name.trim().split(' ').filter(Boolean);
-          if (parts.length > 1) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-          if (parts[0]?.length > 0) return parts[0].substring(0, 2).toUpperCase();
-      }
-      if (email && email.includes('@')) return email[0].toUpperCase();
-      return '??';
-  }
+// Initialize Firebase
+let firebaseApp;
+let db;
+try {
+    firebaseApp = firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore(); // Get Firestore instance
+    console.log("Firebase Initialized Successfully.");
+} catch(e) {
+     console.error("Firebase initialization failed:", e);
+     Utils.showToast("Essential service failed to load. Some features may be disabled.", "danger");
+     // Disable features that rely on Firebase
+}
 
-  // --- 4. Main Logic Execution ---
-  function initializeAppFirebase() {
-      console.log("app.html: Initializing Firebase services...");
+ // Helper function for initials (copy from landing page utils if needed)
+ 
+    function getAppInitials(name = '', email = '') {
+        if (name && name.trim().length > 0) {
+            const parts = name.trim().split(' ');
+            if (parts.length > 1) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            if (parts[0]?.length > 0) return parts[0].substring(0, 2).toUpperCase();
+        }
+        if (email && email.includes('@')) return email[0].toUpperCase();
+        return '??';
+    }
 
-      // Initialize Firebase App safely
-      try {
-          if (!firebase.apps.length) {
-              firebase.initializeApp(firebaseConfig);
-              console.log("app.html: Firebase App Initialized.");
-          } else {
-              firebase.app(); // Get default app
-              console.log("app.html: Using existing Firebase App instance.");
-          }
-      } catch (initError) {
-          console.error("CRITICAL: app.html - Firebase App initialization failed!", initError);
-          displayErrorState("Failed to connect to core services. Please refresh.");
-          return; // Stop execution if app fails
-      }
-
-      // Get Firebase Service Instances
-      try {
-          appAuth = firebase.auth();
-          appDb = firebase.firestore(); // Get Firestore instance
-          // Add Storage here if app.html needs direct access: let appStorage = firebase.storage();
-          console.log("app.html: Firebase Auth & Firestore services obtained.");
-      } catch (serviceError) {
-          console.error("CRITICAL: app.html - Failed to get Firebase services (Auth/Firestore)!", serviceError);
-          displayErrorState("Failed to connect to authentication or data services.");
-          return; // Stop if services fail
-      }
-
-      // Proceed only if Auth service is available
-      if (appAuth) {
-          setupAuthListener();
-      } else {
-          console.error("CRITICAL: app.html - Firebase Auth service unavailable after initialization!");
-          displayErrorState("Authentication service unavailable.");
-      }
-  }
-
-  // --- 5. Setup Auth Listener ---
-  function setupAuthListener() {
-      console.log("app.html: Setting up Auth State Listener...");
-
-      // Get UI Element References (Do this *after* DOMContentLoaded)
-      const appUserInfoArea = document.getElementById('app-user-info-area');
-      const appUserAvatar = document.getElementById('app-user-avatar');
-      const appUserAvatarInitials = document.getElementById('app-user-avatar-initials');
-      const appUserAvatarImage = document.getElementById('app-user-avatar-image');
-      const appUserDisplayName = document.getElementById('app-user-display-name');
-      const appLogoutButton = document.getElementById('app-logout-button');
-      const appLoginPrompt = document.getElementById('app-login-prompt');
-
-      // Basic check for core elements
-      if (!appUserInfoArea || !appLoginPrompt || !appLogoutButton || !appUserAvatar || !appUserAvatarInitials || !appUserAvatarImage || !appUserDisplayName) {
-          console.error("app.html: Not all required UI elements found for auth display. Functionality may be broken.");
-          // Depending on requirements, could stop here or allow partial functionality
-      }
+    // --- 2. Initialize Firebase on app.html ---
+    let appAuth; // Declare auth variable in accessible scope
+    try {
+        if (!firebase.apps.length) { // Avoid re-initializing if already done (e.g., shared layout)
+            firebase.initializeApp(firebaseConfigApp);
+            console.log("Firebase Initialized on app.html");
+        } else {
+            console.log("Using existing Firebase app instance on app.html");
+        }
+        appAuth = firebase.auth(); // Get Auth instance
+    } catch (e) {
+        console.error("CRITICAL: Failed to initialize Firebase on app.html", e);
+        // Display error to user? Redirect?
+        alert("Error connecting to authentication service. Please try refreshing.");
+        // Optionally redirect if app cannot function without Firebase
+        // window.location.href = 'index.html';
+    }
 
 
-      appAuth.onAuthStateChanged(user => {
-          console.log(`app.html: Auth state changed. User is ${user ? 'present' : 'null'}.`);
+    // --- 3. Get References to app.html UI Elements ---
+    // IMPORTANT: Use UNIQUE IDs for elements in app.html's header/user area
+    // to avoid conflicts with landing page elements if scripts somehow run together.
+    const appUserInfoArea = document.getElementById('app-user-info-area'); // e.g., a user info area in app.html header
+    const appUserAvatar = document.getElementById('app-user-avatar');       // Avatar container DIV in app.html
+    const appUserAvatarInitials = document.getElementById('app-user-avatar-initials'); // SPAN for initials in app.html
+    const appUserAvatarImage = document.getElementById('app-user-avatar-image'); // IMG tag in app.html
+    const appUserDisplayName = document.getElementById('app-user-display-name'); // SPAN for name in app.html
+    const appLogoutButton = document.getElementById('app-logout-button');       // Logout button in app.html header
+    const appLoginPrompt = document.getElementById('app-login-prompt');     // e.g., a div/button shown if logged out
 
-          if (user) {
-              // --- USER IS LOGGED IN ---
-              console.log(`app.html: Updating UI for user: ${user.displayName || user.email}`);
-              if (appUserInfoArea) appUserInfoArea.classList.remove('d-none');
-              if (appLoginPrompt) appLoginPrompt.classList.add('d-none');
+    // --- 4. Listen for Authentication State Changes ---
+    if (appAuth) {
+        appAuth.onAuthStateChanged(user => {
+            console.log(`Auth state changed on app.html. User present: ${!!user}`);
 
-              // Update Display Name
-              if (appUserDisplayName) {
-                  const displayName = user.displayName || user.email; // Fallback
-                  appUserDisplayName.textContent = escapeHtmlSimple(displayName); // Use simple escape for safety
-                  appUserDisplayName.title = `Logged in as: ${escapeHtmlSimple(user.email)}`;
-              }
+            if (user) {
+                // --- USER IS LOGGED IN ---
+                console.log(`User Found: ${user.displayName} (${user.email})`);
 
-              // Update Avatar
-              if (appUserAvatar && appUserAvatarImage && appUserAvatarInitials) {
-                  const photoURL = user.photoURL;
-                  if (photoURL) {
-                      appUserAvatarImage.src = photoURL;
-                      appUserAvatarImage.alt = `${user.displayName || user.email}'s profile`;
-                      appUserAvatarImage.classList.remove('d-none');
-                      appUserAvatarInitials.classList.add('d-none');
-                      appUserAvatarInitials.textContent = '';
-                  } else {
-                      const initials = getAppInitials(user.displayName, user.email);
-                      appUserAvatarInitials.textContent = initials;
-                      appUserAvatarInitials.classList.remove('d-none');
-                      appUserAvatarImage.classList.add('d-none');
-                      appUserAvatarImage.src = '';
-                      appUserAvatarImage.alt = '';
-                  }
-              }
+                // Update UI Elements (ensure elements exist first)
+                if (appUserInfoArea) appUserInfoArea.classList.remove('d-none');
+                if (appLoginPrompt) appLoginPrompt.classList.add('d-none'); // Hide login prompt
 
-              // Setup Logout Button (only add listener once)
-              if (appLogoutButton && !appLogoutButton.hasAttribute('data-listener-attached')) {
-                  appLogoutButton.classList.remove('d-none');
-                  appLogoutButton.addEventListener('click', handleLogout);
-                  appLogoutButton.setAttribute('data-listener-attached', 'true');
-              } else if (appLogoutButton) {
-                   appLogoutButton.classList.remove('d-none'); // Still ensure it's visible
-              }
+                if (appUserDisplayName) {
+                    const displayName = user.displayName || user.email;
+                    appUserDisplayName.textContent = displayName;
+                    appUserDisplayName.title = `Logged in as: ${user.email}`;
+                }
 
-              // --- Trigger App Content Loading ---
-              // This is where you start loading movies, playlists, etc., using the 'user' and 'appDb' if needed.
-               console.log("app.html: User authenticated. Triggering app data loading/initialization.");
-               // example: initializeMainAppFeatures(user, appDb);
+                // Update Avatar
+                if (appUserAvatar && appUserAvatarImage && appUserAvatarInitials) {
+                    const photoURL = user.photoURL;
+                    if (photoURL) {
+                        // Display Image
+                        appUserAvatarImage.src = photoURL;
+                        appUserAvatarImage.alt = `${user.displayName || user.email}'s profile`;
+                        appUserAvatarImage.classList.remove('d-none');
+                        appUserAvatarInitials.classList.add('d-none');
+                        appUserAvatarInitials.textContent = '';
+                    } else {
+                        // Display Initials
+                        const initials = getAppInitials(user.displayName, user.email);
+                        appUserAvatarInitials.textContent = initials;
+                        appUserAvatarInitials.classList.remove('d-none');
+                        appUserAvatarImage.classList.add('d-none');
+                        appUserAvatarImage.src = '';
+                        appUserAvatarImage.alt = '';
+                    }
+                }
 
-          } else {
-              // --- USER IS LOGGED OUT ---
-              console.log("app.html: No user session found. Handling logged out state.");
+                // Activate Logout Button
+                if (appLogoutButton) {
+                    appLogoutButton.classList.remove('d-none'); // Ensure button is visible
+                    // Remove previous listener to prevent duplicates if state changes multiple times
+                    const newLogoutButton = appLogoutButton.cloneNode(true); // Clone to remove listeners easily
+                    appLogoutButton.parentNode.replaceChild(newLogoutButton, appLogoutButton);
+                    // Add the listener to the new button
+                    newLogoutButton.addEventListener('click', () => {
+                        console.log("Logging out from app.html...");
+                        appAuth.signOut().then(() => {
+                            console.log("Firebase sign out successful.");
+                            // Redirect back to the landing page after logout
+                            window.location.href = 'index.html'; // Adjust if landing page has different name
+                        }).catch(error => {
+                            console.error("Error signing out:", error);
+                            alert("Logout failed. Please try again.");
+                        });
+                    });
+                     // Make sure the new variable references the active button in the DOM
+                    // (Alternatively, use a flag to add listener only once)
+                }
 
-              // Option 1: Show logged out elements within app.html (if guest access allowed)
-              /*
-              if (appUserInfoArea) appUserInfoArea.classList.add('d-none');
-              if (appLogoutButton) appLogoutButton.classList.add('d-none');
-              if (appLoginPrompt) appLoginPrompt.classList.remove('d-none');
-              // Reset display elements if they exist
-              if (appUserDisplayName) appUserDisplayName.textContent = 'Guest';
-               if (appUserAvatar && appUserAvatarImage && appUserAvatarInitials) {
-                  appUserAvatarInitials.textContent = '?';
-                  appUserAvatarInitials.classList.remove('d-none');
-                  appUserAvatarImage.classList.add('d-none');
-               }
-               */
+                // --- HERE: You would trigger loading the actual movie/app data ---
+                 // Example: loadMovies(), initializePlayer(), etc.
 
-              // Option 2: Force Redirect to Landing/Login Page (most common for protected apps)
-               console.warn("app.html: User is not logged in. Redirecting to landing page.");
-               // Check if we aren't already on index.html to prevent loops if landing page logic errors
-               if (!window.location.pathname.endsWith('/') && !window.location.pathname.endsWith('index.html')) {
-                   // alert("Please log in to access the app."); // Optional feedback
-                    window.location.replace('index.html'); // Redirect (adjust filename if different)
-               } else {
-                    console.log("Already on landing page or root, preventing redirect loop.");
-                    // Potentially show the login prompt on the landing page if already there
-                    if (appUserInfoArea) appUserInfoArea.classList.add('d-none');
-                    if (appLogoutButton) appLogoutButton.classList.add('d-none');
-                    if (appLoginPrompt) appLoginPrompt.classList.remove('d-none');
-               }
-          }
-      });
-  }
+            } else {
+                // --- USER IS LOGGED OUT ---
+                console.log("No user session found on app.html.");
 
-  // --- 6. Logout Handler ---
-  function handleLogout() {
-      if (!appAuth) {
-          console.error("app.html: Cannot logout, Auth service unavailable.");
-          return;
-      }
-      console.log("app.html: Logout button clicked. Signing out...");
-      appAuth.signOut()
-          .then(() => {
-              console.log("app.html: Sign out successful. Redirecting (listener will handle UI/redirect).");
-              // The onAuthStateChanged listener above will handle the redirect/UI update.
-              // No explicit redirect here needed, unless immediate action preferred.
-          })
-          .catch(error => {
-              console.error("app.html: Sign out failed:", error);
-              alert("Logout failed. Please try again.");
-          });
-  }
+                // Option 1: Show Logged Out UI within app.html (if parts are public)
+                 if (appUserInfoArea) appUserInfoArea.classList.add('d-none');
+                 if (appLogoutButton) appLogoutButton.classList.add('d-none');
+                 if (appLoginPrompt) appLoginPrompt.classList.remove('d-none'); // Show login prompt
+                // Clear avatar/name if needed
+                if (appUserDisplayName) appUserDisplayName.textContent = 'Guest';
+                if (appUserAvatarImage) appUserAvatarImage.classList.add('d-none');
+                if (appUserAvatarInitials) {
+                     appUserAvatarInitials.textContent = '?';
+                     appUserAvatarInitials.classList.remove('d-none');
+                }
 
-  // --- 7. Helper to display major errors ---
-  function displayErrorState(message) {
-      const appLoginPrompt = document.getElementById('app-login-prompt');
-      const appUserInfoArea = document.getElementById('app-user-info-area');
-       const body = document.body; // Or a more specific container
-
-      if(body) { // Append a visible error message
-           const errorDiv = document.createElement('div');
-           errorDiv.style.position = 'fixed';
-           errorDiv.style.top = '10px';
-           errorDiv.style.left = '10px';
-           errorDiv.style.padding = '10px';
-           errorDiv.style.backgroundColor = 'red';
-           errorDiv.style.color = 'white';
-           errorDiv.style.zIndex = '9999';
-           errorDiv.textContent = `APP ERROR: ${message}`;
-           body.appendChild(errorDiv);
-      }
-      // Hide normal UI potentially
-       if (appLoginPrompt) appLoginPrompt.classList.add('d-none');
-       if (appUserInfoArea) appUserInfoArea.classList.add('d-none');
-  }
-
-  // --- 8. Simple HTML Escaper (if not globally available) ---
-   function escapeHtmlSimple(unsafe) {
-       if (typeof unsafe !== 'string') return unsafe; // Only escape strings
-       return unsafe
-            .replace(/&/g, "&")
-            .replace(/</g, "<")
-            .replace(/>/g, ">")
-            .replace(/"/g, "")
-            .replace(/'/g, "'");
-   }
-
-  // --- Initialize when DOM is ready ---
-  if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeAppFirebase);
-  } else {
-      initializeAppFirebase(); // DOM already ready
-  }
-
-})(); // IIFE to avoid polluting global scope
+                // Option 2: Redirect to Landing/Login Page (More common for protected apps)
+                 alert("You need to be logged in to access the app. Redirecting to login.");
+                 // Use window.location.replace for cleaner history (prevents back button)
+                 window.location.replace('index.html'); // Adjust filename if needed
+            }
+        });
+    } else {
+        console.error("Firebase Auth instance not available. Cannot listen for state changes.");
+        // Display error? Redirect?
+         alert("Authentication service failed to load. Please refresh.");
+         if (appLoginPrompt) appLoginPrompt.textContent = "Error loading login status.";
+    }
