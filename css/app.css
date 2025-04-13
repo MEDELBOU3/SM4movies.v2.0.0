@@ -2781,4 +2781,73 @@ body.theme-light .dropdown-item:focus {
 #most-viewed-section .skeleton-h-card {
    width: 280px; /* Match card width */
 }
-    
+  #app-user-info-area {
+    /* Bootstrap's align-items-center usually does the vertical alignment */
+    /* Add specific layout styles if needed based on your header structure */
+    gap: 0.75rem; /* Adds a small gap between avatar, name, and button */
+}
+
+/* General Avatar Circle Styles (Same as Landing Page potentially) */
+/* If you already have `.user-avatar` styled globally, you might not need all of this */
+.user-avatar {
+    width: 36px;             /* Adjust size as needed */
+    height: 36px;            /* Adjust size as needed */
+    border-radius: 50%;      /* Makes it a circle */
+    background-color: var(--bs-primary, #0d6efd); /* Default background color for initials */
+    color: white;            /* Text color for initials */
+    display: inline-flex;    /* Allows alignment with other elements */
+    align-items: center;     /* Center content vertically */
+    justify-content: center; /* Center content horizontally */
+    font-weight: 600;
+    font-size: 0.8rem;       /* Size for initials */
+    overflow: hidden;        /* IMPORTANT: Clips the image to the circle */
+    cursor: pointer;         /* Suggests it might be clickable (e.g., profile dropdown) */
+    border: 1px solid rgba(255, 255, 255, 0.15); /* Optional subtle border */
+    flex-shrink: 0;          /* Prevent avatar from shrinking in flex layouts */
+}
+
+/* Style for the Actual Image within the Avatar */
+#app-user-avatar-image { /* Target the specific ID in app.html */
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the image covers the circle without stretching */
+}
+
+/* Style for the Initials Span */
+#app-user-avatar-initials { /* Target the specific ID */
+    line-height: 1; /* Helps vertical centering */
+}
+
+/* Display Name (Bootstrap classes handle most styling) */
+#app-user-display-name { /* Target the specific ID */
+    /* Add specific styles if needed, e.g.: */
+    /* color: #e9ecef; */
+    white-space: nowrap;     /* Prevent name wrapping if space is tight */
+    overflow: hidden;        /* Hide overflow */
+    text-overflow: ellipsis; /* Show '...' if name is too long */
+    max-width: 150px;        /* Optional: limit name width */
+}
+
+/* Logout Button (Bootstrap handles most) */
+#app-logout-button { /* Target the specific ID */
+    /* Add specific hover/active states if the default btn-secondary-outline needs adjustment */
+     white-space: nowrap; /* Prevent text wrapping */
+}
+
+/* Login/Signup Prompt Button (Bootstrap handles most) */
+#app-login-prompt .btn-primary { /* Target the specific ID */
+    /* Customize if needed */
+    font-weight: 500;
+     white-space: nowrap; /* Prevent text wrapping */
+}
+
+/* --- Visibility Handled by JS --- */
+/* The d-none class provided by Bootstrap handles showing/hiding */
+/* #app-login-prompt initially visible */
+/* #app-user-info-area initially hidden via d-none */
+
+/* Optional Hover Effects */
+.user-avatar:hover {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}  
