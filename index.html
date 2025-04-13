@@ -24,8 +24,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <!-- Loading Screen -->
+  <!-- Loading Screen -->
     <div class="loading-screen">
         <div class="loader"><div></div><div></div><div></div></div>
         <div class="loading-text">LOADING AURASTREAM</div>
@@ -51,32 +50,39 @@
                     <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
                 </ul>
             </div>
-            <div class="nav-actions d-none d-lg-flex align-items-center"> <!-- Added align-items-center -->
-                 <div class="search-bar">
-                    <i class="bi bi-search"></i> <!-- Use Bootstrap Icon -->
-                    <input type="text" placeholder="Search..." id="nav-search-input">
-                 </div>
-                 <div id="auth-button-area">
-                      <!-- This button shows when LOGGED OUT -->
-                      <button type="button" class="btn btn-primary-gradient btn-nav-cta" data-bs-toggle="modal" data-bs-target="#launchAppModal" id="login-signup-button">
-                        Login / Sign Up
-                      </button>
-                       <!-- This group shows when LOGGED IN -->
-                      <div class="d-none align-items-center" id="user-info-area">
-                          <span id="user-identifier" class="me-2 text-light small" title="Logged In User">user@example.com</span>
-                          <button type="button" class="btn btn-secondary-outline btn-nav-cta" id="logout-button">
-                              Logout
-                          </button>
-                      </div>
-                   </div>
-           
-            </div>
-            <button class="mobile-menu-toggle d-lg-none" aria-label="Toggle navigation" id="mobile-menu-toggler">
-                 <i class="bi bi-list"></i>
-            </button>
+            <div class="nav-actions d-none d-lg-flex align-items-center">
+                <div class="search-bar">
+                   <i class="bi bi-search"></i>
+                   <input type="text" placeholder="Search..." id="nav-search-input">
+                </div>
+                <div id="auth-button-area">
+                     <!-- Logged OUT View -->
+                     <button type="button" class="btn btn-primary-gradient btn-nav-cta" data-bs-toggle="modal" data-bs-target="#launchAppModal" id="login-signup-button">
+                       Login / Sign Up
+                     </button>
+                      <!-- Logged IN View -->
+                     <div class="d-none align-items-center" id="user-info-area">
+                         <!-- Avatar Placeholder - THIS will display the image -->
+                         <div id="user-avatar" class="user-avatar me-2" title="User Profile">
+                             <!-- Initials shown if no image -->
+                             <span id="user-avatar-initials"></span>
+                             <!-- Image shown when available -->
+                             <img id="user-avatar-image" src="" alt="Profile" class="d-none" />
+                         </div>
+                         <!-- Span for User Name (will be populated by JS) -->
+                         <span id="user-display-name" class="me-3 text-light small fw-medium"></span>
+                         <button type="button" class="btn btn-secondary-outline btn-sm" id="logout-button"> <!-- Made button smaller -->
+                             Logout
+                         </button>
+                     </div>
+                  </div>
+           </div>
+           <button class="mobile-menu-toggle d-lg-none" aria-label="Toggle navigation" id="mobile-menu-toggler">
+                <i class="bi bi-list"></i>
+           </button>
         </nav>
 
-        <!-- Mobile Offcanvas Menu -->
+        <!-- Mobile Offcanvas Menu (Assuming no changes needed here for this request) -->
         <div class="offcanvas-menu" id="mobile-menu">
             <button class="mobile-menu-toggle active" style="position: absolute; top: 1.5rem; right: 1.5rem;" aria-label="Close navigation" id="mobile-menu-close">
                 <i class="bi bi-x"></i>
@@ -95,7 +101,7 @@
             </div>
              <div class="mobile-launch-cta mt-auto"> <!-- Ensure button is at bottom -->
                  <button type="button" class="btn btn-primary-gradient btn-nav-cta w-100" data-bs-toggle="modal" data-bs-target="#launchAppModal">
-                     Launch App
+                     Launch App <!-- Assuming this button should open the same auth modal -->
                  </button>
              </div>
         </div>
@@ -599,84 +605,98 @@
 
      <!-- Launch App Modal -->
      <div class="modal fade" id="launchAppModal" tabindex="-1" aria-labelledby="launchAppModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-      <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h5 class="modal-title" id="launchAppModalLabel"><i class="bi bi-stars me-2"></i> Enter AuraStream</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="auth-modal-close-button"></button>
-              </div>
-              <div class="modal-body">
-                  <!-- Nav tabs -->
-                  <ul class="nav nav-pills nav-fill mb-3" id="authTabs" role="tablist">
-                      <li class="nav-item" role="presentation">
-                          <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-panel" type="button" role="tab" aria-controls="login-panel" aria-selected="true">Login</button>
-                      </li>
-                      <li class="nav-item" role="presentation">
-                          <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup-panel" type="button" role="tab" aria-controls="signup-panel" aria-selected="false">Sign Up</button>
-                      </li>
-                  </ul>
-
-                  <!-- Tab panes -->
-                  <div class="tab-content" id="authTabsContent">
-                      <!-- Login Panel -->
-                      <div class="tab-pane fade show active" id="login-panel" role="tabpanel" aria-labelledby="login-tab">
-                          <form id="login-form">
-                              <div class="mb-3">
-                                  <label for="login-email" class="form-label">Email address</label>
-                                  <input type="email" class="form-control form-control-lg" id="login-email" placeholder="name@example.com" required>
-                              </div>
-                              <div class="mb-3">
-                                  <label for="login-password" class="form-label">Password</label>
-                                  <input type="password" class="form-control form-control-lg" id="login-password" placeholder="Password" required>
-                              </div>
-                              <div class="d-grid mb-3">
-                                   <button type="submit" class="btn btn-primary-gradient btn-lg">Login</button>
-                              </div>
-                          </form>
-                          <div class="text-center text-muted my-3">OR</div>
-                          <div class="d-grid">
-                              <button type="button" class="btn btn-light btn-lg border" id="google-login-button">
-                                  <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Login with Google
-                              </button>
-                          </div>
-                      </div>
-
-                      <!-- Sign Up Panel -->
-                      <div class="tab-pane fade" id="signup-panel" role="tabpanel" aria-labelledby="signup-tab">
-                           <form id="signup-form">
-                              <div class="mb-3">
-                                  <label for="signup-email" class="form-label">Email address</label>
-                                  <input type="email" class="form-control form-control-lg" id="signup-email" placeholder="name@example.com" required>
-                              </div>
-                              <div class="mb-3">
-                                  <label for="signup-password" class="form-label">Password</label>
-                                  <input type="password" class="form-control form-control-lg" id="signup-password" placeholder="Choose a strong password" required minlength="6">
-                                   <div class="form-text">Minimum 6 characters</div>
-                              </div>
-                               <!-- Optional: Confirm Password
-                               <div class="mb-3">
-                                   <label for="signup-confirm-password" class="form-label">Confirm Password</label>
-                                   <input type="password" class="form-control form-control-lg" id="signup-confirm-password" placeholder="Re-enter password" required>
-                               </div>
-                               -->
-                              <div class="d-grid mb-3">
-                                   <button type="submit" class="btn btn-success btn-lg">Sign Up</button>
-                              </div>
-                          </form>
-                           <div class="text-center text-muted my-3">OR</div>
-                           <div class="d-grid">
-                               <button type="button" class="btn btn-light btn-lg border" id="google-signup-button">
-                                   <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Sign Up with Google
-                               </button>
-                           </div>
-                      </div>
-                  </div>
-                   <!-- Error Message Area -->
-                   <div id="auth-error-message" class="alert alert-danger mt-3 d-none" role="alert"></div>
-              </div> <!-- /modal-body -->
-          </div>
-      </div>
-  </div>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="launchAppModalLabel"><i class="bi bi-stars me-2"></i> Enter AuraStream</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="auth-modal-close-button"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-pills nav-fill mb-3" id="authTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-panel" type="button" role="tab" aria-controls="login-panel" aria-selected="true">Login</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup-panel" type="button" role="tab" aria-controls="signup-panel" aria-selected="false">Sign Up</button>
+                        </li>
+                    </ul>
+  
+                    <!-- Tab panes -->
+                    <div class="tab-content" id="authTabsContent">
+                        <!-- Login Panel (Unchanged) -->
+                        <div class="tab-pane fade show active" id="login-panel" role="tabpanel" aria-labelledby="login-tab">
+                            <form id="login-form">
+                                <div class="mb-3">
+                                    <label for="login-email" class="form-label">Email address</label>
+                                    <input type="email" class="form-control form-control-lg" id="login-email" placeholder="name@example.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="login-password" class="form-label">Password</label>
+                                    <input type="password" class="form-control form-control-lg" id="login-password" placeholder="Password" required>
+                                </div>
+                                <div class="d-grid mb-3">
+                                     <button type="submit" class="btn btn-primary-gradient btn-lg">Login</button>
+                                </div>
+                            </form>
+                            <div class="text-center text-muted my-3">OR</div>
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-light btn-lg border" id="google-login-button">
+                                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Login with Google
+                                </button>
+                            </div>
+                        </div>
+  
+                        <!-- Sign Up Panel -- MODIFIED -->
+                        <div class="tab-pane fade" id="signup-panel" role="tabpanel" aria-labelledby="signup-tab">
+                             <form id="signup-form">
+                                <!-- ADDED: Full Name -->
+                                <div class="mb-3">
+                                    <label for="signup-name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control form-control-lg" id="signup-name" placeholder="Your Full Name" required>
+                                </div>
+                                <!-- ADDED: Age -->
+                                <div class="mb-3">
+                                    <label for="signup-age" class="form-label">Age</label>
+                                    <input type="number" class="form-control form-control-lg" id="signup-age" placeholder="Your Age" required min="1"> <!-- Added min="1" for basic validation -->
+                                </div>
+  
+                                <div class="mb-3">
+                                    <label for="signup-email" class="form-label">Email address</label>
+                                    <input type="email" class="form-control form-control-lg" id="signup-email" placeholder="name@example.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signup-password" class="form-label">Password</label>
+                                    <input type="password" class="form-control form-control-lg" id="signup-password" placeholder="Choose a strong password" required minlength="6">
+                                     <div class="form-text">Minimum 6 characters</div>
+                                </div>
+  
+                                 <!-- ADDED: Profile Picture Upload -->
+                                 <div class="mb-3">
+                                     <label for="signup-avatar" class="form-label">Profile Picture (Optional)</label>
+                                     <input type="file" class="form-control form-control-lg" id="signup-avatar" accept="image/png, image/jpeg, image/gif"> <!-- Accept common image types -->
+                                     <div class="form-text">Upload an image for your profile avatar.</div>
+                                 </div>
+  
+                                <div class="d-grid mb-3">
+                                     <button type="submit" class="btn btn-success btn-lg">Sign Up</button>
+                                </div>
+                            </form>
+                             <div class="text-center text-muted my-3">OR</div>
+                             <div class="d-grid">
+                                 <button type="button" class="btn btn-light btn-lg border" id="google-signup-button">
+                                     <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Sign Up with Google
+                                 </button>
+                             </div>
+                        </div>
+                    </div>
+                     <!-- Error Message Area -->
+                     <div id="auth-error-message" class="alert alert-danger mt-3 d-none" role="alert"></div>
+                </div> <!-- /modal-body -->
+            </div>
+        </div>
+    </div>
+  
      <!-- Trailer Modal -->
      <div class="modal fade" id="trailer-modal" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -704,7 +724,19 @@
      <!-- Replace with the latest version numbers from the Firebase docs if needed -->
      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
- 
+
+    <!-- ADD THESE FOR NEW FEATURES -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
+   
+    <!-- Firebase Core -->
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+<!-- Firebase Services -->
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script> <!-- For Image Upload -->
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script> <!-- For Age Storage -->
+
 
     <!-- Enhanced Landing Page Application JS -->
     <script src="app.js"></script>
