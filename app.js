@@ -1,134 +1,155 @@
-  const AuraStreamApp = {
+  /**
+       * AuraStream Landing Page Script v9.2 (Fully Developed & Integrated)
+       * Includes: Intro Video, Enhanced 3D BG/Gallery, API Key Validation, Feature Player, Full Error Handling.
+       */
+  
+      // --- Main Application Object ---
+      const AuraStreamApp = {
   
           // --- Configuration ---
           config: {
-              // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-              //  CRITICAL: REPLACE WITH YOUR VALID TMDB API KEY! GET ONE FROM themoviedb.org (Free)
-              // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-              TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // <<<--- PUT YOUR REAL KEY HERE
-              TMDB_BASE_URL: 'https://api.themoviedb.org/3',
-              IMAGE_BASE_URL: 'https://image.tmdb.org/t/p/',
-              POSTER_SIZE: 'w500',
-              PROFILE_SIZE: 'w185',
-              BACKDROP_SIZE: 'w1280',
-              HERO_BACKDROP_SIZE: 'original',
-              CONTENT_SHELVES: [
-                  { id: 'trending-movie', title: 'Trending Movies', endpoint: '/trending/movie/week', containerSelector: '#trending-movies-scroll', type: 'movie', params: {}, ariaControls: 'trending-movies-scroll' },
-                  { id: 'popular-tv', title: 'Popular TV Shows', endpoint: '/tv/popular', containerSelector: '#popular-tv-scroll', type: 'tv', params: {}, ariaControls: 'popular-tv-scroll'},
-                  { id: 'toprated-movie', title: 'Top Rated Movies', endpoint: '/movie/top_rated', containerSelector: '#toprated-movies-scroll', type: 'movie', params: { region: 'US' }, ariaControls: 'toprated-movies-scroll' },
-              ],
-              HERO_UPDATE_INTERVAL: 90000,
-              AOS_CONFIG: { duration: 700, once: true, offset: 80, easing: 'ease-out-cubic' },
-              SCROLL_DEBOUNCE: 150,
-              RESIZE_DEBOUNCE: 250,
-              LOADING_SCREEN_FADE_DURATION: 700,
-              THREE_PARTICLE_COUNT: 6500,
-              THREE_GALAXY_RADIUS: 600,
-              THREE_PARTICLE_SIZE: 0.8,
-              THREE_PARTICLE_OPACITY: 0.7,
-              THREE_ANIMATED_OBJ_OPACITY: 0.1,
-              GALLERY_AUTO_ROTATE_DELAY: 12000,
-              GALLERY_AUTO_ROTATE_INTERVAL: 6000,
-              GALLERY_PERSPECTIVE: 1200,
-              GALLERY_CARD_WIDTH: 340,
-              GALLERY_CARD_HEIGHT: 220,
-              GALLERY_TRANSLATE_Z_BASE: 290,
-              GALLERY_TRANSLATE_Z_ACTIVE: 340,
-              GALLERY_SCALE_ACTIVE: 1.1,
-              INTRO_VIDEO_TIMEOUT_MS: 15000,
-              AUTH_REDIRECT_URL: 'app.html', // Target page after login/signup
-              DEBUG_MODE: true, // Set to false for production
-              firebaseConfig: {
-                apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4",
-                authDomain: "sm4movies.firebaseapp.com",
-                projectId: "sm4movies",
-                storageBucket: "sm4movies.firebasestorage.app",
-                messagingSenderId: "277353836953",
-                appId: "1:277353836953:web:85e02783526c7cb58de308",
-                //measurementId: "G-690RSNJ2Q2"
-              }
-          },
+                // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+                //  CRITICAL: REPLACE WITH YOUR VALID TMDB API KEY! GET ONE FROM themoviedb.org (Free)
+                // VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+                TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // <<<--- PUT YOUR REAL, ACTIVE KEY HERE
+                TMDB_BASE_URL: 'https://api.themoviedb.org/3',
+                IMAGE_BASE_URL: 'https://image.tmdb.org/t/p/',
+                POSTER_SIZE: 'w500',
+                PROFILE_SIZE: 'w185',
+                BACKDROP_SIZE: 'w1280',
+                HERO_BACKDROP_SIZE: 'original',
+                YOUTUBE_EMBED_URL: 'https://www.youtube.com/embed/', // Base URL for YouTube embeds
+                CONTENT_SHELVES: [
+                    { id: 'trending-movie', title: 'Trending Movies', endpoint: '/trending/movie/week', containerSelector: '#trending-movies-scroll', type: 'movie', params: {}, ariaControls: 'trending-movies-scroll' },
+                    { id: 'popular-tv', title: 'Popular TV Shows', endpoint: '/tv/popular', containerSelector: '#popular-tv-scroll', type: 'tv', params: {}, ariaControls: 'popular-tv-scroll'},
+                    { id: 'toprated-movie', title: 'Top Rated Movies', endpoint: '/movie/top_rated', containerSelector: '#toprated-movies-scroll', type: 'movie', params: { region: 'US' }, ariaControls: 'toprated-movies-scroll' },
+                    // { id: 'community-picks', title: 'Community Picks', endpoint: '/discover/movie', containerSelector: '#shelf-community-picks .horizontal-scroll-container', type: 'movie', params: { sort_by: 'vote_average.desc', 'vote_count.gte': 500 }, ariaControls: 'community-picks-scroll' } // Community picks removed as section was removed
+                ],
+                HERO_UPDATE_INTERVAL: 90000, // Slightly longer interval
+                AOS_CONFIG: { duration: 700, once: true, offset: 80, easing: 'ease-out-cubic' },
+                SCROLL_DEBOUNCE: 150,
+                RESIZE_DEBOUNCE: 250,
+                LOADING_SCREEN_FADE_DURATION: 700,
+                THREE_PARTICLE_COUNT: 6500,
+                THREE_GALAXY_RADIUS: 600,
+                THREE_PARTICLE_SIZE: 0.8,
+                THREE_PARTICLE_OPACITY: 0.7,
+                THREE_ANIMATED_OBJ_OPACITY: 0.1, // Opacity for the wireframe object
+                GALLERY_AUTO_ROTATE_DELAY: 12000, // Longer delay before auto-rotate starts
+                GALLERY_AUTO_ROTATE_INTERVAL: 6000, // Slower auto-rotate speed
+                GALLERY_PERSPECTIVE: 1200,
+                GALLERY_CARD_WIDTH: 340, // Width of 3D gallery cards
+                GALLERY_CARD_HEIGHT: 220, // Height of 3D gallery cards
+                GALLERY_TRANSLATE_Z_BASE: 290, // How far back non-active cards are
+                GALLERY_TRANSLATE_Z_ACTIVE: 340, // How far forward active card is
+                GALLERY_SCALE_ACTIVE: 1.1, // How much active card scales up
+                INTRO_VIDEO_TIMEOUT_MS: 0, // Set to 0 to disable timeout, > 0 for timeout in ms
+                AUTH_REDIRECT_URL: 'app.html', // Target page after successful login/signup
+                DEBUG_MODE: true, // Set to false for production to reduce console noise
+                // --- Firebase Configuration ---
+                 firebaseConfig: {
+                    apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4", // Example - REPLACE with yours
+                    authDomain: "sm4movies.firebaseapp.com", // Example - REPLACE with yours
+                    projectId: "sm4movies", // Example - REPLACE with yours
+                    storageBucket: "sm4movies.appspot.com", // Example - REPLACE with yours (Ensure correct format if using Storage)
+                    messagingSenderId: "277353836953", // Example - REPLACE with yours
+                    appId: "1:277353836953:web:85e02783526c7cb58de308", // Example - REPLACE with yours
+                    // measurementId: "G-XXXXXXXXXX" // Optional: Add if using Analytics
+                }
+            },
+
   
           // --- Application State ---
-          state: {
-              heroMovie: null, featuredTrailerMovieId: null, movieVideosCache: new Map(), shelfScrollData: new Map(),
-              isMobileMenuOpen: false, threeAnimationId: null, librariesLoaded: { three: false, bootstrap: false, aos: false },
-              galleryAutoRotateTimeout: null, galleryAutoRotateInterval: null, isGalleryDragging: false,
-              introHidden: false, domReady: false, initializationComplete: false, apiKeyValid: false,
-              isLoggedIn: false, // Track login status based on Firebase
-              currentUser: null, // Store Firebase user object { uid, email, displayName, etc. }
-              firebaseApp: null, // Firebase App instance
-              firebaseAuth: null, // Firebase Auth instance
-              authListenerUnsubscribe: null // Function to detach auth listener
-          },
+ 
   
+          state: {
+                heroMovie: null, featuredTrailerMovieId: null, movieVideosCache: new Map(), shelfScrollData: new Map(),
+                isMobileMenuOpen: false, threeAnimationId: null, librariesLoaded: { three: false, bootstrap: false, aos: false },
+                galleryAutoRotateTimeout: null, galleryAutoRotateInterval: null, isGalleryDragging: false,
+                introHidden: false, domReady: false, initializationComplete: false, apiKeyValid: false,
+                isLoggedIn: false, 
+                currentUser: null, 
+                firebaseApp: null,
+                firebaseAuth: null, 
+                firebaseStorage: null, 
+                firebaseFirestore: null,
+                authListenerUnsubscribe: null
+           },
           // --- DOM Element Cache ---
           elements: {},
   
           // --- Utility Functions ---
+       
           utils: {
-            log: function(message, ...optionalParams) { if (AuraStreamApp.config.DEBUG_MODE) console.log(`[AuraStream] ${message}`, ...optionalParams); },
-            error: function(message, ...optionalParams) { console.error(`[AuraStream Error] ${message}`, ...optionalParams); },
-            warn: function(message, ...optionalParams) { console.warn(`[AuraStream Warn] ${message}`, ...optionalParams); },
-            escapeHtml: (unsafe) => { if (unsafe === null || typeof unsafe === 'undefined') return ''; return String(unsafe).replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, " ").replace(/'/g, "'"); },
-            debounce: (func, delay) => { let timeoutId; return (...args) => { clearTimeout(timeoutId); timeoutId = setTimeout(() => { func.apply(this, args); }, delay); }; },
-            fetchTMDB: async (endpoint, params = {}) => {
-                  const config = AuraStreamApp.config; const utils = AuraStreamApp.utils;
-                  if (!AuraStreamApp.state.apiKeyValid) { utils.error("API Key is invalid. Fetch aborted."); return null; }
-                  const defaultParams = { api_key: config.TMDB_API_KEY, language: 'en-US' };
-                  const urlParams = new URLSearchParams({ ...defaultParams, ...params });
-                  for (const [key, value] of urlParams.entries()) { if (value === null || value === '' || value === 'undefined') urlParams.delete(key); }
-                  const url = `${config.TMDB_BASE_URL}${endpoint}?${urlParams.toString()}`; utils.log(`Fetching TMDB: ${endpoint}`);
-                  try {
-                      const response = await fetch(url);
-                      if (!response.ok) {
-                          let errorData = { status_message: `HTTP error! Status: ${response.status}` }; try { errorData = await response.json(); } catch (e) { utils.warn(`Could not parse JSON error for ${endpoint}`); }
-                          utils.error(`TMDB API Error ${response.status} for ${endpoint}:`, errorData); if (response.status === 401) { utils.error("API Error 401: Unauthorized."); AuraStreamApp.state.apiKeyValid = false; } return null;
-                      }
-                      const data = await response.json(); utils.log(`Fetch Success: ${endpoint}`); return data;
-                  } catch (error) { utils.error(`TMDB Fetch Network Error (${endpoint}):`, error); return null; }
+                log: function(message, ...optionalParams) { if (AuraStreamApp.config.DEBUG_MODE) console.log(`[AuraStream] ${message}`, ...optionalParams); },
+                error: function(message, ...optionalParams) { console.error(`[AuraStream Error] ${message}`, ...optionalParams); },
+                warn: function(message, ...optionalParams) { console.warn(`[AuraStream Warn] ${message}`, ...optionalParams); },
+                escapeHtml: (unsafe) => { if (unsafe === null || typeof unsafe === 'undefined') return ''; return String(unsafe).replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, "").replace(/'/g, "'"); },
+                debounce: (func, delay) => { let timeoutId; return (...args) => { clearTimeout(timeoutId); timeoutId = setTimeout(() => { func.apply(this, args); }, delay); }; },
+                fetchTMDB: async (endpoint, params = {}) => { /* ... Same robust fetch logic as v8.5 ... */
+                    const config = AuraStreamApp.config; const utils = AuraStreamApp.utils;
+                    if (!AuraStreamApp.state.apiKeyValid) { utils.error("API Key is invalid. Fetch aborted."); return null; }
+                    const defaultParams = { api_key: config.TMDB_API_KEY, language: 'en-US' };
+                    const urlParams = new URLSearchParams({ ...defaultParams, ...params });
+                    for (const [key, value] of urlParams.entries()) { if (value === null || value === '' || value === 'undefined') urlParams.delete(key); }
+                    const url = `${config.TMDB_BASE_URL}${endpoint}?${urlParams.toString()}`; // utils.log(`Fetching TMDB: ${endpoint}`);
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            let errorData = { status_message: `HTTP error! Status: ${response.status}` }; try { errorData = await response.json(); } catch (e) { utils.warn(`Could not parse JSON error for ${endpoint}`); }
+                            utils.error(`TMDB API Error ${response.status} for ${endpoint}:`, errorData); if (response.status === 401) { utils.error("API Error 401: Unauthorized."); AuraStreamApp.state.apiKeyValid = false; AuraStreamApp.modules?.loadingScreen?.showError("Invalid API Key"); } return null;
+                        }
+                        const data = await response.json(); // utils.log(`Fetch Success: ${endpoint}`);
+                        return data;
+                    } catch (error) { utils.error(`TMDB Fetch Network Error (${endpoint}):`, error); AuraStreamApp.modules?.loadingScreen?.showError("Network Error"); return null; }
+                 },
+                getLoadingTextHTML: (text = "Loading...") => `<div class="loading-shelf-text w-100 d-flex align-items-center justify-content-center py-4" role="status"><div class="loading-spinner me-2"></div> ${AuraStreamApp.utils.escapeHtml(text)}</div>`,
+                getErrorTextHTML: (text = "Could not load content.") => `<div class="error-shelf-text w-100 d-flex align-items-center justify-content-center py-4 text-danger" role="alert"><i class="bi bi-exclamation-triangle-fill me-2"></i> ${AuraStreamApp.utils.escapeHtml(text)}</div>`,
+                getSkeletonCardHTML: () => ` <div class="movie-card skeleton-placeholder" aria-hidden="true"> <div class="card-image-wrapper skeleton-item"></div> <div class="card-content"> <div class="skeleton-item title mb-2"></div> <div class="skeleton-item meta"></div> </div> <style> .skeleton-item { background: linear-gradient(110deg, rgba(var(--border-color),0.4) 8%, rgba(var(--border-color),0.6) 18%, rgba(var(--border-color),0.4) 33%); background-size: 200% 100%; border-radius: var(--radius-sm); animation: 1.8s pulse-skeleton linear infinite; } .skeleton-placeholder .title { height: 1rem; width: 85%; } .skeleton-placeholder .meta { height: 0.7rem; width: 55%; } @keyframes pulse-skeleton { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } } </style> </div>`,
+                getSkeletonShelfHTML: (count = 6) => { let h = ''; for (let i = 0; i < count; i++) h += AuraStreamApp.utils.getSkeletonCardHTML(); return h; },
+                formatDate: (d) => { if (!d) return 'N/A'; try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); } catch (e) { return 'Invalid Date'; } },
+                getYear: (d) => { if (!d) return ''; try { return new Date(d).getFullYear(); } catch (e) { return ''; } },
+                fetchMovieVideos: async function(movieId) { /* ... unchanged ... */ const utils=AuraStreamApp.utils;if(AuraStreamApp.state.movieVideosCache.has(movieId))return AuraStreamApp.state.movieVideosCache.get(movieId);if(!movieId)return[];utils.log(`Fetching videos for ID: ${movieId}`);const data=await utils.fetchTMDB(`/movie/${movieId}/videos`);if(!data){AuraStreamApp.state.movieVideosCache.set(movieId,[]);return[]}const videos=data?.results?.filter(v=>v.site==='YouTube')||[];AuraStreamApp.state.movieVideosCache.set(movieId,videos);return videos},
+                getBestTrailer: (vids) => { /* ... unchanged ... */ if(!vids||vids.length===0)return null;const t=vids.find(v=>v.type==='Trailer'&&v.official);if(t)return t;const ot=vids.find(v=>v.type==='Teaser'&&v.official);if(ot)return ot;const at=vids.find(v=>v.type==='Trailer');if(at)return at;const ayt=vids.find(v=>v.type==='Teaser');if(ayt)return ayt;const c=vids.find(v=>v.type==='Clip'||v.type==='Featurette');if(c)return c;return vids[0]||null },
+                setCopyrightYear: () => { try { const el = AuraStreamApp.elements.copyYear; if(el) el.textContent = new Date().getFullYear(); else AuraStreamApp.utils.warn("Copyright year element not found."); } catch(e) { AuraStreamApp.utils.error("Error setting copyright year:", e); } },
+                getCssVariable: (v, f) => { try { let val = getComputedStyle(document.documentElement).getPropertyValue(v).trim(); return val || f; } catch (e) { return f; } },
+                getInitials: (name = '', email = '') => {
+                    if (name && name.trim().length > 0) {
+                      const parts = name.trim().split(' ');
+                    if (parts.length > 1) {
+                      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+                    } else if (parts[0].length > 0) {
+                      return parts[0].substring(0, 2).toUpperCase();
+                    }
+                    }
+                    if (email && email.includes('@')) {
+                       return email[0].toUpperCase();
+                    }
+                    return '??'; // Fallback
+                }
             },
-            getLoadingTextHTML: (text = "Loading...") => `<div class="loading-shelf-text w-100 d-flex align-items-center justify-content-center py-4" role="status"><div class="loading-spinner me-2"></div> ${AuraStreamApp.utils.escapeHtml(text)}</div>`,
-            getErrorTextHTML: (text = "Could not load content.") => `<div class="error-shelf-text w-100 d-flex align-items-center justify-content-center py-4 text-danger" role="alert"><i class="bi bi-exclamation-triangle-fill me-2"></i> ${AuraStreamApp.utils.escapeHtml(text)}</div>`,
-            getSkeletonCardHTML: () => ` <div class="movie-card skeleton-placeholder" aria-hidden="true"> <div class="card-image-wrapper skeleton-item"></div> <div class="card-content"> <div class="skeleton-item title mb-2"></div> <div class="skeleton-item meta"></div> </div> <style> .skeleton-item { background: linear-gradient(110deg, rgba(var(--border-color),0.4) 8%, rgba(var(--border-color),0.6) 18%, rgba(var(--border-color),0.4) 33%); background-size: 200% 100%; border-radius: var(--radius-sm); animation: 1.8s pulse-skeleton linear infinite; } .skeleton-placeholder .title { height: 1rem; width: 85%; } .skeleton-placeholder .meta { height: 0.7rem; width: 55%; } @keyframes pulse-skeleton { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } } </style> </div>`,
-            getSkeletonShelfHTML: (count = 6) => { let h = ''; for (let i = 0; i < count; i++) h += AuraStreamApp.utils.getSkeletonCardHTML(); return h; },
-            formatDate: (d) => { if (!d) return 'N/A'; try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); } catch (e) { return 'Invalid Date'; } },
-            getYear: (d) => { if (!d) return ''; try { return new Date(d).getFullYear(); } catch (e) { return ''; } },
-            fetchMovieVideos: async function(movieId) { const utils = AuraStreamApp.utils; if (AuraStreamApp.state.movieVideosCache.has(movieId)) return AuraStreamApp.state.movieVideosCache.get(movieId); if (!movieId) return []; utils.log(`Fetching videos for ID: ${movieId}`); const data = await utils.fetchTMDB(`/movie/${movieId}/videos`); if (!data) { AuraStreamApp.state.movieVideosCache.set(movieId, []); return []; } const videos = data?.results?.filter(v => v.site === 'YouTube') || []; AuraStreamApp.state.movieVideosCache.set(movieId, videos); return videos; },
-            getBestTrailer: (vids) => { if (!vids || vids.length === 0) return null; const t = vids.find(v => v.type === 'Trailer' && v.official); if (t) return t; const ot = vids.find(v => v.type === 'Teaser' && v.official); if (ot) return ot; const at = vids.find(v => v.type === 'Trailer'); if (at) return at; const ayt = vids.find(v => v.type === 'Teaser'); if (ayt) return ayt; const c = vids.find(v => v.type === 'Clip' || v.type === 'Featurette'); if (c) return c; return vids[0] || null; },
-            setCopyrightYear: () => { try { const el = AuraStreamApp.elements.copyYear; if(el) el.textContent = new Date().getFullYear(); else AuraStreamApp.utils.warn("Copyright year element not found."); } catch(e) { AuraStreamApp.utils.error("Error setting copyright year:", e); } },
-            getCssVariable: (v, f) => { try { let val = getComputedStyle(document.documentElement).getPropertyValue(v).trim(); return val || f; } catch (e) { return f; } }
-          },
+
   
           // --- API Key Validation ---
-          validateApiKey: function() {
-            const utils = this.utils;
-            const key = this.config.TMDB_API_KEY; // Reads the key from config
-            let isValid = true; // Assume valid initially
-            utils.log("Validating TMDB API Key...");
+          validateApiKey: function() { // Runs early to set state.apiKeyValid
+                const utils = this.utils;
+                const key = this.config.TMDB_API_KEY;
+                let isValid = true;
+                utils.log("Validating TMDB API Key Structure...");
 
-            if (!key) {
-                utils.error("TMDB API Key FAIL: Key is missing (empty).");
-                isValid = false;
-            } else if (key === 'YOUR_TMDB_API_KEY_GOES_HERE') { // Check ONLY for the generic placeholder text
-                utils.error("TMDB API Key FAIL: Placeholder key detected. Please replace it with your real key.");
-                isValid = false;
-            // REMOVED: else if (key === '431fb541e27bceeb9db2f4cab69b54e1') { ... }
-            } else if (key.length < 30) { // Check minimum length
-                utils.error("TMDB API Key FAIL: Key is too short to be valid.");
-                isValid = false;
-            }
+                if (!key || key === 'YOUR_TMDB_API_KEY' || key.length < 30) { // Combined checks
+                    utils.error("TMDB API Key FAIL: Key is missing, placeholder, or too short.");
+                    isValid = false;
+                }
 
-            // Set the state based on the checks above
-            this.state.apiKeyValid = isValid;
+                this.state.apiKeyValid = isValid; // Set state
 
-            if (!isValid) {
-                 utils.error(">>> ACTION REQUIRED: Ensure a valid TMDB API key is set in the config. <<<");
-            } else {
-                 utils.log("TMDB API Key structure appears OK."); // Key *looks* okay structurally
-            }
-            // Note: Final validation happens when the first actual API call is made.
-          },
+                if (!isValid) {
+                     utils.error(">>> ACTION REQUIRED: Set a valid TMDB API key in config. <<<");
+                } else {
+                     utils.log("TMDB API Key structure appears OK.");
+                }
+             },
 
   
           // --- Display Data Loading Errors ---
@@ -194,125 +215,126 @@
         initializeFirebase: function() {
             const utils = this.utils;
             const config = this.config.firebaseConfig;
-            const state = this.state; // Use local reference for state
-            const app = AuraStreamApp; // Use local reference for main app object
+            const state = this.state;
+            const app = AuraStreamApp;
 
             utils.log("Initializing Firebase...");
 
-            // 1. --- Check Firebase Configuration ---
-            if (!config || !config.apiKey || !config.authDomain || !config.projectId) {
-                utils.error("Firebase configuration object is missing or incomplete in config.firebaseConfig.");
-                utils.error("Please copy the config from your Firebase project settings into the script.");
-                alert("CRITICAL: Firebase is not configured correctly. Authentication will be unavailable.");
-                // Mark state as invalid for auth dependent operations? Maybe not needed if returning false.
-                return false; // Stop initialization
+            // 1. Check Config (apiKey, authDomain, projectId required)
+            if (!config?.apiKey || !config?.authDomain || !config?.projectId || config.apiKey === "YOUR_API_KEY") {
+                utils.error("Firebase configuration missing/incomplete or uses placeholders.");
+                alert("CRITICAL: Firebase not configured. Auth features unavailable.");
+                return false;
+            }
+             // Warn if storageBucket missing for uploads
+            if (!config.storageBucket) {
+                utils.warn("Firebase storageBucket missing. Profile picture uploads will fail.");
             }
 
-            // 2. --- Check Firebase SDKs ---
-            if (typeof firebase === 'undefined' || !firebase.app || !firebase.auth) {
-                utils.error("Firebase SDKs (app-compat, auth-compat) not loaded. Check HTML script tags.");
-                alert("CRITICAL: Firebase libraries failed to load. Authentication will be unavailable.");
-                return false; // Stop initialization
+            // 2. Check SDKs (App, Auth, Storage, Firestore needed for full features)
+            if (typeof firebase === 'undefined' || !firebase.app || !firebase.auth || !firebase.storage || !firebase.firestore) {
+                utils.error("Required Firebase SDKs (app, auth, storage, firestore compat) not loaded. Check HTML.");
+                alert("CRITICAL: Firebase libraries failed to load. Required features unavailable.");
+                return false;
             }
 
             try {
-                // 3. --- Initialize Firebase App and Auth ---
-                // Ensure initialization happens only once
+                // 3. Initialize Services (once)
                 if (!state.firebaseApp) {
                     state.firebaseApp = firebase.initializeApp(config);
                     state.firebaseAuth = firebase.auth();
-                    utils.log("Firebase App and Auth initialized successfully.");
+                    try {
+                        state.firebaseStorage = firebase.storage(); // Initialize Storage
+                    } catch (storageError) {
+                        utils.error("Firebase Storage init failed:", storageError);
+                        state.firebaseStorage = null;
+                    }
+                    try {
+                        state.firebaseFirestore = firebase.firestore(); // Initialize Firestore
+                    } catch (firestoreError) {
+                         utils.error("Firebase Firestore init failed:", firestoreError);
+                         state.firebaseFirestore = null;
+                    }
+                    utils.log("Firebase App, Auth, Storage, Firestore initialized.");
                 } else {
                     utils.log("Firebase App already initialized.");
                 }
 
-
-                // 4. --- Setup Auth State Listener (if not already attached) ---
+                // 4. Auth State Listener (once)
                 if (!state.authListenerUnsubscribe && state.firebaseAuth) {
                     utils.log("Attaching Firebase onAuthStateChanged listener...");
                     state.authListenerUnsubscribe = state.firebaseAuth.onAuthStateChanged(user => {
-                        utils.log("Firebase onAuthStateChanged listener triggered.");
-                        // Check if this is the very first time the listener is running after page load
+                        utils.log(`Firebase onAuthStateChanged: User is ${user ? 'LOGGED IN' : 'LOGGED OUT'}`);
                         let isInitialAuthCheck = !state.initializationComplete;
 
-                        // --- Update Auth State ---
+                        // Update Auth State
                         if (user) {
-                            // User is signed in.
-                            utils.log(`User is LOGGED IN: ${user.email} (UID: ${user.uid})`);
+                             // Fetch potentially updated profile info each time state changes
                             state.isLoggedIn = true;
-                            state.currentUser = { // Store a clean user object
+                            state.currentUser = { // Store relevant, latest data
                                 uid: user.uid,
                                 email: user.email,
                                 displayName: user.displayName,
-                                // photoURL: user.photoURL // Include if needed later
+                                photoURL: user.photoURL // Get latest photoURL
                             };
+                             utils.log(`Logged in User details:`, state.currentUser);
                         } else {
-                            // User is signed out.
-                            utils.log("User is LOGGED OUT.");
                             state.isLoggedIn = false;
                             state.currentUser = null;
                         }
 
-                        // --- Update UI ---
-                        // Update navbar (login/logout button, user email display)
+                        // Update UI (Header, etc.)
                         app.modules.auth.updateAuthUI();
 
-                        // --- Trigger Async Data Load (Only Once on Initial Check & if TMDB Key Valid) ---
+                        // Trigger Async Data Load (Only on First Check after init)
                         if (isInitialAuthCheck) {
-                            if (state.apiKeyValid) {
-                                utils.log("First Auth state resolved, TMDB key valid -> Running async data fetches...");
-                                app.runAsyncInits(); // Fetch TMDb data (hero, shelves, etc.)
+                             utils.log("Processing initial auth check tasks...");
+                            if (state.apiKeyValid) { // Check TMDB Key validity
+                                utils.log("TMDB key valid -> Running async TMDB data fetches...");
+                                app.runAsyncInits();
                             } else {
-                                // If TMDB key is bad, trigger error display *after* intro is hidden
-                                utils.warn("First Auth state resolved, but TMDB key invalid. Will display errors post-intro.");
-                                // The displayDataLoadingErrors call is now primarily handled in introVideo.hideOverlay
-                                // This ensures errors don't flash before the intro finishes.
-                                // We can add a fallback here ONLY if intro might already be hidden
-                                if (state.introHidden) {
-                                     app.displayDataLoadingErrors();
-                                }
+                                utils.warn("TMDB key invalid. Displaying errors post-intro if applicable.");
+                                if (state.introHidden) app.displayDataLoadingErrors();
                             }
-                             // Mark the main initialization sequence as complete *after* the first auth state check
+                            // Mark the *core* initialization (sync parts) as complete
                             state.initializationComplete = true;
-                            utils.log("Initial Auth state processed. Initialization marked complete.");
+                            utils.log("Initial Auth check complete. Main init sequence finished.");
                         }
 
-
-                        // --- Handle Post-Login Redirect (If login happened via modal *after* initial load) ---
+                        // Post-Login/Signup Redirect (if login/signup just happened)
                         if (user && !isInitialAuthCheck && app.elements.launchAppModal?.classList.contains('show')) {
-                             utils.log("Post-load login detected via modal, redirecting...");
-                             app.modules.modals.closeAuthModal();
-                             window.location.href = app.config.AUTH_REDIRECT_URL;
-                             // Early return to prevent potential issues if redirecting
-                             return;
+                            utils.log("Post-load auth change detected via modal, redirecting...");
+                            app.modules.modals.closeAuthModal();
+                            setTimeout(() => { // Slight delay helpful sometimes
+                               window.location.href = app.config.AUTH_REDIRECT_URL;
+                            }, 100);
+                            return; // Prevent further listener actions on this cycle due to redirect
                         }
 
-                        // --- Ensure Intro Video Overlay is Hidden ---
-                        // If the auth state resolves faster than the intro video/timeout
-                        if (!state.introHidden) {
-                            utils.log("Auth state resolved before intro finished. Hiding intro overlay.");
+                        // Hide Intro if needed
+                        if (!state.introHidden && app.modules?.introVideo?.hideOverlay) {
+                             utils.log("Auth resolved before intro finished. Hiding intro.");
                             app.modules.introVideo.hideOverlay(true); // Force hide
                         }
 
-                    }); // End of onAuthStateChanged callback
-                    utils.log("Firebase onAuthStateChanged listener attached successfully.");
+                    }); // End of onAuthStateChanged listener
+                    utils.log("Firebase onAuthStateChanged listener attached.");
                 } else if (state.authListenerUnsubscribe) {
                      utils.log("Firebase onAuthStateChanged listener already attached.");
                 }
 
+                return true; // Firebase setup success
 
-                return true; // Firebase setup successful
-
-                } catch (error) {
-                utils.error("Firebase initialization failed:", error);
-                alert("Could not initialize Firebase authentication. Features requiring login will be unavailable.");
-                // Update UI to reflect auth failure?
-                 app.modules.auth.updateAuthUI(); // Ensure UI shows logged-out state
-                 // Display errors for TMDB data too, as it relies on API key check which might have passed initially
-                 app.displayDataLoadingErrors("Firebase Init Failed. Cannot load data.");
-                return false; // Initialization failed
+            } catch (error) {
+                utils.error("CRITICAL Firebase initialization failed:", error);
+                alert("Could not initialize Firebase core services. Login/signup unavailable.");
+                app.modules?.auth?.updateAuthUI(); // Try to set UI to logged-out
+                if (state.apiKeyValid) { // Display TMDB errors if key was ok but firebase failed
+                    app.displayDataLoadingErrors("Firebase Init Failed");
+                }
+                return false; // Failure
             }
-        }, // End initializeFirebase
+        },// End initializeFirebase
   
           // --- Library Checks ---
           checkLibraries: function() { this.state.librariesLoaded.three = typeof THREE !== 'undefined'; this.state.librariesLoaded.bootstrap = typeof bootstrap !== 'undefined'; this.state.librariesLoaded.aos = typeof AOS !== 'undefined'; this.utils.log("Libraries Checked:", this.state.librariesLoaded); },
@@ -345,7 +367,17 @@
                 loginSignupButton: document.getElementById('login-signup-button'), // Navbar login button
                 userInfoArea: document.getElementById('user-info-area'),         // Navbar user area
                 userIdentifier: document.getElementById('user-identifier'),     // Navbar user email span
-                logoutButton: document.getElementById('logout-button')          // Navbar logout button
+                logoutButton: document.getElementById('logout-button'),
+                signupNameInput: document.getElementById('signup-name'),
+                signupAgeInput: document.getElementById('signup-age'),
+                signupAvatarInput: document.getElementById('signup-avatar'),
+
+                // Header User Display:
+                userInfoArea: document.getElementById('user-info-area'),       // Existing, ensure it's cached
+                userAvatar: document.getElementById('user-avatar'),                // Container DIV
+                userAvatarInitials: document.getElementById('user-avatar-initials'), // SPAN for initials
+                userAvatarImage: document.getElementById('user-avatar-image'),    // IMG tag
+                userDisplayName: document.getElementById('user-display-name'),           // Navbar logout button
             };
             // Essential elements check
             const essentialKeys = ['introOverlay', 'introVideo', 'skipIntroButton', 'navbar', 'heroSection', 'launchAppModal', 'loginForm', 'signupForm', 'loginSignupButton', 'userInfoArea', 'logoutButton'];
@@ -966,107 +998,234 @@
                         });
                 },
 
-                handleEmailSignup: function(event) {
+                updateProfileAndStoreData: async function(user, name, age, avatarFile = null) {
+                     const utils = AuraStreamApp.utils;
+                     const state = AuraStreamApp.state;
+                     let photoURL = null; // Default photoURL
+
+                     utils.log(`AuthModule: Starting profile/data update for ${user.uid}`);
+
+                     // 1. Handle Avatar Upload (if file exists and storage available)
+                     if (avatarFile && state.firebaseStorage) {
+                         utils.log(`AuthModule: Uploading avatar for ${user.uid}...`);
+                         // Unique path: profile_images / USER_ID / timestamp_filename
+                         const filePath = `profile_images/${user.uid}/${Date.now()}_${avatarFile.name}`;
+                         const storageRef = state.firebaseStorage.ref(filePath);
+
+                         try {
+                             const snapshot = await storageRef.put(avatarFile); // Await upload
+                             utils.log(`AuthModule: Avatar uploaded (${snapshot.bytesTransferred} bytes).`);
+                             photoURL = await snapshot.ref.getDownloadURL(); // Await URL retrieval
+                             utils.log(`AuthModule: Avatar download URL obtained: ${photoURL}`);
+                         } catch (uploadError) {
+                             utils.error(`AuthModule: Avatar upload failed:`, uploadError);
+                             throw new Error(`Avatar upload failed: ${uploadError.message}`); // Signal failure
+                         }
+                     } else {
+                         utils.log(`AuthModule: No avatar file provided or Storage not available.`);
+                     }
+
+                     // 2. Update Firebase Auth Profile (DisplayName, PhotoURL)
+                     utils.log(`AuthModule: Updating Auth profile for ${user.uid} (Name: ${name}, URL: ${photoURL})`);
+                     try {
+                          // Only update fields that are provided
+                         const profileUpdates = {};
+                         if (name) profileUpdates.displayName = name;
+                         if (photoURL) profileUpdates.photoURL = photoURL; // Use URL from upload
+
+                         if (Object.keys(profileUpdates).length > 0) {
+                              await user.updateProfile(profileUpdates);
+                              utils.log(`AuthModule: Auth profile updated successfully.`);
+                              // Re-fetch the user to ensure local state gets updated IF NEEDED immediately
+                              // await user.reload(); // Or rely on next onAuthStateChanged
+                         } else {
+                              utils.log(`AuthModule: No profile changes to update in Auth.`);
+                         }
+                     } catch(authProfileError) {
+                         utils.error(`AuthModule: Auth profile update failed:`, authProfileError);
+                         throw new Error(`Auth profile update failed: ${authProfileError.message}`);
+                     }
+
+                     // 3. Store Age (and potentially other data) in Firestore (if available)
+                     if (age !== undefined && age !== null && state.firebaseFirestore) {
+                          utils.log(`AuthModule: Storing age (${age}) in Firestore for ${user.uid}...`);
+                          const userDocRef = state.firebaseFirestore.collection('users').doc(user.uid);
+                          try {
+                              await userDocRef.set({
+                                  email: user.email, // Useful for queries
+                                  name: name,       // Store name here too if desired
+                                  age: age,         // The age value
+                                  createdAt: firebase.firestore.FieldValue.serverTimestamp() // Record creation
+                              }, { merge: true }); // Merge avoids overwriting existing doc fields accidentally
+                              utils.log(`AuthModule: Age stored successfully in Firestore.`);
+                          } catch(firestoreError) {
+                              utils.error(`AuthModule: Firestore write failed:`, firestoreError);
+                              throw new Error(`Failed to save age data: ${firestoreError.message}`);
+                          }
+                     } else {
+                          utils.log(`AuthModule: Age not provided or Firestore not available.`);
+                     }
+
+                     utils.log(`AuthModule: Profile and data update process completed for ${user.uid}.`);
+                     // Function completes successfully if no errors were thrown
+                 },
+
+
+
+                 handleEmailSignup: function(event) {
                     event.preventDefault();
                     const utils = AuraStreamApp.utils;
                     const els = AuraStreamApp.elements;
-                     const auth = AuraStreamApp.state.firebaseAuth;
-                    utils.log("Handling Email Signup attempt...");
+                    const auth = AuraStreamApp.state.firebaseAuth;
+                    const state = AuraStreamApp.state;
+                    utils.log("AuthModule: Handling Email Signup...");
                     this.clearAuthError();
 
+                    // Get all values from the form
+                    const name = els.signupNameInput?.value?.trim();
+                    const ageInput = els.signupAgeInput?.value; // Get raw age input
                     const email = els.signupEmailInput?.value?.trim();
                     const password = els.signupPasswordInput?.value;
+                    const avatarFile = els.signupAvatarInput?.files[0]; // Get the File object
 
+                    // Basic Validation
                     if (!auth) { this.showAuthError("Auth service not available."); return; }
-                    if (!email || !password) { this.showAuthError("Please fill in email and password."); return; }
+                    if (!state.firebaseFirestore) utils.warn("Firestore not available, age won't be saved.");
+                    if (!state.firebaseStorage && avatarFile) utils.warn("Storage not available, avatar won't be uploaded.");
+
+                    if (!name || !ageInput || !email || !password) {
+                        this.showAuthError("Please fill in Name, Age, Email, and Password.");
+                        return;
+                    }
+                    const age = parseInt(ageInput, 10); // Parse age to integer
+                    if (isNaN(age) || age < 1 || age > 120) {
+                         this.showAuthError("Please enter a valid age (1-120).");
+                         return;
+                    }
                     if (!/\S+@\S+\.\S+/.test(email)) { this.showAuthError("Invalid email format."); return; }
                     if (password.length < 6) { this.showAuthError("Password must be at least 6 characters."); return; }
+                    if (avatarFile && avatarFile.size > 5 * 1024 * 1024) { // 5MB limit example
+                        this.showAuthError("Profile picture file is too large (Max 5MB)."); return;
+                    }
+                    if (avatarFile && !['image/jpeg', 'image/png', 'image/gif'].includes(avatarFile.type)) {
+                         this.showAuthError("Invalid image file type (use JPG, PNG, or GIF)."); return;
+                     }
 
-                    utils.log(`Attempting Firebase signup for ${email}...`);
+                    // Disable button, show processing message
+                    const signupButton = els.signupForm?.querySelector('button[type="submit"]');
+                    if(signupButton) signupButton.disabled = true;
+                    if(els.authErrorMessage) els.authErrorMessage.textContent = "Signing up...";
+                    els.authErrorMessage?.classList.remove('d-none');
+
+                    // 1. Create User Account
                     auth.createUserWithEmailAndPassword(email, password)
-                        .then((userCredential) => {
+                        .then(async (userCredential) => { // Make callback async
                             const user = userCredential.user;
-                            utils.log(`Firebase Email Signup SUCCESS: ${user.email}`);
-                             // Optional: Send verification email
-                             // user.sendEmailVerification();
-                             // alert("Signup successful! Please check your email for verification.");
-                            // onAuthStateChanged handles state/UI. Close modal & redirect.
-                            AuraStreamApp.modules.modals.closeAuthModal();
-                            window.location.href = AuraStreamApp.config.AUTH_REDIRECT_URL;
+                            utils.log(`AuthModule: User account created: ${user.email}`);
+
+                            // 2. Update Profile (name, avatar) & Store Data (age) using the helper
+                            try {
+                                utils.log(`AuthModule: Initiating profile/data storage for new user...`);
+                                await this.updateProfileAndStoreData(user, name, age, avatarFile);
+                                utils.log(`AuthModule: Profile updated and data stored successfully for ${user.email}.`);
+
+                                // 3. Redirect on FULL success (User created AND profile updated)
+                                // onAuthStateChanged will finalize UI & redirect from modal state
+                                 // Force trigger listener or wait? Rely on listener is safer.
+                                 utils.log(`AuthModule: Signup successful. Waiting for redirect via onAuthStateChanged.`);
+
+                            } catch (profileError) {
+                                // Profile update/storage failed AFTER user creation.
+                                utils.error(`AuthModule: Profile update/storage failed post-signup for ${user.email}:`, profileError);
+                                this.showAuthError(`Account created, but profile setup failed: ${profileError.message}. Redirecting...`);
+                                // Log them in anyway, they can fix profile later. Redirect after delay.
+                                setTimeout(() => {
+                                     AuraStreamApp.modules.modals?.closeAuthModal();
+                                     window.location.href = AuraStreamApp.config.AUTH_REDIRECT_URL;
+                                 }, 3500);
+                            }
+
                         })
-                        .catch((error) => {
-                            utils.error("Firebase Email Signup FAILED:", error);
+                        .catch((error) => { // User creation failed
+                            utils.error("AuthModule: Email Signup FAILED (user creation):", error);
                             this.showAuthError(this.mapFirebaseError(error));
+                            if(signupButton) signupButton.disabled = false; // Re-enable button
                         });
-                },
+                }, 
 
                 handleGoogleAuth: function(isSignup = false) {
-                    const utils = AuraStreamApp.utils;
-                    const auth = AuraStreamApp.state.firebaseAuth;
-                    const action = isSignup ? "Signup" : "Login";
-                    utils.log(`Handling Google ${action} attempt...`);
-                    this.clearAuthError();
+                     const utils = AuraStreamApp.utils;
+                     const auth = AuraStreamApp.state.firebaseAuth;
+                     const action = isSignup ? "Signup" : "Login";
+                     utils.log(`AuthModule: Handling Google ${action}...`);
+                     this.clearAuthError();
 
-                    // 1. Check if Firebase Auth is initialized
-                    if (!auth) {
-                        this.showAuthError("Auth service not available. Please refresh.");
-                        utils.error("handleGoogleAuth called before Firebase Auth was ready.");
-                        return;
-                    }
-                    // 2. Check if Google Auth Provider class is available from SDK
-                    if (typeof firebase === 'undefined' || !firebase.auth || !firebase.auth.GoogleAuthProvider) {
-                        this.showAuthError("Google Auth Provider could not be loaded. Check network or scripts.");
-                        utils.error("firebase.auth.GoogleAuthProvider is undefined.");
-                        return;
-                    }
+                     // Checks for auth, provider (as before)
+                     if (!auth || !firebase?.auth?.GoogleAuthProvider) {
+                        this.showAuthError("Google Auth setup error."); return;
+                     }
 
-                    // 3. Create Google Auth Provider instance
-                    const provider = new firebase.auth.GoogleAuthProvider();
-                    // Optional: Add scopes if you need more than basic profile/email
-                    // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-                    // Optional: Custom parameters
-                    // provider.setCustomParameters({
-                    //   'login_hint': 'user@example.com'
-                    // });
+                     const provider = new firebase.auth.GoogleAuthProvider();
+                     utils.log(`AuthModule: Initiating Google Sign-In with Popup...`);
 
-                    utils.log("Initiating Google Sign-In with Popup...");
+                     auth.signInWithPopup(provider)
+                         .then(async (result) => { // Make success callback async
+                             const user = result.user;
+                             const isNewUser = result.additionalUserInfo?.isNewUser;
+                             utils.log(`AuthModule: Google ${action} SUCCESS: ${user.email}. New User: ${isNewUser}`);
 
-                    // 4. Call Firebase signInWithPopup
-                    auth.signInWithPopup(provider)
-                        .then((result) => {
-                            // This gives you a Google Access Token if needed (rarely used directly)
-                            // const credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
-                            // const token = credential?.accessToken;
+                              // --- Attempt to update profile if it's a new user OR crucial info is missing ---
+                              // Use profile data directly from Google result
+                              if (isNewUser || !user.displayName || !user.photoURL) {
+                                  utils.log(`AuthModule: New Google user or missing profile info detected. Updating profile...`);
+                                  try {
+                                      const googleName = result.additionalUserInfo?.profile?.name || user.displayName || user.email.split('@')[0]; // Best guess for name
+                                      const googlePhotoURL = result.additionalUserInfo?.profile?.picture || user.photoURL; // Best guess for photo
 
-                            // The signed-in user info.
-                            const user = result.user;
+                                      // Call helper WITHOUT age and WITHOUT a file upload
+                                      // It will use the user.updateProfile internally if googlePhotoURL exists
+                                       await this.updateProfileAndStoreData(
+                                           user,
+                                           googleName,
+                                           undefined, // No Age from Google
+                                           null,       // No File needed for upload
+                                           googlePhotoURL // Pass the URL to potentially use
+                                        );
+                                        utils.log(`AuthModule: Google user profile updated attempt complete.`);
+                                       // Force reload user to get fresh data *now* instead of waiting for next state change? Optional.
+                                       await user.reload();
+                                       const refreshedUser = auth.currentUser; // Get latest
+                                       // Update local state immediately to reflect potential change
+                                       AuraStreamApp.state.currentUser = {
+                                         uid: refreshedUser.uid, email: refreshedUser.email,
+                                         displayName: refreshedUser.displayName, photoURL: refreshedUser.photoURL
+                                       };
+                                       // Immediately update header UI based on potentially new data
+                                       this.updateAuthUI();
 
-                            // Check if it's a new user during a signup flow (optional check)
-                            // const isNewUser = result.additionalUserInfo?.isNewUser;
-                            // if (isSignup && !isNewUser) {
-                            //     utils.warn(`Google Login attempted during Signup flow for existing user: ${user.email}`);
-                            //     // Decide how to handle - maybe log them in anyway or show message
-                            // }
 
-                            utils.log(`Firebase Google ${action} SUCCESS: ${user.email}`);
+                                  } catch (profileError) {
+                                      utils.error(`AuthModule: Failed to update profile after Google signin:`, profileError);
+                                      // Non-critical - proceed with login even if profile update failed
+                                  }
+                              } else {
+                                 utils.log(`AuthModule: Existing Google user with profile data found.`);
+                                 // Update local state just in case (redundant if relying purely on onAuthStateChanged)
+                                 AuraStreamApp.state.currentUser = { uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL };
+                                 this.updateAuthUI(); // Ensure header reflects this
+                              }
 
-                            // onAuthStateChanged handles actual state update.
-                            // Close modal and redirect.
-                            AuraStreamApp.modules.modals.closeAuthModal();
-                            window.location.href = AuraStreamApp.config.AUTH_REDIRECT_URL;
 
-                        }).catch((error) => {
-                            // Handle Errors here.
-                            utils.error(`Firebase Google ${action} FAILED:`, error);
-                            // Log specific details
-                            console.error("Error Code:", error.code);
-                            console.error("Error Message:", error.message);
-                            // The credential used - may be null.
-                            // const email = error.customData?.email;
-                            // const credential = firebase.auth.GoogleAuthProvider.credentialFromError(error);
+                             // Redirect on success (onAuthStateChanged listener also handles this)
+                             utils.log(`AuthModule: Google Signin successful. Waiting for redirect.`);
+                             // Close modal immediately if open
+                              AuraStreamApp.modules.modals?.closeAuthModal();
 
-                            this.showAuthError(this.mapFirebaseError(error)); // Show user-friendly error
-                        });
+
+                         }).catch((error) => { // Google Signin failed
+                              utils.error(`AuthModule: Google ${action} FAILED:`, error);
+                              this.showAuthError(this.mapFirebaseError(error));
+                         });
                 },
 
                 handleLogout: function() {
@@ -1093,31 +1252,65 @@
 
                 // setLoggedInState / setLoggedOutState are now effectively handled by the onAuthStateChanged listener
 
-                updateAuthUI: function() { // Updates the Navbar UI
+                 updateAuthUI: function() {
                     const utils = AuraStreamApp.utils;
                     const els = AuraStreamApp.elements;
-                    utils.log(`Updating Auth UI based on state. Logged In: ${AuraStreamApp.state.isLoggedIn}`);
-
-                    if (!els.loginSignupButton || !els.userInfoArea || !els.logoutButton || !els.userIdentifier) {
-                        utils.warn("Auth UI elements missing, cannot update navbar state.");
+                    const state = AuraStreamApp.state;
+                    // Run only if the essential elements were cached
+                    if (!els.loginSignupButton || !els.userInfoArea || !els.logoutButton || !els.userDisplayName || !els.userAvatar || !els.userAvatarImage || !els.userAvatarInitials) {
+                        // Log warning only once maybe? Or only in debug mode?
+                        // utils.warn("AuthModule: Cannot update header UI - elements missing.");
                         return;
                     }
 
-                    if (AuraStreamApp.state.isLoggedIn && AuraStreamApp.state.currentUser) {
+                    if (state.isLoggedIn && state.currentUser) {
+                        // --- Logged IN View ---
                         els.loginSignupButton.classList.add('d-none');
                         els.userInfoArea.classList.remove('d-none');
-                        // Use display name if available, otherwise email
-                        const identifier = AuraStreamApp.state.currentUser.displayName || AuraStreamApp.state.currentUser.email;
-                        els.userIdentifier.textContent = utils.escapeHtml(identifier);
-                        els.userIdentifier.title = `Logged in as ${utils.escapeHtml(AuraStreamApp.state.currentUser.email)}`;
+
+                        // Set User Name
+                        // Use displayName if available, fallback to email
+                        const displayName = state.currentUser.displayName || state.currentUser.email;
+                        els.userDisplayName.textContent = utils.escapeHtml(displayName);
+                        els.userDisplayName.title = `Logged in as: ${utils.escapeHtml(state.currentUser.email)}`;
+
+                        // Set Avatar (Image or Initials)
+                        const photoURL = state.currentUser.photoURL;
+
+                        if (photoURL) {
+                            // Display Profile Picture
+                            els.userAvatarImage.src = photoURL;
+                            els.userAvatarImage.alt = `${displayName}'s profile picture`;
+                            els.userAvatarImage.classList.remove('d-none'); // Show the image
+                            els.userAvatarInitials.classList.add('d-none');    // Hide initials
+                            els.userAvatarInitials.textContent = '';         // Clear initials text
+                            // utils.log(`AuthModule: Displaying avatar image for ${displayName}`);
+                        } else {
+                            // Display Initials
+                            const initials = utils.getInitials(state.currentUser.displayName, state.currentUser.email);
+                            els.userAvatarInitials.textContent = initials;
+                            els.userAvatarInitials.classList.remove('d-none'); // Show initials
+                            els.userAvatarImage.classList.add('d-none');       // Hide image
+                            els.userAvatarImage.src = '';                    // Clear image src
+                            els.userAvatarImage.alt = '';
+                            // utils.log(`AuthModule: Displaying initials '${initials}' for ${displayName}`);
+                        }
+
                     } else {
+                        // --- Logged OUT View ---
                         els.loginSignupButton.classList.remove('d-none');
                         els.userInfoArea.classList.add('d-none');
-                        els.userIdentifier.textContent = '';
-                        els.userIdentifier.title = '';
+
+                        // Clear user-specific elements
+                        els.userDisplayName.textContent = '';
+                        els.userDisplayName.title = '';
+                        els.userAvatarInitials.textContent = '';
+                        els.userAvatarImage.src = '';
+                        els.userAvatarImage.alt = '';
+                        els.userAvatarInitials.classList.add('d-none');
+                        els.userAvatarImage.classList.add('d-none');
                     }
-                    // Update mobile menu elements here if they exist
-                },
+                }, 
 
                 showAuthError: function(message) {
                     const els = AuraStreamApp.elements;
@@ -1161,10 +1354,8 @@
   
       // --- Start the Main Application ---
       AuraStreamApp.init();
-   
 
-
-  document.addEventListener('DOMContentLoaded', () => {
+   document.addEventListener('DOMContentLoaded', () => {
         const AUTH_STORAGE_KEY = 'auraUser'; // Must match the key from the landing page script
         let currentUser = null;
 
