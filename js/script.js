@@ -1,4 +1,5 @@
-
+    // --- Configuration ---
+        const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
             IMAGE_BASE_URL: 'https://image.tmdb.org/t/p/w500',
@@ -5096,8 +5097,3 @@
 
         // --- Start the Application ---
         document.addEventListener('DOMContentLoaded', App.init);
-
-    </script>
-
-</body>
-</html>
