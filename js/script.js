@@ -1,4 +1,4 @@
-     // --- Configuration ---
+    // --- Configuration ---
         const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
@@ -82,8 +82,9 @@
                 { id: 203, name: 'Crunchyroll', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/gNZh44MgDBwipGA9LwozlALjSdE.png' }, // Rent/Buy
             ],
             TARGET_REGION: 'US', // For watch providers and release dates
-             // Add bg-primary RGB for overlay gradient
-             BG_PRIMARY_RGB: '11, 12, 16', 
+            // Add bg-primary RGB for overlay gradient
+            BG_PRIMARY_RGB: '11, 12, 16', 
+            MIN_SKELETON_DISPLAY_TIME: 5000,
         };
 
 
@@ -182,6 +183,7 @@
         const State = {
             currentGenre: null, // { type: 'movie' | 'tv', id: number, name: string }
             currentNetwork: null, // { id: number, name: string, logo?: string }
+            tmdbWatchProviders: null,
             currentPersonId: null, // NEW: Track current person being viewed
             allMovieGenres: [],
             allTvGenres: [],
@@ -528,29 +530,35 @@
 
             // Generates HTML for the Hero section skeleton
             getSkeletonHeroHTML: () => {
-                // Note: Assumes hero container structure handles layout
-                return `
-                    <div class="skeleton skeleton-hero-backdrop"></div>
-                    <div class="hero-overlay" style="background:none;"></div> 
-                    <div class="container hero-content">
-                        <div class="hero-genres mb-3">
-                           <span class="skeleton skeleton-badge" style="width: 60px;"></span>
-                           <span class="skeleton skeleton-badge" style="width: 80px;"></span>
-                        </div>
-                        <div class="skeleton skeleton-title mb-3" style="height: 2em; width: 70%;"></div>
-                        <div class="skeleton skeleton-meta mb-3">
-                            <span class="skeleton skeleton-text-sm" style="width: 80px; display:inline-block; margin-right: 1rem;"></span>
-                            <span class="skeleton skeleton-text-sm" style="width: 100px; display:inline-block; margin-right: 1rem;"></span>
-                            <span class="skeleton skeleton-text-sm" style="width: 60px; display:inline-block;"></span>
-                        </div>
-                        <div class="skeleton skeleton-text mb-1" style="width: 95%;"></div>
-                        <div class="skeleton skeleton-text mb-4" style="width: 85%;"></div>
-                        <div class="hero-actions mt-4">
-                            <div class="skeleton skeleton-button" style="height: 48px; width: 150px;"></div>
-                            <div class="skeleton skeleton-button" style="height: 48px; width: 150px;"></div>
-                        </div>
-                    </div>`;
-            },
+            // Use consistent structure with real render
+            return `
+                <div class="skeleton skeleton-hero-backdrop"></div> 
+                <div class="hero-overlay"></div> 
+                <div class="container hero-content">
+                  
+                    <div class="hero-genres mb-3">
+                       <span class="skeleton skeleton-badge" style="width: 70px;"></span>
+                       <span class="skeleton skeleton-badge" style="width: 90px;"></span>
+                       <span class="skeleton skeleton-badge" style="width: 60px;"></span>
+                    </div>
+            
+                    <div class="skeleton skeleton-title mb-3" style="height: 2.5em; width: 65%; max-width: 500px;"></div>
+                    <div class="hero-meta mb-3">
+                        <span class="skeleton skeleton-text-sm" style="width: 90px;"></span> 
+                        <span class="skeleton skeleton-text-sm" style="width: 70px;"></span>
+                        <span class="skeleton skeleton-text-sm" style="width: 100px;"></span> 
+                    </div>
+                  
+                    <div class="skeleton skeleton-text mb-1" style="width: 95%; max-width: 650px;"></div>
+                    <div class="skeleton skeleton-text mb-1" style="width: 90%; max-width: 620px;"></div>
+                    <div class="skeleton skeleton-text mb-4" style="width: 80%; max-width: 580px;"></div>
+    
+                    <div class="hero-actions mt-4">
+                        <div class="skeleton skeleton-button" style="height: 48px; width: 150px;"></div>
+                        <div class="skeleton skeleton-button" style="height: 48px; width: 140px;"></div>
+                    </div>
+                </div>`;
+        },
 
             // Generates HTML for the Details page skeleton
             getSkeletonDetailsHTML: () => {
@@ -858,13 +866,13 @@
                     State.spotifyAppAccessToken = data.access_token;
                     // Set expiry time (e.g., 60 seconds buffer before actual expiry)
                     State.spotifyAppTokenExpiresAt = Date.now() + (data.expires_in - 60) * 1000;
-                    App.setSpotifyStatus("Spotify App Authorized", "success", false);
+                    App.setSpotifyStatus("Authorized", "success", false);
                     State.spotifyTokenPromise = null; // Clear promise on success
                     return State.spotifyAppAccessToken;
                 })
                 .catch(error => {
                     console.error("Spotify Token Acquisition Failed:", error);
-                    Utils.showToast(`Spotify Auth Error: ${error.message}`, "danger");
+                    Utils.showToast(`Auth Error: ${error.message}`, "danger");
                     App.setSpotifyStatus(`Spotify Auth Failed: ${error.message}`, "danger", false);
                     State.spotifyAppAccessToken = null;
                     State.spotifyAppTokenExpiresAt = null;
@@ -1286,19 +1294,59 @@
                  }
                  else if (hash.startsWith('#network=')) {
                      targetViewElement = DOM.views.network;
-                     activeNavLinkHref = '#home'; // Keep home active
+                     activeNavLinkHref = '#home';
+
                      const providerIdString = hash.substring('#network='.length);
                      const providerId = parseInt(providerIdString);
-                     const providerInfo = config.CURATED_WATCH_PROVIDERS.find(p => p.id === providerId);
-                     if (providerInfo) {
-                         State.currentNetwork = providerInfo; // Store network info
-                         runOnViewLoad = () => App.loadNetworkResultsPage(1); // Load first page
-                     } else {
-                         Utils.showToast("Invalid network specified.", "warning");
+
+                     if (isNaN(providerId) || providerId <= 0) {
+                         console.error("Invalid network ID in hash:", providerIdString);
+                         Utils.showToast("Invalid network link.", "warning");
                          location.hash = '#home';
                          return;
                      }
-                 }
+
+                     console.log(`Routing to network page for Provider ID: ${providerId}`);
+
+                     // --- MODIFICATION ---
+                     // Make runOnViewLoad async to await provider loading if needed
+                     runOnViewLoad = async () => {
+                         // Ensure view elements are ready
+                         if (!DOM.networkResultsGrid || !DOM.networkResultsTitle || !DOM.loadMoreNetworkBtn || !DOM.networkLoadingSpinner) {
+                            console.error("Network view elements missing, cannot load results.");
+                            Utils.showToast("Error displaying network results page.", "danger");
+                            location.hash = '#home';
+                            return;
+                         }
+
+                         // 1. Ensure the provider lists are loaded/cached (awaits only first time)
+                         const providersLoaded = await App.ensureTmdbWatchProvidersLoaded();
+
+                         // If loading providers failed, maybe show an error or stop
+                         if (!providersLoaded && !State.tmdbWatchProviders) { // Check explicitly if cache is still null
+                            // The ensure function already shows a toast on error
+                            // Optionally, redirect or display error message on the network page itself
+                            DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML("Could not load required provider information.");
+                            Utils.setElementVisibility(DOM.networkLoadingSpinner, false); // Hide spinner
+                            Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false); // Hide load more
+                            DOM.networkResultsTitle.textContent = "Error";
+                            return; // Stop further processing
+                         }
+
+                         // 2. Get provider details using the helper function
+                         const providerInfo = App.getProviderDetails(providerId);
+
+                         // 3. Store the retrieved/fallback info in state
+                         State.currentNetwork = providerInfo;
+
+                         // 4. Proceed to load the results page (this now uses the potentially detailed providerInfo)
+                         // loadNetworkResultsPage itself doesn't need to be async for this part
+                         App.loadNetworkResultsPage(1);
+                     };
+                    }
+            
+                
+
                  // NEW: Handle Person Route
                  else if (hash.startsWith('#person=')) {
                     targetViewElement = DOM.views.person;
@@ -1750,9 +1798,9 @@
         console.log("✅ App Init Complete.");
         }, 
 
-              handleAuthReady: (user, dbInstance) => {
-                  console.log(`✅ App.handleAuthReady received. User: ${user ? user.email : 'None'}, DB: ${dbInstance ? 'Ready' : 'Unavailable'}`);
-                  State.currentUser = user; // Store user state within App if needed
+        handleAuthReady: (user, dbInstance) => {
+         console.log(`✅ App.handleAuthReady received. User: ${user ? user.email : 'None'}, DB: ${dbInstance ? 'Ready' : 'Unavailable'}`);
+         State.currentUser = user; // Store user state within App if needed
          // Make dbInstance available within App scope if preferred,
          // though `appDb` is already available globally from firebase-app.js
          // App.db = dbInstance;
@@ -1786,6 +1834,7 @@
          }
 
      },
+
 
             applyTheme: (themeName) => {
                 const body = document.body;
@@ -3084,11 +3133,12 @@
                          append_to_response: 'credits,similar,videos,watch/providers'
                      });
 
-                     if (!itemData) {
-                         throw new Error("Item details not found.");
-                     }
-                     // *** Render function replaces skeleton ***
-                    App.renderDetailsPage(itemData); // Make sure this function clears the container first if needed (it does by setting innerHTML)
+                    if (itemData && db) { // Check if data loaded and db is available
+                        // Pass title for potential storage in Firestore doc
+                        const title = itemData.title || itemData.name || 'Unknown Title';
+                        App.recordGlobalView(type, id, title); // Call the global tracking function
+                    }
+                  
 
                 } catch (error) {
                     console.error(`Failed to load details for ${type} ${id}:`, error);
@@ -3096,58 +3146,125 @@
                 }
             },
 
-             loadPlayerPageContext: async (type, id, season = null, episode = null) => {
-                 if (!DOM.playerTitleEl || !DOM.playerSourceBtnsContainer || !DOM.playerIframe || !DOM.playerIframePlaceholder || !DOM.playerEpisodeSelectorContainer) return;
+            /**
+ * Sets up the context for the media player page.
+ * Fetches item details, renders source buttons, handles episode selectors for TV shows,
+ * and records a global view count.
+ * @param {string} type - 'movie' or 'tv'
+ * @param {string|number} id - The TMDB ID of the item.
+ * @param {string|number|null} [season=null] - The season number (for TV).
+ * @param {string|number|null} [episode=null] - The episode number (for TV).
+ */
+loadPlayerPageContext: async (type, id, season = null, episode = null) => {
+    // --- 1. Check for Essential DOM Elements ---
+    if (!DOM.playerTitleEl || !DOM.playerSourceBtnsContainer || !DOM.playerIframe || !DOM.playerIframePlaceholder || !DOM.playerEpisodeSelectorContainer) {
+        console.error("loadPlayerPageContext: Missing required player view DOM elements.");
+        // Optionally display a more user-friendly error on the page
+        if (DOM.playerTitleEl) DOM.playerTitleEl.textContent = 'Player Error';
+        if (DOM.playerIframePlaceholder) DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML("Player UI elements are missing. Cannot load player.");
+        return;
+    }
+    if (!type || !id) {
+        console.error("loadPlayerPageContext: Invalid type or ID provided.");
+        DOM.playerTitleEl.textContent = 'Loading Error';
+        DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML("Invalid media link.");
+        return;
+    }
 
-                 // Reset player view
-                 DOM.playerTitleEl.textContent = 'Loading Player...';
-                 DOM.playerSourceBtnsContainer.innerHTML = '';
-                 Utils.setElementVisibility(DOM.playerIframe, false);
+    // --- 2. Reset Player View State ---
+    console.log(`[Player] Loading context for ${type}/${id}` + (season ? `/S${season}` : '') + (episode ? `/E${episode}` : ''));
+    DOM.playerTitleEl.textContent = 'Loading Player...';
+    DOM.playerSourceBtnsContainer.innerHTML = ''; // Clear old buttons
+    Utils.setElementVisibility(DOM.playerIframe, false); // Hide iframe
+    DOM.playerIframe.src = 'about:blank'; // Clear previous iframe source
+    Utils.setElementVisibility(DOM.playerIframePlaceholder, true); // Show placeholder
+    DOM.playerIframePlaceholder.innerHTML = Utils.getSpinnerHTML("Preparing player..."); // Show spinner in placeholder
+    Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, false); // Hide episode selector initially
+    DOM.playerEpisodeSelectorContainer.innerHTML = ''; // Clear old selectors
+
+    // Store current context in State for potential use by other functions (like setStreamingSource)
+    State.moviePlayerContext = { itemId: id, itemType: type, currentSeason: season, currentEpisode: episode };
+
+    try {
+        // --- 3. Fetch Core Item Data ---
+        const itemData = await API.fetchTMDB(`/${type}/${id}`);
+        if (!itemData) throw new Error(`Media item ${type}/${id} not found.`);
+
+        const title = Utils.escapeHtml(itemData.title || itemData.name || 'Media Item');
+        const displayTitle = title + (type === 'tv' && season && episode ? ` - S${season} E${episode}` : '');
+        DOM.playerTitleEl.textContent = displayTitle; // Update title
+
+        // --- 4. Record Global View (Crucial Step) ---
+        if (itemData && db) { // Check if data was fetched and Firestore instance is available
+            console.log(`[Player] Recording global view for ${type}/${id}`);
+            // Use the base title (without S/E) for consistent tracking
+            const baseTitle = itemData.title || itemData.name || 'Unknown Title';
+            App.recordGlobalView(type, id, baseTitle); // Call the function to increment count in Firestore
+        } else if (!db) {
+            console.warn("[Player] Firestore 'db' instance not available. Skipping global view recording.");
+        }
+        // ---------------------------------------------
+
+        // --- 5. Render Streaming Source Buttons ---
+        App.renderStreamingSourceButtons(); // Assumes this function exists and populates DOM.playerSourceBtnsContainer
+
+        // --- 6. Handle TV Show Specific Logic (Seasons/Episodes) ---
+        if (type === 'tv') {
+            const targetSeason = season || 1; // Default to season 1 if none specified
+            console.log(`[Player] Fetching season data for S${targetSeason}`);
+            const seasonData = await API.fetchTMDB(`/tv/${id}/season/${targetSeason}`);
+            if (!seasonData || !seasonData.episodes) throw new Error(`Season ${targetSeason} data not found.`);
+
+            App.renderEpisodeSelectors(itemData, seasonData); // Assumes this exists and populates/shows selector container
+            Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, true);
+
+            // Automatically set the stream source based on the selected/default episode
+            // Find the currently selected episode number (might be from URL or default to 1)
+             const targetEpisode = episode || 1;
+            // Find the first button and set the source for this specific episode
+            const firstButton = DOM.playerSourceBtnsContainer.querySelector('button');
+            if (firstButton) {
+                 // Pass episode info to setStreamingSource if needed, or rely on State.moviePlayerContext
+                 App.setStreamingSource(firstButton.dataset.sourceIndex); // setStreamingSource should use State.moviePlayerContext
+            } else {
+                 DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">No streaming sources available for this episode.</span>`;
                  Utils.setElementVisibility(DOM.playerIframePlaceholder, true);
-                 Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, false);
-                 DOM.playerEpisodeSelectorContainer.innerHTML = '';
+                 Utils.setElementVisibility(DOM.playerIframe, false);
+             }
 
-                 State.moviePlayerContext = { itemId: id, itemType: type, currentSeason: season, currentEpisode: episode }; // Store context
+        } else {
+            // --- 7. Handle Movie Specific Logic (or non-TV) ---
+            // Directly set the source using the first available button
+            const firstButton = DOM.playerSourceBtnsContainer.querySelector('button');
+            if (firstButton) {
+                App.setStreamingSource(firstButton.dataset.sourceIndex); // setStreamingSource should use State.moviePlayerContext
+            } else {
+                // No sources found at all
+                DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">No streaming sources available for this movie.</span>`;
+                 Utils.setElementVisibility(DOM.playerIframePlaceholder, true);
+                 Utils.setElementVisibility(DOM.playerIframe, false);
+            }
+        }
 
-                 try {
-                     const itemData = await API.fetchTMDB(`/${type}/${id}`);
-                     if (!itemData) throw new Error("Media item not found.");
+    } catch (error) {
+        console.error("[Player] Failed to load player context:", error);
+        DOM.playerTitleEl.textContent = 'Error Loading Player';
+        // Display error in the placeholder area
+        DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML(`Could not load player: ${error.message}`);
+        Utils.setElementVisibility(DOM.playerIframePlaceholder, true); // Ensure placeholder is visible
+        Utils.setElementVisibility(DOM.playerIframe, false); // Ensure iframe is hidden
+        Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, false); // Hide episode stuff on error
+    }
+}, // End loadPlayerPageContext
 
-                     const title = Utils.escapeHtml(itemData.title || itemData.name || 'Media Item');
-                     DOM.playerTitleEl.textContent = title;
-
-                     // Render source buttons (always show these)
-                     App.renderStreamingSourceButtons();
-
-                     // If TV show, render episode selectors
-                     if (type === 'tv') {
-                         const seasonData = await API.fetchTMDB(`/tv/${id}/season/${season || 1}`); // Fetch first season by default or specified one
-                         if (!seasonData || !seasonData.episodes) throw new Error("Season data not found.");
-                         App.renderEpisodeSelectors(itemData, seasonData);
-                         Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, true);
-                     } else {
-                         // For movies, directly set the source for the first button (if available)
-                         const firstButton = DOM.playerSourceBtnsContainer.querySelector('button');
-                         if (firstButton) {
-                             App.setStreamingSource(firstButton.dataset.sourceIndex);
-                         } else {
-                              DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">No streaming sources available.</span>`;
-                         }
-                     }
-
-                 } catch (error) {
-                     console.error("Failed to load player context:", error);
-                     DOM.playerTitleEl.textContent = 'Error Loading Player';
-                     DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML(`Error: ${error.message}`);
-                 }
-             },
+            
 
              loadTmdbSearchResults: async (query) => {
                  if (!DOM.tmdbSearchResultsGrid || !DOM.tmdbSearchResultsTitle) return;
 
                  DOM.tmdbSearchResultsTitle.textContent = `Search Results for "${query}"`;
                  // *** Show Skeleton ***
-                 DOM.tmdbSearchResultsGrid.innerHTML = Utils.getSkeletonCardHTML(12); // Show 12 skeletons for search
+                 DOM.tmdbSearchResultsGrid.innerHTML = Utils.getSkeletonCardHTML(50); // Show 12 skeletons for search
 
                  try {
                      const searchData = await API.fetchTMDB('/search/multi', { query: query, page: 1, include_adult: false });
@@ -3178,7 +3295,7 @@
 
                  // *** Show Skeleton ONLY on first load ***
                  if (!isLoadingMore) {
-                     DOM.genreResultsGrid.innerHTML = Utils.getSkeletonCardHTML(12); // Show 12 skeletons initially
+                     DOM.genreResultsGrid.innerHTML = Utils.getSkeletonCardHTML(80); // Show 12 skeletons initially
                  }
 
                  try {
@@ -3249,6 +3366,90 @@
                  App.loadGenreResultsPage(currentPage + 1);
              },
 
+              /**
+     * Fetches TMDB watch provider lists for movie/tv in the target region
+     * and caches them in State.tmdbWatchProviders if not already loaded.
+     * Uses Maps for efficient lookup.
+     * @returns {Promise<boolean>} True if providers are loaded/cached, false on error.
+     */
+    ensureTmdbWatchProvidersLoaded: async () => {
+        if (State.tmdbWatchProviders) {
+            return true; // Already loaded
+        }
+        console.log("Fetching TMDB watch provider lists for caching...");
+        try {
+            const [movieProvidersResponse, tvProvidersResponse] = await Promise.all([
+                API.fetchTMDB(`/watch/providers/movie`, { watch_region: config.TARGET_REGION }),
+                API.fetchTMDB(`/watch/providers/tv`, { watch_region: config.TARGET_REGION })
+            ]);
+
+            const movieProviders = movieProvidersResponse?.results || [];
+            const tvProviders = tvProvidersResponse?.results || [];
+
+            // Use Maps for efficient ID lookup. Store both lists.
+            // If a provider exists in both, the details are usually the same.
+            State.tmdbWatchProviders = {
+                movie: new Map(movieProviders.map(p => [p.provider_id, p])),
+                tv: new Map(tvProviders.map(p => [p.provider_id, p]))
+            };
+
+            console.log(`Cached ${State.tmdbWatchProviders.movie.size} movie providers and ${State.tmdbWatchProviders.tv.size} TV providers.`);
+            return true;
+
+        } catch (error) {
+            console.error("Failed to fetch or cache TMDB watch providers:", error);
+            State.tmdbWatchProviders = null; // Ensure it's null on error
+            Utils.showToast("Could not load provider information.", "warning");
+            return false;
+        }
+    },
+
+    /**
+     * Gets provider details by ID, checking curated list first, then cached TMDB lists.
+     * @param {number} providerId - The ID of the provider.
+     * @returns {object} Object with { id, name, logo } or fallback if not found.
+     */
+    getProviderDetails: (providerId) => {
+        if (!providerId) return null;
+
+        // 1. Check Curated List First (using your config)
+        const curatedProvider = config.CURATED_WATCH_PROVIDERS.find(p => p.id === providerId);
+        if (curatedProvider) {
+            console.log(`Provider ${providerId} found in curated list: ${curatedProvider.name}`);
+            // Ensure logo URL is correctly formed (handle relative paths if any)
+             const logoUrl = curatedProvider.logo
+                           ? (curatedProvider.logo.startsWith('/') ? `${config.LOGO_BASE_URL}${curatedProvider.logo}` : curatedProvider.logo)
+                           : null; // Or a default placeholder image URL
+            return {
+                id: curatedProvider.id,
+                name: curatedProvider.name,
+                logo: logoUrl
+            };
+        }
+
+        // 2. Check Cached TMDB Lists (ensure they are loaded)
+        if (State.tmdbWatchProviders) {
+            // Look in movie providers first, then tv providers
+            const tmdbProvider = State.tmdbWatchProviders.movie.get(providerId) || State.tmdbWatchProviders.tv.get(providerId);
+            if (tmdbProvider) {
+                console.log(`Provider ${providerId} found in cached TMDB list: ${tmdbProvider.provider_name}`);
+                return {
+                    id: tmdbProvider.provider_id,
+                    name: tmdbProvider.provider_name,
+                    logo: tmdbProvider.logo_path ? `${config.LOGO_BASE_URL}${tmdbProvider.logo_path}` : null // Construct URL
+                };
+            }
+        }
+
+        // 3. Fallback if not found anywhere
+        console.warn(`Provider ${providerId} not found in curated or cached TMDB lists. Using fallback.`);
+        return {
+            id: providerId,
+            name: `Provider ${providerId}`, // Generic name
+            logo: null // Or a default placeholder image URL: 'https://via.placeholder.com/50x50/cccccc/808080?text=?'
+        };
+    },
+
             // --- Network Functions ---
             renderNetworkLogos: async () => { // Ensure this is async if it wasn't already
     if (!DOM.networkLogosContainer) {
@@ -3296,77 +3497,160 @@
                  }
              },
 
-             loadNetworkResultsPage: async (page = 1) => {
-                 if (!State.currentNetwork || !DOM.networkResultsGrid || !DOM.networkResultsTitle || !DOM.loadMoreNetworkBtn || !DOM.networkLoadingSpinner) return;
+                /**
+     * Loads and displays content for the currently selected network provider.
+     * Shows skeleton loaders for a minimum duration on initial load.
+     * @param {number} [page=1] - The page number to fetch.
+     */
+    loadNetworkResultsPage: async (page = 1) => {
+        // --- 1. Initial Checks ---
+        if (!State.currentNetwork || !DOM.networkResultsGrid || !DOM.networkResultsTitle || !DOM.loadMoreNetworkBtn || !DOM.networkLoadingSpinner) {
+            console.error("loadNetworkResultsPage: Missing state or required DOM elements.");
+            if (DOM.networkResultsGrid) { // Attempt to show error in grid if possible
+                 DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML("Page setup error. Cannot load results.");
+            }
+            // Optionally hide spinner/button if they exist
+            if (DOM.networkLoadingSpinner) Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
+            if (DOM.loadMoreNetworkBtn) Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+            return;
+        }
 
-                 const { id, name } = State.currentNetwork;
-                 DOM.networkResultsTitle.textContent = `Content on ${Utils.escapeHtml(name)}`;
+        // --- 2. State and Flags ---
+        const { id, name, logo } = State.currentNetwork;
+        const isInitialLoad = (page === 1);
+        let startTime = null;
 
-                 const isLoadingMore = page > 1;
-                 Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
-                 Utils.setElementVisibility(DOM.networkLoadingSpinner, true);
+        // --- 3. Setup Loading State ---
+        Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false); // Always hide 'Load More' at the start of any load
+        Utils.setElementVisibility(DOM.networkLoadingSpinner, true); // Show spinner
 
-                 // *** Show Skeleton ONLY on first load ***
-                 if (!isLoadingMore) {
-                     DOM.networkResultsGrid.innerHTML = Utils.getSkeletonCardHTML(12); // Show 12 skeletons initially
+        if (isInitialLoad) {
+            // a. Set Title (only on initial load)
+            let titleHtml = Utils.escapeHtml(name);
+            if (logo && DOM.networkResultsTitle) {
+                 // Example: Logo first, then name
+                 titleHtml = `<img src="${logo}" alt="${Utils.escapeHtml(name)}" style="height: 30px; width: auto; margin-right: 10px; vertical-align: middle; border-radius: 4px;"> ${titleHtml}`;
+                 DOM.networkResultsTitle.innerHTML = `Content on ${titleHtml}`;
+            } else if (DOM.networkResultsTitle) {
+                 DOM.networkResultsTitle.textContent = `Content on ${titleHtml}`;
+            }
+
+            // b. Show Skeletons
+            DOM.networkResultsGrid.innerHTML = Utils.getSkeletonCardHTML(24); // Use a sufficiently large number
+
+            // c. Start Timer
+            startTime = performance.now();
+        }
+
+        // --- 4. Data Fetching ---
+        let networkData = null;
+        let fetchError = null;
+        let discoveryType = 'movie'; // Default
+
+        try {
+            // Determine content type (simple example, adjust as needed)
+            const tvFocusedProviders = [203]; // e.g., Crunchyroll ID
+            if (tvFocusedProviders.includes(id)) {
+                 discoveryType = 'tv';
+            }
+            console.log(`Fetching page ${page} of /discover/${discoveryType} for provider ${id} (${name})`);
+
+            networkData = await API.fetchTMDB(`/discover/${discoveryType}`, {
+                 with_watch_providers: id,
+                 watch_region: config.TARGET_REGION,
+                 page: page,
+                 sort_by: 'popularity.desc' // Or other relevant sorting
+            });
+            // Store type for rendering phase if needed (optional, depends if renderContent needs it)
+             State.currentNetwork.lastDiscoveryType = discoveryType;
+
+        } catch (error) {
+            fetchError = error;
+            console.error(`Failed to fetch network results (page ${page}):`, error);
+        }
+
+        // --- 5. Render Content Function ---
+        const renderContent = () => {
+            // Hide spinner *before* potentially replacing grid content
+            Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
+
+            if (fetchError) {
+                 // Handle fetch error display
+                 if (isInitialLoad) {
+                     DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load results: ${fetchError.message}`);
+                 } else {
+                     // Show toast for "Load More" errors, don't clear existing results
+                     Utils.showToast(`Failed to load more results: ${fetchError.message}`, 'warning');
+                     // Optionally re-enable the button to allow retry?
+                     // Utils.setElementVisibility(DOM.loadMoreNetworkBtn, true);
                  }
+            } else if (networkData && networkData.results && networkData.results.length > 0) {
+                 // Render successful results
+                 // Retrieve the type determined during fetch
+                 const fetchedType = State.currentNetwork.lastDiscoveryType || 'movie';
+                 App.renderNetworkResultsPage(
+                     networkData.results,
+                     networkData.page,
+                     networkData.total_pages,
+                     fetchedType, // Pass the correct type
+                     !isInitialLoad // Pass append flag (true if not initial load)
+                 );
+            } else {
+                 // Handle case where fetch was successful but no results found
+                 if (isInitialLoad) {
+                     DOM.networkResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this network.</p>';
+                 }
+                 // If no results on page 1, or no more results on subsequent pages, keep 'Load More' hidden
+                 Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+            }
+        };
 
-                let discoveryType = 'movie';
-                const tvFocusedProviders = [203]; // Add other TV-centric provider IDs if needed (e.g., maybe Hulu ID 15?)
-                    if (tvFocusedProviders.includes(id)) {
-                        discoveryType = 'tv';
-                        console.log(`Provider ${id} (${name}) identified as TV-focused. Fetching /discover/tv.`);
-                    } else {
-                        console.log(`Provider ${id} (${name}) treated as movie-focused. Fetching /discover/movie.`);
-                    }
-                 try {
-                   
-                    const networkData = await API.fetchTMDB(`/discover/${discoveryType}`, {
-                        with_watch_providers: id,
-                        watch_region: config.TARGET_REGION,
-                        page: page,
-                        sort_by: 'popularity.desc'
-                    });
+        // --- 6. Delay Logic ---
+        if (isInitialLoad && startTime) {
+            const endTime = performance.now();
+            const elapsedTime = endTime - startTime;
+            // Calculate remaining time, ensuring it's not negative
+            const remainingTime = Math.max(0, (config.MIN_SKELETON_DISPLAY_TIME || 3000) - elapsedTime); // Use config or default
 
-                     // *** Render function replaces skeleton (if page 1) or appends ***
-                     if (networkData && networkData.results) {
-                        App.renderNetworkResultsPage(networkData.results, networkData.page, networkData.total_pages, discoveryType);
-                        } else {
-                           if (!isLoadingMore) DOM.networkResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this network.</p>'; // Replace skeleton
-                           Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
-                        }
-                      
-                     } catch (error) {
+            console.log(`Data fetch took ${elapsedTime.toFixed(0)}ms. Waiting additional ${remainingTime.toFixed(0)}ms.`);
+            setTimeout(renderContent, remainingTime);
+        } else {
+            // Render immediately for "Load More" (page > 1) or if timer logic failed
+            renderContent();
+        }
+    },
 
-                     console.error("Network results loading failed:", error);
-                   
-                     if (!isLoadingMore) {
-                          DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load network results: ${error.message}`); // Replace skeleton
-                      } else {
-                          Utils.showToast(`Failed to load more network results: ${error.message}`, 'warning');
-                      }
-                    } finally {
-                        Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
-                    }
-             },
+    /**
+     * Renders the fetched network results into the grid and updates the 'Load More' button.
+     * @param {Array} results - Array of movie/TV show objects from TMDB.
+     * @param {number} currentPage - The current page number that was loaded.
+     * @param {number} totalPages - The total number of pages available.
+     * @param {string} [itemType='movie'] - The type of items ('movie' or 'tv').
+     * @param {boolean} [append=false] - Whether to append results or replace grid content.
+     */
+    renderNetworkResultsPage: (results, currentPage, totalPages, itemType = 'movie', append = false) => {
+        if (!DOM.networkResultsGrid || !DOM.loadMoreNetworkBtn) {
+            console.error("renderNetworkResultsPage: Missing required DOM elements.");
+            return;
+        }
 
+        // --- 1. Render Cards ---
+        // Pass the append flag to renderTmdbCards
+        App.renderTmdbCards(results, DOM.networkResultsGrid, itemType, append);
 
-            renderNetworkResultsPage: (results, currentPage, totalPages, itemType = 'movie') => { // Added itemType parameter
-                if (!DOM.networkResultsGrid || !DOM.loadMoreNetworkBtn) return;
-            
-                const append = currentPage > 1;
-                // --- *** Pass the determined itemType to renderTmdbCards *** ---
-                App.renderTmdbCards(results, DOM.networkResultsGrid, itemType, append);
+        // --- 2. Update Load More Button ---
+        const canLoadMore = currentPage < totalPages;
+        Utils.setElementVisibility(DOM.loadMoreNetworkBtn, canLoadMore);
 
-                // Update Load More Button state
-                const canLoadMore = currentPage < totalPages;
-                Utils.setElementVisibility(DOM.loadMoreNetworkBtn, canLoadMore);
-                if (canLoadMore) {
-                    DOM.loadMoreNetworkBtn.dataset.page = currentPage;
-                    // --- *** Store the type for the next page load *** ---
-                    DOM.loadMoreNetworkBtn.dataset.itemType = itemType;
-                }
-            },
+        if (canLoadMore) {
+            // Update button state for the *next* potential load
+            DOM.loadMoreNetworkBtn.dataset.page = currentPage; // Store the page just loaded
+            DOM.loadMoreNetworkBtn.dataset.itemType = itemType; // Store type for next load
+            // The actual loading of currentPage + 1 happens in handleLoadMoreNetworkResults
+        }
+    },
+
+          
 
             handleLoadMoreNetworkResults: () => {
                  if (!DOM.loadMoreNetworkBtn) return;
@@ -4118,7 +4402,9 @@
             },
 
              // Renders the Hero section item
-            renderHeroItem: (item) => {
+             
+
+             renderHeroItem: (item) => {
                  if (!DOM.views.hero) return;
 
                  const backdropUrl = item.backdrop_path ? `${config.BACKDROP_BASE_URL}${item.backdrop_path}` : '';
@@ -4130,7 +4416,7 @@
                  const genres = item.genres?.slice(0, 3) || []; // Max 3 genres
                  const runtime = type === 'movie' && item.runtime ? Utils.formatRuntime(item.runtime) : null;
                  const seasons = type === 'tv' && item.number_of_seasons ? item.number_of_seasons : null;
-
+  
 
                  DOM.views.hero.innerHTML = `
                      <img src="${backdropUrl}" class="hero-backdrop" alt="${title} backdrop" loading="eager">
@@ -4145,12 +4431,13 @@
                              ${year ? `<span class="me-3 d-flex align-items-center"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
                              ${runtime ? `<span class="me-3 d-flex align-items-center"><i class="bi bi-clock me-1"></i> ${runtime}</span>` : ''}
                              ${seasons ? `<span class="me-3 d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${seasons} Season${seasons > 1 ? 's' : ''}</span>` : ''}
+
                          </div>
                          <p class="hero-description lead">${overview.length > 250 ? overview.substring(0, 250) + '...' : overview}</p>
                          <div class="hero-actions mt-4">
                              <a href="#details=${type}/${item.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-info-circle-fill me-2"></i> More Info</a>
                              <a href="#player=${type}/${item.id}" class="btn btn-outline-light btn-lg"><i class="bi bi-play-circle me-2"></i> Watch Now</a>
-                         </div>
+                        </div>
                      </div>
                  `;
              },
@@ -4214,7 +4501,7 @@
                                      ${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}
                                  </div>
                                  ${displayOverview !== 'No overview available.' ? `<h4 id="text-white" class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
-                                 ${director ? `<p class="small mb-1"><strong class="text-white-50">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
+                                 ${director ? `<p class="small mb-1"><strong class="text-white-50"">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
                                  ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
                                 <div class="details-section mt-4">
                                     <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
@@ -4255,22 +4542,39 @@
                     detailsHtml += `
                         <div class="details-section mt-5">
                             <h2 class="details-section-title">Cast</h2>
-                             <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
+                            <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
                                 ${castList.map(member => {
-                                    const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632','w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A'; // Use smaller image for cast grid
+                                    const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A'; // Use smaller image for cast grid
                                     // Wrap in an anchor tag linking to the person view
-                                    return `
-                                        <div class="col mb-3">
-                                             <a href="#person=${member.id}" class="cast-member-link">
-                                                 <img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy">
-                                                 <div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div>
-                                                 <div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div>
-                                             </a>
-                                         </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
+                                return `
+                            <div class="col mb-3">
+                                <a href="#person=${member.id}" class="cast-member-link">
+                                    <i class="bi bi-person-circle img-fallback-icon-init d-none"></i>
+                                   <img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy" onerror="this.previousElementSibling.classList.remove('d-none'); this.classList.add('d-none');">
+                                   <div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div>
+                                   <div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div>
+                                </a>
+                                <style>
+                                    .d-none {
+                                        display: none;
+                                    }
+
+                                    .img-fallback-icon-init {
+                                        font-size: 8rem;  /* Adjust size of the fallback icon */
+                                        color: #ccc;  /* You can adjust the color to match your design */
+                                        display: inline-block;
+                                        width: 120px;  /* Match the size of your images */
+                                        height: 180px; /* Match the size of your images */
+                                        text-align: center;
+                                        line-height: 180px;  /* Center the icon vertically */
+                                    }
+
+                                </style>
+                           </div>
+                        `;
+                           }).join('')}
+                         </div>
+                      </div>
                     `;
                 }
 
@@ -4364,7 +4668,7 @@
 
                  seasons.sort((a,b) => a.season_number - b.season_number).forEach((season, index) => {
                      const seasonNum = season.season_number;
-                     const isActive = index === 0; // Make first tab active by default
+                     const isActive = index === 1; // Make first tab active by default
                      const tabId = `season-${seasonNum}-tab`;
                      const paneId = `season-${seasonNum}-pane`;
 
@@ -4466,6 +4770,7 @@
              },
 
              recordGlobalView: async (type, id) => {
+                const db = firebase.firestore();
                 if (!db) { // Check if Firestore is initialized
                    console.warn("Firestore not available, cannot record global view.");
                     return;
@@ -4485,6 +4790,7 @@
                     // or update it if it does.
                     type: type,
                     tmdbId: parseInt(id),
+                    title: title, // Assuming title is available in the context
                     viewCount: firebase.firestore.FieldValue.increment(1), // Atomically increments
                     lastViewed: firebase.firestore.FieldValue.serverTimestamp() // Track last view time
                 }, { merge: true }); // Merge ensures we don't overwrite type/id if doc exists
@@ -4851,6 +5157,8 @@
                  });
             },
         };
+
+   
 
         if (!State.horizontalScrollContainers) {
              State.horizontalScrollContainers = [];
