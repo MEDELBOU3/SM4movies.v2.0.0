@@ -1,5 +1,4 @@
-    // --- Configuration ---
-        const config = {
+
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
             IMAGE_BASE_URL: 'https://image.tmdb.org/t/p/w500',
@@ -3122,27 +3121,23 @@
                  bsInstances.trailerModal.show();
             },
 
-
             loadDetailsPage: async (type, id) => {
-                if (!DOM.detailsWrapper) return;
-                // *** Show Skeleton ***
-                DOM.detailsWrapper.innerHTML = Utils.getSkeletonDetailsHTML();
- 
-                try {
-                     const itemData = await API.fetchTMDB(`/${type}/${id}`, {
-                     append_to_response: 'credits,similar,videos,watch/providers'
+            if (!DOM.detailsWrapper) return;
+            DOM.detailsWrapper.innerHTML = Utils.getSpinnerHTML("Loading details...", true);
+
+            try {
+                 const itemData = await API.fetchTMDB(`/${type}/${id}`, {
+                     append_to_response: 'credits,similar,videos,watch/providers' // Fetch extra details
                  });
 
-                if (itemData && db) { // Check if data loaded and db is available
-                    // Pass title for potential storage in Firestore doc
-                    const title = itemData.title || itemData.name || 'Unknown Title';
-                    App.recordGlobalView(type, id, title); // Call the global tracking function
-                }
-              
+                 if (!itemData) {
+                     throw new Error("Item details not found.");
+                 }
+                App.renderDetailsPage(itemData);
 
             } catch (error) {
                 console.error(`Failed to load details for ${type} ${id}:`, error);
-                DOM.detailsWrapper.innerHTML = Utils.getErrorHTML(`Failed to load details: ${error.message}`); // Replace skeleton with error
+                DOM.detailsWrapper.innerHTML = Utils.getErrorHTML(`Failed to load details: ${error.message}`);
             }
         },
 
@@ -3165,7 +3160,6 @@
 
                  const title = Utils.escapeHtml(itemData.title || itemData.name || 'Media Item');
                  DOM.playerTitleEl.textContent = title;
-
 
                  // Render source buttons (always show these)
                  App.renderStreamingSourceButtons();
@@ -3194,8 +3188,6 @@
          },
 
           
-
-            
 
              loadTmdbSearchResults: async (query) => {
                  if (!DOM.tmdbSearchResultsGrid || !DOM.tmdbSearchResultsTitle) return;
@@ -5104,3 +5096,8 @@
 
         // --- Start the Application ---
         document.addEventListener('DOMContentLoaded', App.init);
+
+    </script>
+
+</body>
+</html>
