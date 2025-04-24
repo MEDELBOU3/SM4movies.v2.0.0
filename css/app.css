@@ -1,4 +1,4 @@
-       /* --- CSS Reset & Base Styles --- */
+    /* --- CSS Reset & Base Styles --- */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -450,6 +450,12 @@ body.theme-light .form-control {
     font-weight: 500;
 }
 
+#spotify-auth-nav-message {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    margin-top: 0.5rem;
+}
+
 /* --- Navbar --- */
 .navbar {
     background: rgba(var(--bg-primary-rgb), 0.85);
@@ -582,6 +588,20 @@ body.theme-light .dropdown-item:focus {
     background: var(--bg-secondary);
 }
 
+.hero-backdrop,
+.skeleton-hero-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* For <img> */
+    background-size: cover; /* For <div> */
+    background-position: center center;
+    z-index: 1; /* Behind overlay and content */
+    filter: brightness(0.6); /* Example: Slightly darken backdrop */
+}
+
 .hero-backdrop {
     position: absolute;
     top: 0;
@@ -599,27 +619,15 @@ body.theme-light .dropdown-item:focus {
     transform: scale(1);
 }
 
-.hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top, var(--bg-primary) 10%, rgba(var(--bg-secondary-rgb), 0.8) 50%, rgba(var(--bg-secondary-rgb), 0.3) 80%, transparent 100%);
-    z-index: 2;
-    transition: var(--transition-base);
-}
+.hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-primary) 10%, rgba(11, 13, 24, 0.8) 50%, rgba(11, 13, 24, 0.3) 80%, transparent 100%); z-index: 2; }
 
 .hero-content {
-    position: relative;
-    z-index: 3;
-    max-width: 65%;
-    margin-top: 8vh;
-    padding-left: 5%;
-    animation: fadeInSlideUp 1s ease-out forwards;
-    opacity: 0;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+    position: relative; /* To stack above overlay */
+    z-index: 3; /* Above overlay */
+    padding-top: 5rem; /* Adjust padding as needed */
+    padding-bottom: 5rem;
 }
+
 
 @keyframes fadeInSlideUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -627,25 +635,22 @@ body.theme-light .dropdown-item:focus {
 }
 
 .hero-genres span {
-    font-size: 0.9rem;
-    margin-right: 0.8rem;
-    letter-spacing: 0.03em;
     display: inline-block;
-    margin-bottom: 0.5rem;
-    padding: 0.3em 0.8em;
-    background: rgba(var(--surface-rgb), 0.3);
-    border: 1px solid rgba(var(--border-rgb), 0.2);
-    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-sm); /* Use your radius variable */
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem; /* For wrapping */
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-#genre-results-title{
-   color: var(--text-light);
-}  
 .hero-title {
-    color: var(--text-medium);
-    font-size: clamp(2.8rem, 6vw, 4.2rem);
-    line-height: 1.15;
+    font-size: 3rem; /* Adjust size */
+    font-weight: 700;
     margin-bottom: 1rem;
+    color: var(--text-light);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .hero-meta {
@@ -657,9 +662,14 @@ body.theme-light .dropdown-item:focus {
     flex-wrap: wrap;
 }
 
-.hero-meta .rating i {
-    color: var(--warning-color);
+.hero-meta .rating i { /* Assuming .rating wraps the rating span */
+    color: var(--warning-color); /* Use your warning color */
     font-size: 1.1em;
+    vertical-align: middle; /* Align star better */
+}
+.hero-meta span i { /* General icons in meta */
+    vertical-align: middle; /* Align icons better */
+    margin-right: 0.3em !important; /* Ensure consistent spacing */
 }
 
 .hero-description {
@@ -668,6 +678,12 @@ body.theme-light .dropdown-item:focus {
     opacity: 0.9;
     margin-bottom: 2rem;
     max-width: 700px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 /* --- Cards --- */
@@ -2734,7 +2750,7 @@ body.theme-light .dropdown-item:focus {
 
 /* View Count Badge Style (Optional - Only needed if implementing renderMostViewedCards) */
 /* Add this if you create the renderMostViewedCards function to show counts */
-/*
+
 #most-viewed-section .h-card .view-count-badge {
     position: absolute;
     top: 0.5rem;
@@ -2757,7 +2773,7 @@ body.theme-light .dropdown-item:focus {
     position: relative;
     top: -1px;
 }
-*/
+
 
 /* Style the initial placeholder within the container */
 #most-viewed-section .initial-placeholder {
@@ -2781,7 +2797,8 @@ body.theme-light .dropdown-item:focus {
 #most-viewed-section .skeleton-h-card {
    width: 280px; /* Match card width */
 }
-  #app-user-info-area {
+    
+#app-user-info-area {
     /* Bootstrap's align-items-center usually does the vertical alignment */
     /* Add specific layout styles if needed based on your header structure */
     gap: 0.75rem; /* Adds a small gap between avatar, name, and button */
@@ -2834,11 +2851,19 @@ body.theme-light .dropdown-item:focus {
      white-space: nowrap; /* Prevent text wrapping */
 }
 
+
 /* Login/Signup Prompt Button (Bootstrap handles most) */
-#app-login-prompt .btn-primary { /* Target the specific ID */
-    /* Customize if needed */
+#app-login-prompt .btn-primary {
+    border-radius: 20px;
     font-weight: 500;
-     white-space: nowrap; /* Prevent text wrapping */
+    white-space: nowrap; /* Prevent text wrapping */
+    padding: 0.5rem 1.5rem; /* Adjust padding for better touch targets */
+}
+
+#app-login-prompt .btn-primary:hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.8); /* Slightly darker on hover */
+    color: #fff; /* Ensure text is readable */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); /* Optional glow effect */
 }
 
 /* --- Visibility Handled by JS --- */
@@ -2850,4 +2875,4 @@ body.theme-light .dropdown-item:focus {
 .user-avatar:hover {
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.5);
-}  
+}
