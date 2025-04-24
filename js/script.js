@@ -3127,135 +3127,73 @@
                 if (!DOM.detailsWrapper) return;
                 // *** Show Skeleton ***
                 DOM.detailsWrapper.innerHTML = Utils.getSkeletonDetailsHTML();
-
+ 
                 try {
                      const itemData = await API.fetchTMDB(`/${type}/${id}`, {
-                         append_to_response: 'credits,similar,videos,watch/providers'
-                     });
+                     append_to_response: 'credits,similar,videos,watch/providers'
+                 });
 
-                    if (itemData && db) { // Check if data loaded and db is available
-                        // Pass title for potential storage in Firestore doc
-                        const title = itemData.title || itemData.name || 'Unknown Title';
-                        App.recordGlobalView(type, id, title); // Call the global tracking function
-                    }
-                  
-
-                } catch (error) {
-                    console.error(`Failed to load details for ${type} ${id}:`, error);
-                    DOM.detailsWrapper.innerHTML = Utils.getErrorHTML(`Failed to load details: ${error.message}`); // Replace skeleton with error
+                if (itemData && db) { // Check if data loaded and db is available
+                    // Pass title for potential storage in Firestore doc
+                    const title = itemData.title || itemData.name || 'Unknown Title';
+                    App.recordGlobalView(type, id, title); // Call the global tracking function
                 }
-            },
+              
 
-            /**
- * Sets up the context for the media player page.
- * Fetches item details, renders source buttons, handles episode selectors for TV shows,
- * and records a global view count.
- * @param {string} type - 'movie' or 'tv'
- * @param {string|number} id - The TMDB ID of the item.
- * @param {string|number|null} [season=null] - The season number (for TV).
- * @param {string|number|null} [episode=null] - The episode number (for TV).
- */
-loadPlayerPageContext: async (type, id, season = null, episode = null) => {
-    // --- 1. Check for Essential DOM Elements ---
-    if (!DOM.playerTitleEl || !DOM.playerSourceBtnsContainer || !DOM.playerIframe || !DOM.playerIframePlaceholder || !DOM.playerEpisodeSelectorContainer) {
-        console.error("loadPlayerPageContext: Missing required player view DOM elements.");
-        // Optionally display a more user-friendly error on the page
-        if (DOM.playerTitleEl) DOM.playerTitleEl.textContent = 'Player Error';
-        if (DOM.playerIframePlaceholder) DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML("Player UI elements are missing. Cannot load player.");
-        return;
-    }
-    if (!type || !id) {
-        console.error("loadPlayerPageContext: Invalid type or ID provided.");
-        DOM.playerTitleEl.textContent = 'Loading Error';
-        DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML("Invalid media link.");
-        return;
-    }
-
-    // --- 2. Reset Player View State ---
-    console.log(`[Player] Loading context for ${type}/${id}` + (season ? `/S${season}` : '') + (episode ? `/E${episode}` : ''));
-    DOM.playerTitleEl.textContent = 'Loading Player...';
-    DOM.playerSourceBtnsContainer.innerHTML = ''; // Clear old buttons
-    Utils.setElementVisibility(DOM.playerIframe, false); // Hide iframe
-    DOM.playerIframe.src = 'about:blank'; // Clear previous iframe source
-    Utils.setElementVisibility(DOM.playerIframePlaceholder, true); // Show placeholder
-    DOM.playerIframePlaceholder.innerHTML = Utils.getSpinnerHTML("Preparing player..."); // Show spinner in placeholder
-    Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, false); // Hide episode selector initially
-    DOM.playerEpisodeSelectorContainer.innerHTML = ''; // Clear old selectors
-
-    // Store current context in State for potential use by other functions (like setStreamingSource)
-    State.moviePlayerContext = { itemId: id, itemType: type, currentSeason: season, currentEpisode: episode };
-
-    try {
-        // --- 3. Fetch Core Item Data ---
-        const itemData = await API.fetchTMDB(`/${type}/${id}`);
-        if (!itemData) throw new Error(`Media item ${type}/${id} not found.`);
-
-        const title = Utils.escapeHtml(itemData.title || itemData.name || 'Media Item');
-        const displayTitle = title + (type === 'tv' && season && episode ? ` - S${season} E${episode}` : '');
-        DOM.playerTitleEl.textContent = displayTitle; // Update title
-
-        // --- 4. Record Global View (Crucial Step) ---
-        if (itemData && db) { // Check if data was fetched and Firestore instance is available
-            console.log(`[Player] Recording global view for ${type}/${id}`);
-            // Use the base title (without S/E) for consistent tracking
-            const baseTitle = itemData.title || itemData.name || 'Unknown Title';
-            App.recordGlobalView(type, id, baseTitle); // Call the function to increment count in Firestore
-        } else if (!db) {
-            console.warn("[Player] Firestore 'db' instance not available. Skipping global view recording.");
-        }
-        // ---------------------------------------------
-
-        // --- 5. Render Streaming Source Buttons ---
-        App.renderStreamingSourceButtons(); // Assumes this function exists and populates DOM.playerSourceBtnsContainer
-
-        // --- 6. Handle TV Show Specific Logic (Seasons/Episodes) ---
-        if (type === 'tv') {
-            const targetSeason = season || 1; // Default to season 1 if none specified
-            console.log(`[Player] Fetching season data for S${targetSeason}`);
-            const seasonData = await API.fetchTMDB(`/tv/${id}/season/${targetSeason}`);
-            if (!seasonData || !seasonData.episodes) throw new Error(`Season ${targetSeason} data not found.`);
-
-            App.renderEpisodeSelectors(itemData, seasonData); // Assumes this exists and populates/shows selector container
-            Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, true);
-
-            // Automatically set the stream source based on the selected/default episode
-            // Find the currently selected episode number (might be from URL or default to 1)
-             const targetEpisode = episode || 1;
-            // Find the first button and set the source for this specific episode
-            const firstButton = DOM.playerSourceBtnsContainer.querySelector('button');
-            if (firstButton) {
-                 // Pass episode info to setStreamingSource if needed, or rely on State.moviePlayerContext
-                 App.setStreamingSource(firstButton.dataset.sourceIndex); // setStreamingSource should use State.moviePlayerContext
-            } else {
-                 DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">No streaming sources available for this episode.</span>`;
-                 Utils.setElementVisibility(DOM.playerIframePlaceholder, true);
-                 Utils.setElementVisibility(DOM.playerIframe, false);
-             }
-
-        } else {
-            // --- 7. Handle Movie Specific Logic (or non-TV) ---
-            // Directly set the source using the first available button
-            const firstButton = DOM.playerSourceBtnsContainer.querySelector('button');
-            if (firstButton) {
-                App.setStreamingSource(firstButton.dataset.sourceIndex); // setStreamingSource should use State.moviePlayerContext
-            } else {
-                // No sources found at all
-                DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">No streaming sources available for this movie.</span>`;
-                 Utils.setElementVisibility(DOM.playerIframePlaceholder, true);
-                 Utils.setElementVisibility(DOM.playerIframe, false);
+            } catch (error) {
+                console.error(`Failed to load details for ${type} ${id}:`, error);
+                DOM.detailsWrapper.innerHTML = Utils.getErrorHTML(`Failed to load details: ${error.message}`); // Replace skeleton with error
             }
-        }
+        },
 
-    } catch (error) {
-        console.error("[Player] Failed to load player context:", error);
-        DOM.playerTitleEl.textContent = 'Error Loading Player';
-        // Display error in the placeholder area
-        DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML(`Could not load player: ${error.message}`);
-        Utils.setElementVisibility(DOM.playerIframePlaceholder, true); // Ensure placeholder is visible
-        Utils.setElementVisibility(DOM.playerIframe, false); // Ensure iframe is hidden
-        Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, false); // Hide episode stuff on error
-    }
-}, // End loadPlayerPageContext
+         loadPlayerPageContext: async (type, id, season = null, episode = null) => {
+             if (!DOM.playerTitleEl || !DOM.playerSourceBtnsContainer || !DOM.playerIframe || !DOM.playerIframePlaceholder || !DOM.playerEpisodeSelectorContainer) return;
+
+             // Reset player view
+             DOM.playerTitleEl.textContent = 'Loading Player...';
+             DOM.playerSourceBtnsContainer.innerHTML = '';
+             Utils.setElementVisibility(DOM.playerIframe, false);
+             Utils.setElementVisibility(DOM.playerIframePlaceholder, true);
+             Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, false);
+             DOM.playerEpisodeSelectorContainer.innerHTML = '';
+
+             State.moviePlayerContext = { itemId: id, itemType: type, currentSeason: season, currentEpisode: episode }; // Store context
+
+             try {
+                 const itemData = await API.fetchTMDB(`/${type}/${id}`);
+                 if (!itemData) throw new Error("Media item not found.");
+
+                 const title = Utils.escapeHtml(itemData.title || itemData.name || 'Media Item');
+                 DOM.playerTitleEl.textContent = title;
+
+
+                 // Render source buttons (always show these)
+                 App.renderStreamingSourceButtons();
+
+                 // If TV show, render episode selectors
+                 if (type === 'tv') {
+                     const seasonData = await API.fetchTMDB(`/tv/${id}/season/${season || 1}`); // Fetch first season by default or specified one
+                     if (!seasonData || !seasonData.episodes) throw new Error("Season data not found.");
+                     App.renderEpisodeSelectors(itemData, seasonData);
+                     Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, true);
+                 } else {
+                     // For movies, directly set the source for the first button (if available)
+                     const firstButton = DOM.playerSourceBtnsContainer.querySelector('button');
+                     if (firstButton) {
+                         App.setStreamingSource(firstButton.dataset.sourceIndex);
+                     } else {
+                          DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">No streaming sources available.</span>`;
+                     }
+                 }
+
+             } catch (error) {
+                 console.error("Failed to load player context:", error);
+                 DOM.playerTitleEl.textContent = 'Error Loading Player';
+                 DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML(`Error: ${error.message}`);
+             }
+         },
+
+          
 
             
 
