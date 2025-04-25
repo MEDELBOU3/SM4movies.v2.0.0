@@ -727,6 +727,53 @@ body.theme-light .dropdown-item:focus {
     flex-direction: column;
 }
 
+/* --- Rank Badge Styling --- */
+.rank-badge {
+    position: absolute;
+    top: 0.6rem; /* Adjust positioning as needed */
+    left: 0.6rem;
+    z-index: 5; /* Above image, potentially below text overlays depending on structure */
+    background: linear-gradient(135deg, rgba(var(--primary-accent-rgb, 80 0 180), 0.85), rgba(var(--secondary-accent-rgb, 0 180 200), 0.75)); /* Use theme gradient */
+    color: #ffffff;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.8rem, 3vw, 1.1rem); /* Responsive font size */
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 0.2em 0.6em; /* Use em for padding relative to font size */
+    border-radius: var(--radius-sm);
+    min-width: 30px; /* Ensure it looks okay for single digit numbers */
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(2px); /* Subtle blur for background */
+    transform: skewX(-5deg); /* Optional: Add a slight slant */
+    transition: transform 0.2s ease-out;
+}
+
+/* Optional: Different positioning for vertical cards if needed */
+.card .rank-badge { /* Targets badges inside vertical cards */
+   top: 0.7rem;
+   left: 0.7rem;
+   /* transform: none; */ /* Remove slant if desired for vertical */
+}
+
+/* Optional: Hover effect on the card containing the badge */
+.h-card:hover .rank-badge,
+.card:hover .rank-badge {
+   transform: scale(1.05) skewX(-5deg); /* Slightly larger on hover */
+   /* Or just transform: scale(1.05); if not using skew */
+}
+
+/* Light theme adjustments if necessary (gradient might need tweaking) */
+body.theme-light .rank-badge {
+    background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    text-shadow: none;
+    border: none;
+}
+
 .card:hover {
     transform: translateY(-8px) scale(1.03);
     box-shadow: var(--shadow-lg);
