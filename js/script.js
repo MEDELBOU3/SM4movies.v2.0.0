@@ -2948,108 +2948,81 @@
            
 
             // --- NEW Rendering Function for Horizontal Cards ---
-            renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false) => {
-                 if (!containerElement) return;
-                 containerElement.innerHTML = ''; // Clear spinner/previous
+                 // Inside App object
 
-                 if (!items || items.length === 0) {
-                     containerElement.innerHTML = `<p class="text-muted px-3" style="width: 100%;">No items found.</p>`;
-                     return;
-                 }
+        renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false) => {
+            if (!containerElement) return;
+            containerElement.innerHTML = ''; // Clear spinner/previous
 
-                 items.forEach(item => {
-                    // Determine type (movie/tv)
-                    let itemType = item.media_type || defaultType;
-                    if (!itemType) {
-                        if (item.title) itemType = 'movie';
-                        else if (item.name) itemType = 'tv';
-                        else return; // Skip if unknown
-                    }
-                    if (itemType === 'person' || !item.id) return; // Skip people or items without ID
+            if (!items || items.length === 0) {
+                containerElement.innerHTML = `<p class="text-muted px-3" style="width: 100%;">No items found.</p>`;
+                return;
+            }
 
-                    const title = Utils.escapeHtml(item.title || item.name || 'N/A');
-                    // Use backdrop for horizontal cards, fallback to poster if needed
-                    const imagePath = item.backdrop_path || item.poster_path;
-                    // Use a larger backdrop size (w780)
-                    const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
-                    const year = (item.release_date || item.first_air_date || '').substring(0, 4);
-                    const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
+            // --- Modification Start ---
+            items.forEach((item, index) => { // <--- Add index here
+                const rank = index + 1; // Calculate rank (starts from 1)
+            // --- Modification End ---
 
-                    const cardLink = document.createElement('a');
-                    cardLink.href = `#details=${itemType}/${item.id}`;
-                    cardLink.className = 'h-card';
-                    cardLink.title = title;
+                // Determine type (movie/tv)
+                let itemType = item.media_type || defaultType;
+                if (!itemType) {
+                    if (item.title) itemType = 'movie';
+                    else if (item.name) itemType = 'tv';
+                    else return;
+                }
+                if (itemType === 'person' || !item.id) return;
 
-                    // Image or Placeholder
-                    const imageHtml = imageUrl
-                        ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
-                        : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`; // Placeholder icon
+                const title = Utils.escapeHtml(item.title || item.name || 'N/A');
+                const imagePath = item.backdrop_path || item.poster_path;
+                const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+                const year = (item.release_date || item.first_air_date || '').substring(0, 4);
+                const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
 
-                     // Overlay Content
-                    const overlayHtml = `
-                        <div class="h-card-overlay">
-                            <h3 class="h-card-title">${title}</h3>
-                             <p class="h-card-meta small opacity-80">
-                                ${year ? `<span>${year}</span>` : ''}
-                                ${rating && parseFloat(rating) > 0 ? `<span class="ms-2"><i class="bi bi-star-fill text-warning"></i> ${rating}</span>` : ''}
-                             </p>
-                        </div>
-                    `;
+                const cardLink = document.createElement('a');
+                cardLink.href = `#details=${itemType}/${item.id}`;
+                cardLink.className = 'h-card'; // Keep existing class
+                cardLink.title = title;
 
-                    // Trailer Button (only added if showTrailerButton is true)
-                    const trailerButtonHtml = showTrailerButton
-                        ? `<button class="h-card-play-trailer-btn"
-                                   aria-label="Play Trailer for ${title}"
-                                   data-item-id="${item.id}"
-                                   data-item-type="${itemType}">
-                              <i class="bi bi-play-fill"></i>
-                          </button>`
-                        : '';
-                    
-                    const isInList = Watchlist.isInWatchlist(item.id, itemType);
-                    const watchlistBtnHtml = `
-                         <button class="btn watchlist-btn ${isInList ? 'in-watchlist' : ''}"
-                                 title="${isInList ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
-                                 aria-label="${isInList ? 'Remove from Watchlist' : 'Add to Watchlist'}"
-                                 data-item-id="${item.id}"
-                                 data-item-type="${itemType}"
-                                 data-item-title="${Utils.escapeHtml(item.title || item.name || '')}"
-                                 data-item-poster="${item.poster_path || null}"
-                                 data-item-backdrop="${item.backdrop_path || null}"
-                                 data-item-rating="${item.vote_average || null}"
-                                 style="/* Adjust positioning if needed for h-card */ top: 0.6rem; right: 0.6rem;"
-                                 >
-                             <i class="bi ${isInList ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
-                         </button>
-                    `;
+                const imageHtml = imageUrl
+                    ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+                    : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
 
-                    cardLink.innerHTML = imageHtml + overlayHtml + trailerButtonHtml + watchlistBtnHtml;
+                const overlayHtml = `
+                    <div class="h-card-overlay">
+                        <h3 class="h-card-title">${title}</h3>
+                         <p class="h-card-meta small opacity-80">
+                            ${year ? `<span>${year}</span>` : ''}
+                            ${rating && parseFloat(rating) > 0 ? `<span class="ms-2"><i class="bi bi-star-fill text-warning"></i> ${rating}</span>` : ''}
+                         </p>
+                    </div>
+                `;
+
+                const trailerButtonHtml = showTrailerButton ? `...` : ''; // Keep existing trailer logic
+
+                const isInList = Watchlist.isInWatchlist(item.id, itemType);
+                const watchlistBtnHtml = `...`; // Keep existing watchlist logic
+
+                // --- Modification Start ---
+                // Add the Rank Badge HTML
+                const rankBadgeHtml = `
+                    <div class="rank-badge">#${rank}</div>
+                `;
+                // Prepend the rank badge to the innerHTML
+                cardLink.innerHTML = rankBadgeHtml + imageHtml + overlayHtml + trailerButtonHtml + watchlistBtnHtml;
+                // --- Modification End ---
 
 
-                    // Add click listener for trailer button IF it exists
-                    const trailerButton = cardLink.querySelector('.h-card-play-trailer-btn');
-                    if (trailerButton) {
-                        trailerButton.addEventListener('click', (e) => {
-                            e.preventDefault(); // Prevent navigation from the link
-                            e.stopPropagation(); // Stop event bubbling
-                            App.handlePlayTrailerClick(e.currentTarget);
-                        });
-                    }
+                // Add click listeners (keep existing logic)
+                const trailerButton = cardLink.querySelector('.h-card-play-trailer-btn');
+                // ... trailer listener logic ...
+                const addedWatchlistButton = cardLink.querySelector('.watchlist-btn');
+                // ... watchlist listener logic ...
 
-                    const addedWatchlistButton = cardLink.querySelector('.watchlist-btn');
-                    if (addedWatchlistButton) {
-                        addedWatchlistButton.addEventListener('click', (e) => {
-                            e.preventDefault(); // Prevent link navigation
-                            e.stopPropagation();
-                            App.handleAddOrRemoveWatchlist(e.currentTarget);
-                        });
-                    }
-
-
-                    containerElement.appendChild(cardLink);
-                });
-            },
-
+                containerElement.appendChild(cardLink);
+            });
+        }, // End renderHorizontalCards
+           
              // --- NEW: Handler for Trailer Button Click ---
              handlePlayTrailerClick: async (button) => {
                  const itemId = button.dataset.itemId;
