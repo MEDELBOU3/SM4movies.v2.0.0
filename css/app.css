@@ -1,4 +1,4 @@
- /* --- CSS Reset & Base Styles --- */
+   /* --- CSS Reset & Base Styles --- */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -2861,56 +2861,117 @@ body.theme-light .skeleton-h-card-overlay {
 }
     
 #app-user-info-area {
-    /* Bootstrap's align-items-center usually does the vertical alignment */
-    /* Add specific layout styles if needed based on your header structure */
-    gap: 0.75rem; /* Adds a small gap between avatar, name, and button */
+    display: flex; /* Ensure flex properties are explicitly set */
+    align-items: center;
+    gap: 0.65rem; /* Slightly adjusted gap */
+    padding: 0.25rem 0; /* Add some vertical padding if needed */
 }
 
+#app-login-prompt a.btn { /* Target the anchor specifically */
+    display: inline-flex; /* Align icon and potential text */
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 1.1rem; /* Slightly refined padding */
+    font-size: 0.9rem; /* Slightly smaller font */
+    font-weight: 600; /* Bolder */
+    /* Use theme gradient or primary accent */
+    background: var(--gradient-primary, var(--primary-accent));
+    color: #fff; /* Ensure contrast */
+    border: none;
+    border-radius: var(--radius-md); /* Consistent radius */
+    box-shadow: 0 3px 8px -2px rgba(var(--primary-accent-rgb, 0 0 0), 0.3);
+    transition: var(--transition-base); /* Use global transition */
+    white-space: nowrap;
+    text-decoration: none; /* Ensure no underline */
+}
+
+#app-login-prompt a.btn i {
+    font-size: 1.1em; /* Adjust icon size relative to button text */
+    /* Add margin if you include text next to the icon */
+    /* margin-right: 0.4rem; */
+}
+
+#app-login-prompt a.btn:hover {
+    transform: translateY(-2px) scale(1.03); /* Subtle lift */
+    filter: brightness(1.15); /* Brighter */
+    box-shadow: 0 5px 12px -3px rgba(var(--primary-accent-rgb, 0 0 0), 0.4);
+    color: #fff; /* Keep color */
+}
+
+
 /* General Avatar Circle Styles (Same as Landing Page potentially) */
-/* If you already have `.user-avatar` styled globally, you might not need all of this */
+
 .user-avatar {
-    width: 36px;             /* Adjust size as needed */
-    height: 36px;            /* Adjust size as needed */
-    border-radius: 50%;      /* Makes it a circle */
-    background-color: var(--bs-primary, #0d6efd); /* Default background color for initials */
-    color: white;            /* Text color for initials */
-    display: inline-flex;    /* Allows alignment with other elements */
-    align-items: center;     /* Center content vertically */
-    justify-content: center; /* Center content horizontally */
+    width: 38px; /* Slightly larger */
+    height: 38px;
+    border-radius: 50%;
+    /* Use a theme-aware background, slightly transparent accent */
+    background-color: rgba(var(--primary-accent-rgb, 0 0 0), 0.3);
+    color: var(--text-light); /* Use theme text color */
+    border: 2px solid rgba(var(--primary-accent-rgb, 255 255 255), 0.2); /* Subtle theme border */
     font-weight: 600;
-    font-size: 0.8rem;       /* Size for initials */
-    overflow: hidden;        /* IMPORTANT: Clips the image to the circle */
-    cursor: pointer;         /* Suggests it might be clickable (e.g., profile dropdown) */
-    border: 1px solid rgba(255, 255, 255, 0.15); /* Optional subtle border */
-    flex-shrink: 0;          /* Prevent avatar from shrinking in flex layouts */
+    font-size: 0.85rem;
+    overflow: hidden;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+.user-avatar:hover {
+    transform: scale(1.1); /* Scale up */
+    border-color: rgba(var(--primary-accent-rgb, 255 255 255), 0.6); /* Brighter border */
+    box-shadow: 0 0 10px rgba(var(--primary-accent-rgb, 255 255 255), 0.3); /* Subtle glow */
 }
 
 /* Style for the Actual Image within the Avatar */
-#app-user-avatar-image { /* Target the specific ID in app.html */
+#app-user-avatar-image {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ensures the image covers the circle without stretching */
+    object-fit: cover;
 }
 
-/* Style for the Initials Span */
-#app-user-avatar-initials { /* Target the specific ID */
-    line-height: 1; /* Helps vertical centering */
+#app-user-avatar-initials {
+    line-height: 1;
 }
 
 /* Display Name (Bootstrap classes handle most styling) */
-#app-user-display-name { /* Target the specific ID */
-    /* Add specific styles if needed, e.g.: */
-    /* color: #e9ecef; */
-    white-space: nowrap;     /* Prevent name wrapping if space is tight */
-    overflow: hidden;        /* Hide overflow */
-    text-overflow: ellipsis; /* Show '...' if name is too long */
-    max-width: 150px;        /* Optional: limit name width */
+#app-user-display-name {
+    color: var(--text-light); /* Theme text color */
+    font-weight: 500; /* Slightly less bold than avatar initials */
+    font-size: 0.9rem; /* Slightly larger */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px; /* Slightly more width if needed */
+    opacity: 0.9; /* Slightly softer */
 }
 
 /* Logout Button (Bootstrap handles most) */
-#app-logout-button { /* Target the specific ID */
-    /* Add specific hover/active states if the default btn-secondary-outline needs adjustment */
-     white-space: nowrap; /* Prevent text wrapping */
+#app-logout-button {
+    font-size: 0.8rem; /* Slightly smaller */
+    padding: 0.35rem 0.8rem; /* Adjust padding */
+    border-radius: var(--radius-sm); /* Smaller radius */
+    border-width: 1px;
+    /* Use theme's secondary accent for outline */
+    color: var(--text-medium);
+    border-color: var(--border-color);
+    background-color: transparent;
+    transition: var(--transition-base);
+    white-space: nowrap;
+    display: inline-flex; /* Align icon */
+    align-items: center;
+    gap: 0.35rem; /* Space between icon and text */
+}
+
+#app-logout-button:hover {
+    color: var(--secondary-accent); /* Theme hover color */
+    border-color: var(--secondary-accent);
+    background-color: rgba(var(--secondary-accent-rgb), 0.1); /* Subtle background */
+    transform: scale(1.05); /* Slight scale */
 }
 
 
@@ -2933,11 +2994,7 @@ body.theme-light .skeleton-h-card-overlay {
 /* #app-login-prompt initially visible */
 /* #app-user-info-area initially hidden via d-none */
 
-/* Optional Hover Effects */
-.user-avatar:hover {
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
-}
+
 
 #hero-video-container {
     position: absolute;
