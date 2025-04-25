@@ -2308,7 +2308,7 @@ body.theme-light .skeleton-h-card-overlay {
     }
     .navbar-nav { align-items: stretch; }
     #tmdb-search-form { width: 100%; margin-right: 0 !important; margin-bottom: 0.5rem; }
-    #spotify-status-nav { margin-left: 0 !important; width: 100%; justify-content: center; margin-top: 0.5rem !important; }
+    #spotify-status-nav { margin-left: 0 !important;  margin-right: 10px; width: 100%; justify-content: center; margin-top: 0.5rem !important; }
     #spotify-search-form .input-group { flex-direction: column; gap: 0.5rem; }
     #spotify-search-form button { width: 100%; }
     .hero-content { max-width: 95%; padding-left: 2%; margin-top: 5vh; }
