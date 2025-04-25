@@ -87,229 +87,154 @@
             MIN_SKELETON_DISPLAY_TIME: 5000,
         };
 
-
-        // --- DOM References ---
         const DOM = {
-            // Views
-            views: {
-                hero: document.getElementById('hero-view'),
-                discover: document.getElementById('discover-view'),
-                details: document.getElementById('details-view'),
-                player: document.getElementById('player-view'),
-                genre: document.getElementById('genre-results-view'),
-                music: document.getElementById('music-view'),
-                livesports: document.getElementById('livesports-view'),
-                network: document.getElementById('network-results-view'),
-                person: document.getElementById('person-view'), // NEW: Person view
-                watchlist: document.getElementById('watchlist-view'), 
-                analytics: document.getElementById('analytics-view'),
-            },
-            // Navbar
-            navbarMenu: document.getElementById('navbarNav'),
-            tmdbSearchForm: document.getElementById('tmdb-search-form'),
-            tmdbSearchInput: document.getElementById('tmdb-search-input'),
-            spotifyStatusNavMessage: document.getElementById('spotify-auth-nav-message'),
-            genreDropdownMenu: document.getElementById('genre-dropdown-menu'),
-            // Discover/Home View
-            homeContentWrapper: document.getElementById('home-content-wrapper'),
-            networkLogosContainer: document.getElementById('network-logos-container'),
-            networkPrevBtn: document.getElementById('network-prev-btn'),
-            networkNextBtn: document.getElementById('network-next-btn'),
-            homeContentSectionsContainer: document.getElementById('home-content-sections'),
-            tmdbSearchResultsContainer: document.getElementById('tmdb-search-results-container'),
-            tmdbSearchResultsGrid: document.getElementById('tmdb-search-results-grid'),
-            tmdbSearchResultsTitle: document.getElementById('tmdb-search-results-title'),
-            clearTmdbSearchResultsBtn: document.getElementById('clear-tmdb-search-results'),
-            // Details View
-            detailsWrapper: document.getElementById('details-content-wrapper'),
-            // --- NEW: Gemini refs for Details View ---
-            detailsAiInsightBtn: null, // Will be selected dynamically after render
-            detailsAiInsightContainer: null, // Will be selected dynamically after render
-            // Genre Results View
-            genreResultsGrid: document.getElementById('genre-results-grid'),
-            genreResultsTitle: document.getElementById('genre-results-title'),
-            loadMoreGenreBtn: document.getElementById('load-more-genre-btn'),
-            genreLoadingSpinner: document.getElementById('genre-loading-more-spinner'),
-            // Network Results View
-            networkResultsGrid: document.getElementById('network-results-grid'),
-            networkResultsTitle: document.getElementById('network-results-title'),
-            loadMoreNetworkBtn: document.getElementById('load-more-network-btn'),
-            networkLoadingSpinner: document.getElementById('network-loading-more-spinner'),
-            //Lives
-            liveSportsGrid: document.getElementById('livesports-grid'),
-            // Person View (NEW)
-            personWrapper: document.getElementById('person-content-wrapper'),
-            //Analytics
-            analyticsNavLink: document.querySelector('.nav-link[href="#analytics"]'),
-            // --- NEW: Gemini refs for Person View ---
-            personAiBioBtn: null, // Will be selected dynamically
-            personAiBioContainer: null, // Will be selected dynamically
-            // Movie Player View
-            playerTitleEl: document.getElementById('player-title'),
-            playerSourceBtnsContainer: document.getElementById('stream-source-buttons'),
-            playerEpisodeSelectorContainer: document.getElementById('episode-selector-container'),
-            playerIframe: document.getElementById('streaming-iframe'),
-            playerIframePlaceholder: document.getElementById('iframe-placeholder'),
-
-            trailerModalElement: document.getElementById('trailerModal'),
-            trailerModalIframe: document.getElementById('trailerModalIframe'),
-
-            watchlistGrid: document.getElementById('watchlist-grid'), // NEW
-            clearWatchlistBtn: document.getElementById('clear-watchlist-btn'),
-
-            connectionExplorerModal: document.getElementById('connectionExplorerModal'),
-            connectionGraphContainer: document.getElementById('connection-graph-container'),
-            connectionGraphLoading: document.getElementById('connection-graph-loading'),
-            connectionGraphError: document.getElementById('connection-graph-error'),
-            connectionExplorerTitle: document.getElementById('connectionExplorerModalLabel'), // To set title
-
-
-            // Music View
-            spotifyStatusArea: document.getElementById('spotify-status-area'),
-            spotifyStatusText: document.getElementById('spotify-status-text'),
-            spotifyStatusSpinner: document.getElementById('spotify-status-spinner'),
-            spotifySearchForm: document.getElementById('spotify-search-form'),
-            spotifySearchInput: document.getElementById('spotify-search-input'),
-            spotifySearchResultsContainer: document.getElementById('spotify-search-results'),
-            spotifySearchLoadingSpinner: document.getElementById('spotify-search-loading'),
-            // Visualizer
-            visualizerCanvas: document.getElementById('music-visualizer-canvas'),
-            visualizerCtx: document.getElementById('music-visualizer-canvas')?.getContext('2d'),
-            demoAudioElement: document.getElementById('demo-audio'),
-            startVisualizerButton: document.getElementById('start-visualizer-button'),
-        };
-
+        // Views
+        views: {
+            hero: document.getElementById('hero-view'),
+            discover: document.getElementById('discover-view'),
+            details: document.getElementById('details-view'),
+            player: document.getElementById('player-view'),
+            genre: document.getElementById('genre-results-view'),
+            music: document.getElementById('music-view'),
+            livesports: document.getElementById('livesports-view'),
+            network: document.getElementById('network-results-view'),
+            person: document.getElementById('person-view'),
+            watchlist: document.getElementById('watchlist-view'),
+            analytics: document.getElementById('analytics-view'),
+        },
+        // Navbar
+        navbarMenu: document.getElementById('navbarNav'),
+        tmdbSearchForm: document.getElementById('tmdb-search-form'),
+        tmdbSearchInput: document.getElementById('tmdb-search-input'),
+        spotifyStatusNavMessage: document.getElementById('spotify-auth-nav-message'),
+        genreDropdownMenu: document.getElementById('genre-dropdown-menu'),
+        analyticsNavLink: document.querySelector('.nav-link[href="#analytics"]'), // Link to activate analytics view
+        // Discover/Home View
+        homeContentWrapper: document.getElementById('home-content-wrapper'),
+        networkLogosContainer: document.getElementById('network-logos-container'),
+        networkPrevBtn: document.getElementById('network-prev-btn'),
+        networkNextBtn: document.getElementById('network-next-btn'),
+        homeContentSectionsContainer: document.getElementById('home-content-sections'),
+        tmdbSearchResultsContainer: document.getElementById('tmdb-search-results-container'),
+        tmdbSearchResultsGrid: document.getElementById('tmdb-search-results-grid'),
+        tmdbSearchResultsTitle: document.getElementById('tmdb-search-results-title'),
+        clearTmdbSearchResultsBtn: document.getElementById('clear-tmdb-search-results'),
+        // Details View
+        detailsWrapper: document.getElementById('details-content-wrapper'),
+        // Genre Results View
+        genreResultsGrid: document.getElementById('genre-results-grid'),
+        genreResultsTitle: document.getElementById('genre-results-title'),
+        loadMoreGenreBtn: document.getElementById('load-more-genre-btn'),
+        genreLoadingSpinner: document.getElementById('genre-loading-more-spinner'),
+        // Network Results View
+        networkResultsGrid: document.getElementById('network-results-grid'),
+        networkResultsTitle: document.getElementById('network-results-title'),
+        loadMoreNetworkBtn: document.getElementById('load-more-network-btn'),
+        networkLoadingSpinner: document.getElementById('network-loading-more-spinner'),
+        // Livesports
+        liveSportsGrid: document.getElementById('livesports-grid'),
+        // Person View
+        personWrapper: document.getElementById('person-content-wrapper'),
+        // Watchlist View
+        watchlistGrid: document.getElementById('watchlist-grid'),
+        clearWatchlistBtn: document.getElementById('clear-watchlist-btn'),
+        // Analytics View Elements (Ensure these IDs are in your HTML's #analytics-view section)
+        analyticsContent: document.getElementById('analytics-content'),
+        analyticsGenreChartCanvas: document.getElementById('analyticsGenreChartCanvas'),
+        analyticsActorChartCanvas: document.getElementById('analyticsActorChartCanvas'),
+        analyticsGenreChartPlaceholder: document.getElementById('analyticsGenreChartPlaceholder'),
+        analyticsActorChartPlaceholder: document.getElementById('analyticsActorChartPlaceholder'),
+        analyticsRecommendedGrid: document.getElementById('analyticsRecommendedGrid'),
+        clearAnalyticsHistoryBtn: document.getElementById('clearAnalyticsHistoryBtn'), // Button to clear analytics data
+        // Player View
+        playerTitleEl: document.getElementById('player-title'),
+        playerSourceBtnsContainer: document.getElementById('stream-source-buttons'),
+        playerEpisodeSelectorContainer: document.getElementById('episode-selector-container'),
+        playerIframe: document.getElementById('streaming-iframe'),
+        playerIframePlaceholder: document.getElementById('iframe-placeholder'),
+        // Trailer Modal
+        trailerModalElement: document.getElementById('trailerModal'),
+        trailerModalIframe: document.getElementById('trailerModalIframe'),
+        // Connection Explorer Modal
+        connectionExplorerModal: document.getElementById('connectionExplorerModal'),
+        connectionGraphContainer: document.getElementById('connection-graph-container'),
+        connectionGraphLoading: document.getElementById('connection-graph-loading'),
+        connectionGraphError: document.getElementById('connection-graph-error'),
+        connectionExplorerTitle: document.getElementById('connectionExplorerModalLabel'),
+        // Music View
+        spotifyStatusArea: document.getElementById('spotify-status-area'),
+        spotifyStatusText: document.getElementById('spotify-status-text'),
+        spotifyStatusSpinner: document.getElementById('spotify-status-spinner'),
+        spotifySearchForm: document.getElementById('spotify-search-form'),
+        spotifySearchInput: document.getElementById('spotify-search-input'),
+        spotifySearchResultsContainer: document.getElementById('spotify-search-results'),
+        spotifySearchLoadingSpinner: document.getElementById('spotify-search-loading'),
+        // Visualizer
+        visualizerCanvas: document.getElementById('music-visualizer-canvas'),
+        visualizerCtx: document.getElementById('music-visualizer-canvas')?.getContext('2d'),
+        demoAudioElement: document.getElementById('demo-audio'),
+        startVisualizerButton: document.getElementById('start-visualizer-button'),
+        // Global Loader/Error (Assume these exist or add them)
+        globalLoader: document.getElementById('global-loader') || document.body, // Fallback to body for class toggle
+        globalErrorDisplay: document.getElementById('global-error-display'),
+        globalErrorMessage: document.getElementById('global-error-message'),
+    };
         // --- State Variables ---
         const State = {
-            currentGenre: null, // { type: 'movie' | 'tv', id: number, name: string }
-            currentNetwork: null, // { id: number, name: string, logo?: string }
-            tmdbWatchProviders: null,
-            currentPersonId: null, // NEW: Track current person being viewed
-            allMovieGenres: [],
-            allTvGenres: [],
-            watchlist: [],
-            continueWatching: [],
-            horizontalScrollContainers: [],
-            tmdbSearchTimeout: null,
-            activeSeasonAbortController: null, // To cancel previous season loads
-            moviePlayerContext: { // Context for the player page
-                 itemId: null, itemType: null, currentSeason: null, currentEpisode: null
-            },
-            spotifyAppAccessToken: null,
-            spotifyAppTokenExpiresAt: null, // Timestamp when token expires
-            spotifyTokenPromise: null, // To prevent multiple token requests
-            visualizerAudioContext: null,
-            visualizerAnalyser: null,
-            visualizerSource: null, // MediaElementAudioSourceNode
-            visualizerDataArray: null, // Uint8Array
-            isGraphLoading: false,
-            visualizerRafId: null, // requestAnimationFrame ID
-            isVisualizerSetup: false,
-            isVisualizerConnected: false,
-            visNetworkInstance: null, // Reference to the vis.js Network
-            currentExplorerItem: null, // { id: ..., type: ... } for the graph
-            // Helper function to check if token is valid
-            hasValidSpotifyAppToken: () => !!(State.spotifyAppAccessToken && State.spotifyAppTokenExpiresAt && Date.now() < State.spotifyAppTokenExpiresAt),
-        };
+        currentGenre: null,
+        currentNetwork: null,
+        tmdbWatchProviders: null,
+        currentPersonId: null,
+        allMovieGenres: [],
+        allTvGenres: [],
+        watchlist: [],
+        continueWatching: [],
+        favorites: [], // Assuming AuraStream has a separate favorites list
+        horizontalScrollContainers: [],
+        tmdbSearchTimeout: null,
+        activeSeasonAbortController: null,
+        moviePlayerContext: { itemId: null, itemType: null, currentSeason: null, currentEpisode: null },
+        spotifyAppAccessToken: null,
+        spotifyAppTokenExpiresAt: null,
+        spotifyTokenPromise: null,
+        visualizerAudioContext: null,
+        visualizerAnalyser: null,
+        visualizerSource: null,
+        visualizerDataArray: null,
+        isGraphLoading: false,
+        visualizerRafId: null,
+        isVisualizerSetup: false,
+        isVisualizerConnected: false,
+        visNetworkInstance: null,
+        currentExplorerItem: null,
+        // Analytics State
+        userPreferences: { genres: {}, actors: {}, directors: {}, keywords: {} }, // For analytics
+        watchHistory: [], // For analytics and continue watching seeds
+        genreChartInstance: null, // Chart.js instances
+        actorChartInstance: null,
+        // Helper function to check token validity
+        hasValidSpotifyAppToken: () => !!(State.spotifyAppAccessToken && State.spotifyAppTokenExpiresAt && Date.now() < State.spotifyAppTokenExpiresAt),
+    };
 
-        // --- Bootstrap Instance Cache ---
-        const bsInstances = {
-            navbarCollapse: null,
-            tooltips: [], // Store tooltip instances if needed for cleanup
-            tabs: [], // Store tab instances if needed
-            trailerModal: null,
-            connectionModal: null,
-        };
+    const bsInstances = {
+        navbarCollapse: null,
+        tooltips: [],
+        tabs: [],
+        trailerModal: null,
+        connectionModal: null,
+    };
 
-        const Watchlist = {
-            STORAGE_KEY: 'auraStreamWatchlist',
+    const Watchlist = {
+        STORAGE_KEY: 'auraStreamWatchlist',
+        load: () => { try { const d = localStorage.getItem(Watchlist.STORAGE_KEY); State.watchlist = d ? JSON.parse(d) : []; } catch (e) { console.error("Watchlist load failed:", e); State.watchlist = []; localStorage.removeItem(Watchlist.STORAGE_KEY); } },
+        save: () => { try { localStorage.setItem(Watchlist.STORAGE_KEY, JSON.stringify(State.watchlist)); } catch (e) { console.error("Watchlist save failed:", e); /* Maybe show toast */ } },
+        add: (d) => { if (!d?.id || !d?.type || Watchlist.isInWatchlist(d.id, d.type)) return false; const i = { id: d.id, type: d.type, title: d.title || d.name || 'N/A', poster_path: d.poster_path, backdrop_path: d.backdrop_path, vote_average: d.vote_average }; State.watchlist.push(i); Watchlist.save(); Utils.showToast(`${i.title} added to watchlist!`, "success"); return true; },
+        remove: (id, t) => { const l = State.watchlist.length; const i = parseInt(id); State.watchlist = State.watchlist.filter(d => !(d.id === i && d.type === t)); if (State.watchlist.length < l) { Watchlist.save(); Utils.showToast("Item removed from watchlist.", "info"); return true; } return false; },
+        clear: () => { State.watchlist = []; Watchlist.save(); Utils.showToast("Watchlist cleared.", "info"); },
+        isInWatchlist: (id, t) => { const i = parseInt(id); return State.watchlist.some(d => d.id === i && d.type === t); }
+    };
 
-            // Load watchlist from localStorage into State
-            load: () => {
-                try {
-                    const storedList = localStorage.getItem(Watchlist.STORAGE_KEY);
-                    State.watchlist = storedList ? JSON.parse(storedList) : [];
-                    console.log("Watchlist loaded:", State.watchlist.length, "items");
-                } catch (error) {
-                    console.error("Failed to load watchlist from localStorage:", error);
-                    State.watchlist = [];
-                    localStorage.removeItem(Watchlist.STORAGE_KEY); // Clear corrupted data
-                }
-            },
-
-             // Save current State.watchlist to localStorage
-             save: () => {
-                try {
-                    localStorage.setItem(Watchlist.STORAGE_KEY, JSON.stringify(State.watchlist));
-                } catch (error) {
-                    console.error("Failed to save watchlist to localStorage:", error);
-                    Utils.showToast("Error saving watchlist.", "danger");
-                }
-            },
-
-            // Add an item to the watchlist
-            add: (itemData) => {
-                if (!itemData || !itemData.id || !itemData.type) return false;
-
-                // Check if already exists
-                if (Watchlist.isInWatchlist(itemData.id, itemData.type)) {
-                    console.log("Item already in watchlist:", itemData.id);
-                    // Optionally remove if clicked again (like a toggle)
-                     // Watchlist.remove(itemData.id, itemData.type);
-                     // return false; // Indicate removal
-                     return true; // Indicate it's already there or logic handles it
-                }
-
-                // Extract necessary data
-                const watchlistItem = {
-                    id: itemData.id,
-                    type: itemData.type,
-                    title: itemData.title || itemData.name || 'Unknown Title',
-                    poster_path: itemData.poster_path || null,
-                    backdrop_path: itemData.backdrop_path || null, // Also store backdrop
-                    vote_average: itemData.vote_average || null,
-                };
-
-                State.watchlist.push(watchlistItem);
-                Watchlist.save();
-                console.log("Added to watchlist:", watchlistItem.title);
-                Utils.showToast(`${watchlistItem.title} added to watchlist!`, "success");
-                return true; // Indicate addition
-            },
-
-            // Remove an item from the watchlist by id and type
-            remove: (id, type) => {
-                 const initialLength = State.watchlist.length;
-                 const itemId = parseInt(id); // Ensure ID is number for comparison
-                 State.watchlist = State.watchlist.filter(item =>
-                     !(item.id === itemId && item.type === type)
-                 );
-
-                if (State.watchlist.length < initialLength) {
-                    Watchlist.save();
-                    console.log("Removed item from watchlist:", id, type);
-                    Utils.showToast("Item removed from watchlist.", "info");
-                    return true; // Indicate removal
-                }
-                return false; // Item not found
-            },
-
-            // Clear the entire watchlist
-            clear: () => {
-                State.watchlist = [];
-                Watchlist.save();
-                console.log("Watchlist cleared.");
-                 Utils.showToast("Watchlist cleared.", "info");
-            },
-
-            // Check if an item is in the current watchlist State
-            isInWatchlist: (id, type) => {
-                const itemId = parseInt(id); // Ensure comparison uses numbers
-                return State.watchlist.some(item => item.id === itemId && item.type === type);
-            }
-        };
-
-        const ContinueWatching = {
+    const ContinueWatching = {
             STORAGE_KEY: 'auraStreamContinueWatching',
             MAX_ITEMS: 20, // Max number of items to keep in the list
 
@@ -416,6 +341,7 @@
              },
 
         };
+
 
         // --- Utilities ---
         const Utils = {
@@ -1625,7 +1551,6 @@
         };
 
 
-
         // --- Main App Module ---
         const App = {
             init: () => {
@@ -2513,33 +2438,56 @@
                  }
             },
 
-             loadHomePageContent: async () => {
-                 console.log("Loading home page content...");
-                 if (DOM.views.hero) DOM.views.hero.innerHTML = Utils.getSkeletonHeroHTML();
-                 if (DOM.homeContentSectionsContainer) DOM.homeContentSectionsContainer.innerHTML = ''; // Clear section area first
-                 if (DOM.networkLogosContainer) DOM.networkLogosContainer.innerHTML = Utils.getSkeletonNetworkLogoHTML(10); 
-                 if (DOM.views.hero) DOM.views.hero.innerHTML = Utils.getSpinnerHTML("Loading hero...", true);
-                 if (DOM.homeContentSectionsContainer) DOM.homeContentSectionsContainer.innerHTML = Utils.getSpinnerHTML("Loading sections...", true);
-                 if (DOM.networkLogosContainer) DOM.networkLogosContainer.innerHTML = Utils.getSpinnerHTML("Loading networks...");
+            loadHomePageContent: async () => {
+                console.log("Loading home page content...");
 
-                 // Load concurrently
-                 await Promise.all([
-                     App.loadHeroItem(),
-                     App.loadHomeSections(),
-                     App.renderNetworkLogos() // Renders curated logos directly
-                 ]);
+                // Show Skeletons or Spinners
+                if (DOM.views.hero) DOM.views.hero.innerHTML = Utils.getSkeletonHeroHTML();
+                if (DOM.homeContentSectionsContainer) DOM.homeContentSectionsContainer.innerHTML = Utils.getSpinnerHTML("Loading sections...", true);
+                if (DOM.networkLogosContainer) DOM.networkLogosContainer.innerHTML = Utils.getSkeletonNetworkLogoHTML(10);
 
-                 // Update scroll buttons AFTER logos are rendered
-                 App.updateNetworkScrollButtons();
+                // Helper delay function
+                const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-                 setTimeout(() => {
-                     State.horizontalScrollContainers?.forEach(({ container, prevBtn, nextBtn }) => {
-                         App.updateHScrollButtons(container, prevBtn, nextBtn);
-                     });
-                 }, 200);
-             },
+                try {
+                // Wait for data and 5s delay together
+                await Promise.all([
+                    Promise.all([
+                       App.loadHeroItem(),
+                       App.loadHomeSections(),
+                       App.renderNetworkLogos()
+                    ]),
+                delay(5000) // ⏱️ Hold skeletons/spinners for 5 seconds
+                ]);
 
-             loadHeroItem: async () => {
+                // Update scroll buttons AFTER logos are rendered
+                App.updateNetworkScrollButtons();
+
+                // Minor UI update delay
+                setTimeout(() => {
+                    State.horizontalScrollContainers?.forEach(({ container, prevBtn, nextBtn }) => {
+                        App.updateHScrollButtons(container, prevBtn, nextBtn);
+                    });
+                }, 200);
+
+                } catch (error) {
+                  console.error("Error loading home page content:", error);
+                  if (DOM.views.hero) DOM.views.hero.innerHTML = Utils.getErrorHTML("Failed to load hero section.");
+                  if (DOM.homeContentSectionsContainer) DOM.homeContentSectionsContainer.innerHTML = Utils.getErrorHTML("Failed to load sections.");
+                  if (DOM.networkLogosContainer) DOM.networkLogosContainer.innerHTML = Utils.getErrorHTML("Failed to load networks.");
+                } finally {
+                    // Hide skeletons/spinners after loading
+                    setTimeout(() => {
+                        DOM.views.hero?.classList.add('loaded');
+                        DOM.homeContentSectionsContainer?.classList.add('loaded');
+                        DOM.networkLogosContainer?.classList.add('loaded');
+                    }, 50); // Minor delay for smooth transition
+                }
+            },
+
+            
+        
+            loadHeroItem: async () => {
                  if (!DOM.views.hero) return;
                  try {
                      const trending = await API.fetchTMDB('/trending/all/week');
@@ -2565,33 +2513,36 @@
                  }
              },
 
-             loadHomeSections: async () => {
-        console.log("[Home Sections] Starting load (Firebase Version)...");
-        const mainContainer = DOM.homeContentSectionsContainer;
-        if (!mainContainer) {
-            console.error("[Home Sections] Main container (#home-content-sections) not found!");
-            return;
-        }
-
-        // 1. Clear Container & Reset State
-        mainContainer.innerHTML = Utils.getSpinnerHTML("Loading content sections...", true);
-        State.horizontalScrollContainers = [];
-        await new Promise(resolve => setTimeout(resolve, 50)); // Allow spinner to render
-        mainContainer.innerHTML = ''; // Clear spinner
-
-        // --- Prepare Promises for sections that require async checks BEFORE rendering structure ---
-        let continueWatchingPromise = ContinueWatching.getList(); // Get list sync (already loaded in init)
-        let mostViewedCheckPromise = (async () => { // Wrap Firestore check in async IIFE
-            if (!db) return []; // Firestore not ready
-            try {
-                 const querySnapshot = await db.collection("viewCounts").limit(1).get(); // Check if *any* document exists
-                 return querySnapshot.empty ? [] : [{}]; // Return non-empty array if views exist
-             } catch(e){ console.error("Firestore check failed:", e); return []; }
-        })();
+            
 
 
-        // 2. Iterate through Section Configurations
-        for (const sectionConfig of config.HOME_SECTIONS) {
+            loadHomeSections: async () => {
+                console.log("[Home Sections] Starting load (Firebase Version)...");
+                const mainContainer = DOM.homeContentSectionsContainer;
+                if (!mainContainer) {
+                   console.error("[Home Sections] Main container (#home-content-sections) not found!");
+                   return;
+                }
+
+                // 1. Clear Container & Reset State
+                mainContainer.innerHTML = Utils.getSpinnerHTML("Loading content sections...", true);
+                State.horizontalScrollContainers = [];
+                await new Promise(resolve => setTimeout(resolve, 50)); // Allow spinner to render
+                mainContainer.innerHTML = ''; // Clear spinner 
+
+                // --- Prepare Promises for sections that require async checks BEFORE rendering structure ---
+                let continueWatchingPromise = ContinueWatching.getList(); // Get list sync (already loaded in init)
+                let mostViewedCheckPromise = (async () => { // Wrap Firestore check in async IIFE
+                if (!db) return []; // Firestore not ready
+                try {
+                    const querySnapshot = await db.collection("viewCounts").limit(1).get(); // Check if *any* document exists
+                    return querySnapshot.empty ? [] : [{}]; // Return non-empty array if views exist
+                } catch(e){ console.error("Firestore check failed:", e); return []; }
+                })();
+
+
+            // 2. Iterate through Section Configurations
+            for (const sectionConfig of config.HOME_SECTIONS) {
             console.log(`[Home Sections] Processing config: "${sectionConfig.title}"`);
             let shouldCreateSection = false;
             let sectionDiv = null; // Will be created or found
@@ -3123,24 +3074,34 @@
             },
 
             loadDetailsPage: async (type, id) => {
-            if (!DOM.detailsWrapper) return;
-            DOM.detailsWrapper.innerHTML = Utils.getSpinnerHTML("Loading details...", true);
+                if (!DOM.detailsWrapper) return;
 
-            try {
-                 const itemData = await API.fetchTMDB(`/${type}/${id}`, {
-                     append_to_response: 'credits,similar,videos,watch/providers' // Fetch extra details
-                 });
+                // Show Skeleton
+                DOM.detailsWrapper.innerHTML = Utils.getSkeletonDetailsHTML();
 
-                 if (!itemData) {
-                     throw new Error("Item details not found.");
-                 }
-                App.renderDetailsPage(itemData);
+                // Wait for data and timeout in parallel
+                const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-            } catch (error) {
-                console.error(`Failed to load details for ${type} ${id}:`, error);
-                DOM.detailsWrapper.innerHTML = Utils.getErrorHTML(`Failed to load details: ${error.message}`);
-            }
-        },
+                try {
+                    const [itemData] = await Promise.all([
+                        API.fetchTMDB(`/${type}/${id}`, {
+                        append_to_response: 'credits,similar,videos,watch/providers'
+                    }),
+                        delay(4500) // ⏱️ Delay rendering for 5 seconds
+                    ]);
+
+                    if (!itemData) {
+                       throw new Error("Item details not found.");
+                    }
+
+                    App.renderDetailsPage(itemData);
+
+                } catch (error) {
+                    console.error(`Failed to load details for ${type} ${id}:`, error);
+                    DOM.detailsWrapper.innerHTML = Utils.getErrorHTML(`Failed to load details: ${error.message}`);
+                }
+         },
+
 
          loadPlayerPageContext: async (type, id, season = null, episode = null) => {
              if (!DOM.playerTitleEl || !DOM.playerSourceBtnsContainer || !DOM.playerIframe || !DOM.playerIframePlaceholder || !DOM.playerEpisodeSelectorContainer) return;
@@ -4333,8 +4294,6 @@
             },
 
              // Renders the Hero section item
-             
-
              renderHeroItem: (item) => {
                  if (!DOM.views.hero) return;
 
@@ -4356,15 +4315,15 @@
                          <div class="hero-genres mb-3">
                              ${genres.map(g => `<span>${Utils.escapeHtml(g.name)}</span>`).join('')}
                          </div>
-                         <h1 class="hero-title">${title}</h1>
-                         <div class="hero-meta mb-3">
+                         <h1 class="hero-title" style="color: #fff;">${title}</h1>
+                         <div class="hero-meta mb-3" style="color: #fff;">
                              ${rating && parseFloat(rating) > 0 ? `<span class="rating me-3 d-flex align-items-center"><i class="bi bi-star-fill me-1"></i> ${rating}/10</span>` : ''}
                              ${year ? `<span class="me-3 d-flex align-items-center"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
                              ${runtime ? `<span class="me-3 d-flex align-items-center"><i class="bi bi-clock me-1"></i> ${runtime}</span>` : ''}
                              ${seasons ? `<span class="me-3 d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${seasons} Season${seasons > 1 ? 's' : ''}</span>` : ''}
 
                          </div>
-                         <p class="hero-description lead">${overview.length > 250 ? overview.substring(0, 250) + '...' : overview}</p>
+                         <p class="hero-description lead" style="color: #fff;">${overview.length > 250 ? overview.substring(0, 250) + '...' : overview}</p>
                          <div class="hero-actions mt-4">
                              <a href="#details=${type}/${item.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-info-circle-fill me-2"></i> More Info</a>
                              <a href="#player=${type}/${item.id}" class="btn btn-outline-light btn-lg"><i class="bi bi-play-circle me-2"></i> Watch Now</a>
@@ -4700,71 +4659,97 @@
                  });
              },
 
-             recordGlobalView: async (type, id) => {
-                const db = firebase.firestore();
-                if (!db) { // Check if Firestore is initialized
-                   console.warn("Firestore not available, cannot record global view.");
-                    return;
-                 }
-             if (!type || !id) return;
+             recordGlobalView: async (type, id, title) => {
+        // Use the globally initialized appDb from firebase.js
+        if (typeof appDb === 'undefined' || !appDb) {
+            console.warn("Firestore (appDb) not available, cannot record global view.");
+            return; // Exit if Firestore instance isn't ready
+        }
+        if (!type || !id || !title) {
+            console.warn(`recordGlobalView skipped: Missing type (${type}), id (${id}), or title (${title}).`);
+            return; // Exit if required info is missing
+        }
 
-            const docId = `${type}-${id}`; // e.g., "movie-12345"
-            const viewDocRef = db.collection("viewCounts").doc(docId);
+        const docId = `${type}-${id}`; // e.g., "movie-12345"
+        const viewDocRef = appDb.collection("viewCounts").doc(docId);
 
-             console.log(`[Global Views] Incrementing count for ${docId}...`);
+        console.log(`[App.recordGlobalView] Attempting to increment count for ${docId} (${title})...`);
 
-            try {
-                // Use a transaction or batched write for potential future enhancements,
-                // but FieldValue.increment is atomic and usually sufficient for a counter.
-                 await viewDocRef.set({
-                    // Use set with merge:true to create the document if it doesn't exist
-                    // or update it if it does.
-                    type: type,
-                    tmdbId: parseInt(id),
-                    title: title, // Assuming title is available in the context
-                    viewCount: firebase.firestore.FieldValue.increment(1), // Atomically increments
-                    lastViewed: firebase.firestore.FieldValue.serverTimestamp() // Track last view time
-                }, { merge: true }); // Merge ensures we don't overwrite type/id if doc exists
+        try {
+            // Use set with merge:true to create/update atomically.
+            // This ensures the document is created if it doesn't exist,
+            // and the counter is incremented correctly if it does.
+            await viewDocRef.set({
+                type: type,
+                tmdbId: parseInt(id), // Store ID as number if possible
+                title: title, // Store the title
+                viewCount: firebase.firestore.FieldValue.increment(1), // Atomically increments
+                lastViewed: firebase.firestore.FieldValue.serverTimestamp() // Track last view time
+            }, { merge: true }); // Merge ensures we don't overwrite type/id/title if doc exists
 
-                console.log(`[Global Views] Successfully recorded view for ${docId}`);
-                } catch (error) {
-                     console.error(`[Global Views] Error recording view for ${docId}:`, error);
-                    // Optionally retry or log this error to a monitoring service in production
-                }
-            },
+            console.log(`[App.recordGlobalView] Successfully recorded global view for ${docId}`);
+        } catch (error) {
+            console.error(`[App.recordGlobalView] Error recording global view for ${docId}:`, error);
+            // Optional: Show a non-critical error toast to the user?
+            // Utils.showToast("Could not update global view count.", "info");
+        }
+    },
+
 
              // Sets the iframe source based on selected provider and context
              setStreamingSource: (sourceIndex) => {
-                 const provider = config.STREAMING_PROVIDERS[sourceIndex];
-                 const { itemId, itemType, currentSeason, currentEpisode } = State.moviePlayerContext;
+        // 1. Get Context and Provider
+        const provider = config.STREAMING_PROVIDERS[sourceIndex];
+        const { itemId, itemType, currentSeason, currentEpisode } = State.moviePlayerContext;
 
-                 if (!provider || !itemId || !itemType || !DOM.playerIframe || !DOM.playerIframePlaceholder) return;
-                 App.recordGlobalView(itemType, itemId);
-                try {
-                    let episodeIdentifier = null;
-                    if (itemType === 'tv' && currentSeason && currentEpisode) {
-                       episodeIdentifier = `s${currentSeason}-e${currentEpisode}`;
-                    }
-                    // Record the view *when a source is successfully selected/loaded*
-                    ViewTracker.recordView(itemType, itemId, episodeIdentifier);
-                } catch (e) {
-                    console.error("Error during view tracking:", e);
-                }
-                 const url = provider.urlFormat(itemId, itemType, currentSeason, currentEpisode);
+        // 2. Validate Inputs and DOM Elements
+        if (!provider || !itemId || !itemType || !DOM.playerIframe || !DOM.playerIframePlaceholder || !DOM.playerTitleEl) {
+            console.error("setStreamingSource: Missing provider, context, or essential DOM elements.");
+            Utils.showToast("Cannot load stream: essential information missing.", "danger");
+            return;
+        }
 
-                 if (url && DOM.playerIframe) {
-                     DOM.playerIframe.src = url;
-                     Utils.setElementVisibility(DOM.playerIframe, true);
-                     Utils.setElementVisibility(DOM.playerIframePlaceholder, false);
-                 } else {
-                     console.warn("Could not generate URL for provider:", provider.name);
-                     Utils.showToast(`Could not load source: ${provider.name}`, 'warning');
-                     DOM.playerIframe.src = 'about:blank';
-                     Utils.setElementVisibility(DOM.playerIframe, false);
-                     Utils.setElementVisibility(DOM.playerIframePlaceholder, true);
-                     DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">Failed to load source: ${provider.name}</span>`;
-                 }
-             },
+        // 3. Get Item Title (needed for global tracking)
+        const itemTitle = DOM.playerTitleEl.textContent || 'Unknown Title'; // Get current title
+
+        // 4. Trigger User-Specific View Tracking (if user is logged in)
+        // Assumes trackView is globally available from firebase.js
+        if (typeof trackView === 'function' && typeof appAuth !== 'undefined' && appAuth.currentUser && typeof appDb !== 'undefined' && appDb) {
+            const userId = appAuth.currentUser.uid;
+            const contentId = `${itemType}-${itemId}`; // Unique ID for user's view subcollection
+            console.log(`[App.setStreamingSource] Calling trackView for user ${userId}, content ${contentId}`);
+            trackView(appDb, userId, contentId)
+                .catch(err => console.error("Error occurred during trackView execution:", err)); // Catch errors from the async function
+        } else {
+            console.warn("[App.setStreamingSource] User-specific view tracking skipped: User not logged in, trackView function not found, or DB not ready.");
+        }
+
+        // 5. Trigger Global View Tracking
+        // Call the App's own method, passing the necessary info
+        App.recordGlobalView(itemType, itemId, itemTitle);
+
+        // 6. Generate Streaming URL
+        const url = provider.urlFormat(itemId, itemType, currentSeason, currentEpisode);
+
+        // 7. Update Iframe
+        if (url && DOM.playerIframe) {
+            console.log(`[App.setStreamingSource] Setting iframe src to: ${url}`);
+            DOM.playerIframe.src = url;
+            Utils.setElementVisibility(DOM.playerIframe, true);
+            Utils.setElementVisibility(DOM.playerIframePlaceholder, false);
+        } else {
+            // Handle cases where URL generation failed
+            console.warn(`[App.setStreamingSource] Could not generate URL for provider: ${provider.name}`);
+            Utils.showToast(`Could not load source: ${provider.name}`, 'warning');
+            DOM.playerIframe.src = 'about:blank'; // Clear src
+            Utils.setElementVisibility(DOM.playerIframe, false);
+            Utils.setElementVisibility(DOM.playerIframePlaceholder, true);
+            // Update placeholder text
+            if (DOM.playerIframePlaceholder) {
+                DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">Failed to load source: ${provider.name}</span>`;
+            }
+        }
+    },
 
             // Renders episode dropdowns for the player page
             renderEpisodeSelectors: async (itemData, initialSeasonData) => {
