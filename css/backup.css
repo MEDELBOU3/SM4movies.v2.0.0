@@ -1,1 +1,2970 @@
 
+/* --- CSS Reset & Base Styles --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family-base);
+    background: var(--bg-primary);
+    color: var(--text-light);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: var(--transition-base);
+}
+
+/* --- Theme Variables --- */
+:root {
+    /* Default Theme: Aura (Dark) */
+    --bg-primary: #0b0c10;
+    --bg-secondary: #111318;
+    --surface-color: #1a1d24;
+    --bg-primary-rgb: 11, 12, 16;
+    --bg-secondary-rgb: 17, 19, 24;
+    --surface-rgb: 26, 29, 36;
+    --primary-accent: #a855f7; /* Purple */
+    --primary-accent-rgb: 168, 85, 247;
+    --secondary-accent: #22d3ee; /* Cyan */
+    --secondary-accent-rgb: 34, 211, 238;
+    --spotify-green: #1db954;
+    --spotify-green-rgb: 29, 185, 84;
+    --text-light: #e5e7eb;
+    --text-medium: #9ca3af;
+    --text-dark: #1f2937;
+    --border-color: #374151;
+    --border-light: rgba(var(--primary-accent-rgb), 0.2);
+    --warning-color: #facc15;
+    --danger-color: #f87171;
+    /* Typography & Layout */
+    --font-family-base: 'Poppins', sans-serif;
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+    --transition-base: all 0.3s ease-in-out;
+}
+
+body.theme-midnight {
+    --bg-primary: #0a101f;
+    --bg-secondary: #111827;
+    --surface-color: #1f2937;
+    --bg-primary-rgb: 10, 16, 31;
+    --bg-secondary-rgb: 17, 24, 39;
+    --surface-rgb: 31, 41, 55;
+    --primary-accent: #38bdf8; /* Sky Blue */
+    --primary-accent-rgb: 56, 189, 248;
+    --secondary-accent: #4ade80; /* Green */
+    --secondary-accent-rgb: 74, 222, 128;
+    --text-light: #e5e7eb;
+    --text-medium: #9ca3af;
+    --border-color: #374151;
+    --border-light: rgba(var(--primary-accent-rgb), 0.2);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+body.theme-forest {
+    --bg-primary: #0f1713;
+    --bg-secondary: #111f1a;
+    --surface-color: #1a2c25;
+    --bg-primary-rgb: 15, 23, 19;
+    --bg-secondary-rgb: 17, 31, 26;
+    --surface-rgb: 26, 44, 37;
+    --primary-accent: #34d399; /* Emerald Green */
+    --primary-accent-rgb: 52, 211, 153;
+    --secondary-accent: #facc15; /* Gold */
+    --secondary-accent-rgb: 250, 204, 21;
+    --text-light: #e5e7eb;
+    --text-medium: #a1a1aa;
+    --border-color: #2f443b;
+    --border-light: rgba(var(--primary-accent-rgb), 0.2);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+body.theme-crimson {
+    --bg-primary: #170a0f;
+    --bg-secondary: #241117;
+    --surface-color: #371a22;
+    --bg-primary-rgb: 23, 10, 15;
+    --bg-secondary-rgb: 36, 17, 23;
+    --surface-rgb: 55, 26, 34;
+    --primary-accent: #f43f5e; /* Rose Red */
+    --primary-accent-rgb: 244, 63, 94;
+    --secondary-accent: #f97316; /* Orange */
+    --secondary-accent-rgb: 249, 115, 22;
+    --text-light: #f1f5f9;
+    --text-medium: #a8a29e;
+    --border-color: #4b232f;
+    --border-light: rgba(var(--primary-accent-rgb), 0.25);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+body.theme-nebula {
+    --bg-primary: #0d0714;
+    --bg-secondary: #1a0e25;
+    --surface-color: #251534;
+    --bg-primary-rgb: 13, 7, 20;
+    --bg-secondary-rgb: 26, 14, 37;
+    --surface-rgb: 37, 21, 52;
+    --primary-accent: #ec4899; /* Pink */
+    --primary-accent-rgb: 236, 72, 153;
+    --secondary-accent: #8b5cf6; /* Violet */
+    --secondary-accent-rgb: 139, 92, 246;
+    --text-light: #e5e7eb;
+    --text-medium: #a5b4fc;
+    --border-color: #3f2a56;
+    --border-light: rgba(var(--primary-accent-rgb), 0.2);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+body.theme-light {
+    --bg-primary: #f9fafb; /* Softer Gray */
+    --bg-secondary: #f3f4f6;
+    --surface-color: #ffffff;
+    --bg-primary-rgb: 249, 250, 251;
+    --bg-secondary-rgb: 243, 244, 246;
+    --surface-rgb: 255, 255, 255;
+    --primary-accent: #3b82f6; /* Tailwind blue-500 */
+    --primary-accent-rgb: 59, 130, 246;
+    --secondary-accent: #10b981; /* Tailwind emerald-500 */
+    --secondary-accent-rgb: 16, 185, 129;
+    --spotify-green: #1db954;
+    --spotify-green-rgb: 29, 185, 84;
+    --text-light: #111827;
+    --text-medium: #374151;
+    --text-dark: #1f2937;
+    --border-color: #e5e7eb;
+    --border-light: rgba(59, 130, 246, 0.2);
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+
+body.theme-ocean {
+    --bg-primary: #0d1b2a;
+    --bg-secondary: #1b263b;
+    --surface-color: #415a77;
+    --bg-primary-rgb: 13, 27, 42;
+    --bg-secondary-rgb: 27, 38, 59;
+    --surface-rgb: 65, 90, 119;
+    --primary-accent: #3abff8; /* Ocean Blue */
+    --primary-accent-rgb: 58, 191, 248;
+    --secondary-accent: #38bdf8;
+    --secondary-accent-rgb: 56, 189, 248;
+    --text-light: #e0f2fe;
+    --text-medium: #bae6fd;
+    --border-color: #64748b;
+    --border-light: rgba(var(--primary-accent-rgb), 0.2);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+
+/* DESERT THEME */
+body.theme-desert {
+    --bg-primary: #3e2723;
+    --bg-secondary: #5d4037;
+    --surface-color: #795548;
+    --bg-primary-rgb: 62, 39, 35;
+    --bg-secondary-rgb: 93, 64, 55;
+    --surface-rgb: 121, 85, 72;
+    --primary-accent: #ffb74d; /* Sand Orange */
+    --primary-accent-rgb: 255, 183, 77;
+    --secondary-accent: #ff8f00; /* Sunset Gold */
+    --secondary-accent-rgb: 255, 143, 0;
+    --text-light: #fbe9e7;
+    --text-medium: #efebe9;
+    --border-color: #a1887f;
+    --border-light: rgba(var(--primary-accent-rgb), 0.3);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+/* SOLARIZED THEME */
+body.theme-solarized {
+    --bg-primary: #002b36;
+    --bg-secondary: #073642;
+    --surface-color: #586e75;
+    --bg-primary-rgb: 0, 43, 54;
+    --bg-secondary-rgb: 7, 54, 66;
+    --surface-rgb: 88, 110, 117;
+    --primary-accent: #b58900;
+    --primary-accent-rgb: 181, 137, 0;
+    --secondary-accent: #2aa198;
+    --secondary-accent-rgb: 42, 161, 152;
+    --text-light: #fdf6e3;
+    --text-medium: #839496;
+    --border-color: #93a1a1;
+    --border-light: rgba(var(--primary-accent-rgb), 0.3);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+body.theme-solarflare {
+    --bg-primary: #1b1212;
+    --bg-secondary: #2a1d1d;
+    --surface-color: #3c2a2a;
+    --bg-primary-rgb: 27, 18, 18;
+    --bg-secondary-rgb: 42, 29, 29;
+    --surface-rgb: 60, 42, 42;
+    --primary-accent: #f97316; /* Warm Orange */
+    --primary-accent-rgb: 249, 115, 22;
+    --secondary-accent: #facc15; /* Gold */
+    --secondary-accent-rgb: 250, 204, 21;
+    --text-light: #fff7ed;
+    --text-medium: #fcd34d;
+    --border-color: #78350f;
+    --border-light: rgba(var(--primary-accent-rgb), 0.2);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+body.theme-cyberpunk {
+    --bg-primary: #0f0c29;
+    --bg-secondary: #302b63;
+    --surface-color: #24243e;
+    --bg-primary-rgb: 15, 12, 41;
+    --bg-secondary-rgb: 48, 43, 99;
+    --surface-rgb: 36, 36, 62;
+    --primary-accent: #f72585; /* Neon Pink */
+    --primary-accent-rgb: 247, 37, 133;
+    --secondary-accent: #7209b7; /* Deep Purple */
+    --secondary-accent-rgb: 114, 9, 183;
+    --text-light: #f1f1f1;
+    --text-medium: #c084fc;
+    --border-color: #3a0ca3;
+    --border-light: rgba(var(--primary-accent-rgb), 0.3);
+    --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
+}
+
+
+/* --- Typography --- */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    color: var(--text-medium);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+
+a {
+    color: var(--primary-accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    margin-bottom: 10px;
+}
+
+a:hover {
+    color: var(--secondary-accent);
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+.text-muted {
+    color: var(--text-medium) !important;
+}
+
+/* --- Utility Classes --- */
+.content-wrapper {
+    padding-top: 3rem;
+    padding-bottom: 4rem;
+}
+
+.custom-color {
+  color: var(--text-light) !important;
+}
+
+.custom-color-st {
+  color: var(--secondary-accent) !important;
+}
+.container, .container-fluid {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.back-button {
+    font-size: 0.9rem;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 1rem;
+    min-height: 200px;
+}
+
+.spinner-border-lg {
+    width: 4rem;
+    height: 4rem;
+    border-width: 0.3em;
+}
+
+.view {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+}
+
+.view.active {
+    display: block;
+    opacity: 1;
+}
+
+.img-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.7em;
+    border-radius: var(--radius-sm);
+    font-size: 0.8em;
+}
+
+/* --- Forms --- */
+.form-control {
+    background: rgba(var(--surface-rgb), 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+    border-radius: var(--radius-md);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 0 3px rgba(var(--primary-accent-rgb), 0.25);
+    background: var(--surface-color);
+}
+
+.form-control::placeholder {
+    color: var(--text-medium);
+    opacity: 0.7;
+}
+
+body.theme-light .form-control {
+    background: rgba(var(--bg-secondary-rgb), 0.5);
+    color: var(--text-dark);
+}
+
+/* --- Buttons --- */
+.btn {
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    transition: var(--transition-base);
+    letter-spacing: 0.03em;
+    border: none;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.btn:disabled {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.btn-primary {
+    background: var(--gradient-primary);
+    color: #fff;
+    box-shadow: 0 4px 15px -5px rgba(var(--primary-accent-rgb), 0.4);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px -6px rgba(var(--primary-accent-rgb), 0.5);
+    filter: brightness(1.1);
+}
+
+.btn-outline-light {
+    border: 2px solid var(--border-color);
+    color: var(--text-medium);
+    font-weight: 500;
+    background: transparent;
+}
+
+.btn-outline-light:hover:not(:disabled) {
+    background: rgba(var(--primary-accent-rgb), 0.1);
+    border-color: var(--primary-accent);
+    color: var(--primary-accent);
+}
+
+.btn-outline-secondary {
+    border: 1px solid var(--border-color);
+    color: var(--text-medium);
+    font-weight: 500;
+    background: transparent;
+}
+
+.btn-outline-secondary:hover:not(:disabled) {
+    background: rgba(var(--secondary-accent-rgb), 0.1);
+    border-color: var(--secondary-accent);
+    color: var(--secondary-accent);
+}
+
+.btn-lg {
+    padding: 0.8rem 1.8rem;
+    font-size: 1.05rem;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.btn-icon {
+    padding: 0.5rem;
+    width: 38px;
+    height: 38px;
+    line-height: 1;
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.link-icon {
+    color: var(--text-medium);
+    font-size: 1.5rem;
+    transition: color 0.2s ease;
+    margin-left: 0.5rem;
+}
+
+.link-icon:hover {
+    color: var(--text-light);
+}
+
+.read-more-btn {
+    font-size: 0.85em;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+#spotify-auth-nav-message {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    margin-top: 0.5rem;
+}
+
+/* --- Navbar --- */
+.navbar {
+    background: rgba(var(--bg-primary-rgb), 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 0;
+    transition: var(--transition-base);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.7rem;
+    color: var(--text-light) !important;
+    letter-spacing: -0.04em;
+}
+
+.nav-link {
+    color: var(--text-medium);
+    font-weight: 500;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--radius-md);
+    margin: 0 0.1rem;
+    font-size: 0.95rem;
+}
+
+.nav-link.active, .nav-link:hover {
+    color: var(--text-light);
+    background: rgba(var(--primary-accent-rgb), 0.1);
+}
+
+.dropdown-menu {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 0;
+    box-shadow: var(--shadow-md);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.dropdown-item {
+    color: var(--text-medium);
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    font-size: 0.9rem;
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+    background: rgba(var(--primary-accent-rgb), 0.15);
+    color: var(--text-light);
+}
+
+.dropdown-header {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    background: var(--gradient-primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dropdown-divider {
+    border-top-color: var(--border-color);
+}
+
+.navbar-toggler {
+    border-color: rgba(var(--border-rgb), 0.15);
+    padding: 0.35rem 0.75rem;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28229, 231, 235, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+#tmdb-search-form .form-control {
+    height: calc(1.5em + 1rem + 2px);
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+body.theme-light .navbar {
+    background: rgba(var(--bg-primary-rgb), 0.95);
+    color: var(--text-dark);
+}
+
+body.theme-light .nav-link {
+    color: var(--text-medium);
+}
+
+body.theme-light .nav-link:hover,
+body.theme-light .nav-link.active {
+    color: var(--text-dark);
+    background: rgba(var(--primary-accent-rgb), 0.1);
+}
+
+body.theme-light .dropdown-menu {
+    background: var(--surface-color);
+    color: var(--text-dark);
+}
+
+body.theme-light .dropdown-item {
+    color: var(--text-medium);
+}
+
+body.theme-light .dropdown-item:hover,
+body.theme-light .dropdown-item:focus {
+    color: var(--text-dark);
+    background: rgba(var(--primary-accent-rgb), 0.15);
+}
+
+/* --- Hero Section --- */
+.section-title {
+    font-size: 1.8rem;
+    margin-bottom: 2.5rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+#hero-view {
+    height: 90vh;
+    min-height: 600px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    color: var(--text-light);
+    overflow: hidden;
+    background: var(--bg-secondary);
+}
+
+.hero-backdrop,
+.skeleton-hero-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* For <img> */
+    background-size: cover; /* For <div> */
+    background-position: center center;
+    z-index: 1; /* Behind overlay and content */
+    filter: brightness(0.6); /* Example: Slightly darken backdrop */
+}
+
+.hero-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    transform: scale(1.1);
+    transition: transform 8s ease-out;
+    filter: brightness(0.6);
+}
+
+#hero-view.loaded .hero-backdrop {
+    transform: scale(1);
+}
+
+.hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-primary) 10%, rgba(11, 13, 24, 0.8) 50%, rgba(11, 13, 24, 0.3) 80%, transparent 100%); z-index: 2;    pointer-events: none; }
+
+
+
+.hero-content { /* Your existing #hero-content-container */
+    position: relative; /* Or absolute if needed, depends on your layout */
+    z-index: 3; /* Above overlay and video */
+    /* Keep existing padding, text alignment etc. */
+     display: flex;
+     flex-direction: column;
+     justify-content: center; /* Adjust alignment as needed */
+     min-height: 80vh; /* Example min height */
+     padding-top: 80px; /* Example padding */
+     padding-bottom: 40px;
+}
+
+
+/* Static fallback image */
+#hero-backdrop-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1; /* Same level as video container */
+}
+
+/* Class to show fallback when no video */
+#hero-view.no-video #hero-backdrop-fallback {
+    display: block !important; /* Override d-none */
+}
+#hero-view.no-video #hero-video-container {
+    display: none; /* Hide video container if using fallback */
+}
+
+@keyframes fadeInSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-genres span {
+    display: inline-block;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-sm); /* Use your radius variable */
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem; /* For wrapping */
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.hero-title {
+    font-size: 3rem; /* Adjust size */
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-light);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-meta {
+    font-size: 1.05rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.hero-meta .rating i { /* Assuming .rating wraps the rating span */
+    color: var(--warning-color); /* Use your warning color */
+    font-size: 1.1em;
+    vertical-align: middle; /* Align star better */
+}
+.hero-meta span i { /* General icons in meta */
+    vertical-align: middle; /* Align icons better */
+    margin-right: 0.3em !important; /* Ensure consistent spacing */
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    max-width: 700px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* --- Cards --- */
+.card {
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(var(--primary-accent-rgb), 0.3);
+    z-index: 10;
+}
+
+.card-img-top {
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.card-img-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    color: var(--text-medium);
+    aspect-ratio: 2 / 3;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    flex-shrink: 0;
+}
+
+.card-body {
+    padding: 1.1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    margin-bottom: 0;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--text-light);
+    font-size: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+}
+
+.card-rating {
+    color: var(--warning-color);
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* --- Details View --- */
+#details-view {
+    padding-top: 0;
+}
+
+#text-white{
+    color: var(--text-light);
+}
+
+#details-view .details-backdrop-container {
+    height: 65vh;
+    min-height: 450px;
+    background-size: cover;
+    background-position: center 20%;
+    border-radius: 0;
+    position: relative;
+}
+
+#details-view .details-backdrop-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, var(--bg-primary) 15%, rgba(var(--bg-secondary-rgb), 0.7) 60%, transparent 100%);
+}
+
+#details-view .details-content-overlay {
+    margin-top: -250px;
+    padding-bottom: 3rem;
+    position: relative;
+    z-index: 3;
+}
+
+#details-view .details-header {
+    gap: 2.5rem;
+}
+
+#details-view .details-poster img {
+    width: 100%;
+    max-width: 280px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 3px solid rgba(var(--surface-rgb), 0.1);
+}
+
+#details-view .details-info h1 {
+    color: var(--text-medium);
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    margin-bottom: 0.6rem;
+}
+
+#details-view .details-meta {
+    margin-bottom: 1rem;
+    gap: 0.5rem 1.5rem;
+    flex-wrap: wrap;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+#details-view .details-meta span {
+    gap: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+#details-view .genres .badge {
+    font-size: 0.8rem;
+}
+
+#details-view .details-overview {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    color: var(--text-medium);
+}
+
+#details-view .details-actions .btn {
+    margin-top: 1rem;
+}
+
+#details-view .details-section {
+    margin-top: 3.5rem;
+}
+
+#details-view .details-section-title {
+    font-size: 1.6rem;
+    color: var(--text-light);
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-accent);
+    display: inline-block;
+}
+
+/* --- Cast Styling --- */
+.cast-member-link {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    height: 100%;
+    padding: 0.5rem;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+}
+
+.cast-member-link:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+    background: rgba(var(--surface-rgb), 0.03);
+    border: 2px solid var(--border-color);
+}
+
+.cast-member-link img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin: 5px auto;
+    border: 1px solid var(--border-color);
+}
+
+.cast-member-link .actor-name {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-weight: 500;
+    line-height: 1.3;
+    padding: 0 0.5rem;
+}
+
+.cast-member-link .character-name {
+    font-size: 0.8rem;
+    color: var(--text-medium);
+    line-height: 1.3;
+    padding: 0 0.5rem 0.5rem 0.5rem;
+}
+
+/* --- Horizontal Scroll --- */
+.horizontal-scroll-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.h-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 15;
+    background: rgba(var(--bg-secondary-rgb), 0.7);
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, background-color 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.horizontal-scroll-wrapper:hover .h-scroll-btn:not(.disabled) {
+    opacity: 0.9;
+    pointer-events: auto;
+}
+
+.h-scroll-btn:not(.disabled):hover {
+    background: rgba(var(--primary-accent-rgb), 0.4);
+    border-color: var(--primary-accent);
+    opacity: 1;
+}
+
+.h-scroll-btn.prev {
+    left: 5px;
+}
+
+.h-scroll-btn.next {
+    right: 5px;
+}
+
+.h-scroll-btn.disabled {
+    opacity: 0 !important;
+    cursor: default;
+    pointer-events: none;
+}
+
+.horizontal-card-container {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5rem 1.5rem 1.5rem 1.5rem;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.horizontal-card-container::-webkit-scrollbar {
+    display: none;
+}
+
+.h-card {
+    flex: 0 0 auto;
+    width: 320px;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    scroll-snap-align: start;
+}
+
+.h-card:hover {
+    transform: scale(1.04);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+}
+
+.h-card img.h-card-backdrop {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.h-card:hover img.h-card-backdrop {
+    transform: scale(1.05);
+}
+
+.h-card .h-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: linear-gradient(to top, rgba(var(--bg-primary-rgb), 0.9) 10%, rgba(var(--bg-primary-rgb), 0.6) 50%, transparent 100%);
+    transition: opacity 0.3s ease;
+    color: var(--text-light);
+}
+
+.h-card .h-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+    color: var(--text-light);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.h-card .h-card-meta {
+    font-size: 0.8rem;
+    color: var(--text-medium);
+    margin-top: 0.25rem;
+    opacity: 0.9;
+}
+
+.h-card .h-card-play-trailer-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: var(--text-light);
+    border: 1px solid rgba(var(--surface-rgb), 0.5);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease, background-color 0.2s ease;
+    cursor: pointer;
+    padding: 0;
+    z-index: 5;
+}
+
+.h-card:hover .h-card-play-trailer-btn {
+    opacity: 0.85;
+}
+
+.h-card .h-card-play-trailer-btn:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.8);
+    border-color: var(--text-light);
+}
+
+.h-card .h-card-play-trailer-btn .spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 0.2em;
+}
+
+/* --- Trailer Modal --- */
+#trailerModal .modal-dialog {
+    max-width: 900px;
+    width: 95%;
+}
+
+#trailerModal .modal-content {
+    transition: transform 0.3s ease-out;
+    transform: scale(0.95);
+}
+
+#trailerModal.show .modal-content {
+    transform: scale(1);
+}
+
+#trailerModal .modal-body {
+    padding: 2rem;
+}
+
+#trailerModal iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    display: block;
+    border: none;
+}
+
+#trailerModal .modal-header {
+    border-bottom: none;
+    background: none;
+    padding: 0;
+    min-height: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+#trailerModal .btn-close {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 20px;
+    height: 20px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    border: 1px solid var(--border-color);
+    font-size: large;
+    z-index: 1056;
+    background: var(--gradient-primary);
+    color: var(--text-light);
+    border-radius: 50%;
+    padding: 0.6em;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+   
+}
+
+#trailerModal .btn-close i {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    transition: color 0.2s ease;
+}
+
+#trailerModal .btn-close:hover {
+    background: var(--danger-color);
+    opacity: 1;
+}
+
+#trailerModal .btn-close:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-accent-rgb), 0.3);
+}
+
+/* --- TV Seasons/Episodes --- */
+.season-episode-section {
+    background: rgba(var(--primary-accent-rgb), 0.04);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+}
+
+.nav-pills .nav-link {
+    border-radius: var(--radius-md);
+    transition: var(--transition-base);
+    color: var(--text-medium);
+    background: rgba(var(--primary-accent-rgb), 0.1);
+    margin-right: 0.5rem;
+}
+
+.nav-pills .nav-link:hover {
+    background: rgba(var(--primary-accent-rgb), 0.2);
+}
+
+.nav-pills .nav-link.active {
+    background: var(--primary-accent);
+    color: #fff;
+}
+
+.episode-item {
+    padding: 1.5rem 0;
+    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .episode-item {
+        flex-direction: row;
+        align-items: flex-start;
+        text-align: left;
+    }
+}
+
+.episode-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.episode-still img {
+    width: 100%;
+    max-width: 240px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+}
+
+.episode-details h5 {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+.episode-details .episode-meta {
+    font-size: 0.85rem;
+    color: var(--text-medium);
+}
+
+.episode-details .episode-overview {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-medium);
+    margin-bottom: 0.8rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (min-width: 768px) {
+    .episode-details .episode-overview {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+.episode-details .watch-trailer-btn {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+}
+
+/* --- Player View --- */
+#player-view .alert-warning {
+    background: rgba(var(--warning-color), 0.1);
+    border-left: 4px solid var(--warning-color) !important;
+}
+
+#stream-source-buttons .btn {
+    border-color: var(--border-color);
+    margin-bottom: 0.25rem;
+}
+
+#streaming-iframe {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    background: #000;
+    aspect-ratio: 16 / 9;
+}
+
+#iframe-placeholder {
+    background: #000;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-medium);
+}
+
+#episode-selector-container {
+    padding: 1rem;
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+#episode-selector-container .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* --- Music View --- */
+#music-view .content-wrapper {
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#spotify-status-area {
+    padding: 1.5rem;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+#spotify-status-area .alert-heading {
+    margin-bottom: 0.5rem;
+}
+
+#spotify-search-area {
+    margin-bottom: 2.5rem;
+}
+
+#spotify-search-form .form-control {
+    background: rgba(var(--surface-rgb), 0.08);
+}
+
+#spotify-search-results .list-group-item {
+    background: transparent;
+    border-color: var(--border-color);
+    border-width: 0 0 1px 0;
+    border-radius: 0;
+    padding: 1rem 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: background-color 0.15s ease;
+}
+
+#spotify-search-results .list-group-item:hover {
+    background: rgba(var(--primary-accent-rgb), 0.08);
+}
+
+#spotify-search-results img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+#spotify-search-results .track-info {
+    overflow: hidden;
+    flex-grow: 1;
+}
+
+#spotify-search-results .track-name {
+    font-weight: 500;
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-light);
+}
+
+#spotify-search-results .artist-name {
+    font-size: 0.9em;
+    color: var(--text-medium);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#spotify-search-results .badge {
+    align-self: center;
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+}
+
+#spotify-search-results .play-preview-btn {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    padding: 0.3rem 0.6rem;
+    width: 32px;
+    height: 32px;
+    line-height: 1;
+}
+
+/* --- Music Visualizer --- */
+#music-visualizer-container {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+#music-visualizer-canvas {
+    height: 200px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    width: 100%;
+    display: block;
+}
+
+#visualizer-demo-controls {
+    text-align: center;
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+#visualizer-demo-controls audio {
+    max-width: 100%;
+    filter: contrast(0.8) saturate(0.8);
+    height: 40px;
+}
+
+/* --- Skeleton Loader Styles --- */
+@keyframes skeleton-shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+
+.skeleton {
+  /* Default dark theme colors */
+  background-color: rgba(255, 255, 255, 0.06);
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.06) 100%);
+  background-size: 1000px 100%;
+  animation: skeleton-shimmer 1.5s infinite linear; /* Adjusted timing slightly */
+  border-radius: var(--radius-sm);
+  display: block;
+  line-height: 1;
+}
+
+
+/* Light Theme Skeleton Overrides */
+body.theme-light .skeleton {
+  /* Use dark grays for contrast on light background */
+  background-color: rgba(0, 0, 0, 0.08); /* Base gray */
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.08) 100%); /* Darker gray shimmer */
+}
+
+/* Also override specific elements if needed */
+body.theme-light .skeleton-card-img,
+body.theme-light .skeleton-h-card-backdrop,
+body.theme-light .skeleton-details-poster,
+body.theme-light .skeleton-person-profile,
+body.theme-light .skeleton-episode-still,
+body.theme-light .skeleton-network-logo {
+    background-color: rgba(0, 0, 0, 0.1); /* Slightly darker base for images/blocks */
+}
+
+body.theme-light .skeleton-card,
+body.theme-light .skeleton-h-card {
+   background-color: var(--bg-secondary); /* Use a slightly off-white background */
+   /* Or keep using surface-color if you want white cards,
+      but ensure the inner skeletons use the darker grays defined above */
+}
+
+/* You might need to adjust the overlay gradient too */
+body.theme-light .skeleton-h-card-overlay {
+    background: linear-gradient(to top, rgba(var(--bg-secondary-rgb), 0.9) 10%, transparent 90%); /* Use light theme background */
+}
+
+
+
+/* Specific Skeleton Element Types */
+.skeleton-card {
+  background-color: var(--surface-color); /* Match card background */
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.skeleton-card-img {
+  height: 0;
+  padding-bottom: 150%; /* Aspect ratio for posters (3:2) */
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-card-body {
+  padding: 0.75rem; /* Match card padding */
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+.skeleton-title {
+  height: 1.1em; /* Approx height of card title */
+  margin-bottom: 0.5rem;
+  width: 85%;
+}
+.skeleton-text-sm {
+  height: 0.9em; /* Approx height of rating/meta */
+  margin-top: auto; /* Push to bottom */
+  width: 50%;
+}
+
+/* Horizontal Card Skeletons */
+.skeleton-h-card {
+    background-color: var(--surface-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    aspect-ratio: 16 / 9; /* Match backdrop aspect ratio */
+    position: relative;
+    scroll-snap-align: start; /* For horizontal scroll */
+    flex: 0 0 auto; /* Needed for horizontal scroll layout */
+    width: clamp(280px, 30vw, 380px); /* Match h-card width */
+    border: 1px solid var(--border-color);
+}
+.skeleton-h-card-backdrop {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-h-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem;
+    background: linear-gradient(to top, rgba(var(--surface-rgb), 0.9) 10%, transparent 90%);
+}
+.skeleton-h-title {
+    height: 1.1em;
+    width: 70%;
+    margin-bottom: 0.4rem;
+}
+.skeleton-h-text-sm {
+    height: 0.8em;
+    width: 40%;
+}
+
+/* Details Page Skeletons */
+.skeleton-details-backdrop {
+    height: 60vh; /* Match details backdrop */
+    max-height: 550px;
+    margin-bottom: -120px; /* Match overlap */
+}
+.skeleton-details-poster {
+    width: 100%;
+    max-width: 280px; /* Match poster size */
+    aspect-ratio: 2 / 3;
+    border-radius: var(--radius-lg);
+    border: 3px solid rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-details-title {
+    height: 2.5em;
+    width: 70%;
+    max-width: 500px;
+    margin-bottom: 0.75rem;
+}
+.skeleton-details-meta {
+    height: 1.2em;
+    width: 60%;
+    max-width: 400px;
+    margin-bottom: 1rem;
+}
+.skeleton-details-genres {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+.skeleton-details-genre-badge {
+    height: 1.8em;
+    width: 70px;
+    border-radius: var(--radius-pill);
+}
+.skeleton-details-heading {
+    height: 1.5em;
+    width: 200px;
+    margin-bottom: 1rem;
+}
+.skeleton-details-text {
+    height: 1em;
+    width: 95%;
+    margin-bottom: 0.6rem;
+}
+.skeleton-details-text-short {
+    height: 1em;
+    width: 70%;
+    margin-bottom: 0.6rem;
+}
+.skeleton-details-button {
+    height: 48px; /* Match btn-lg */
+    width: 180px;
+    border-radius: var(--radius-md);
+    margin-right: 0.5rem;
+}
+
+/* Person Page Skeletons */
+.skeleton-person-profile {
+    width: 100%;
+    max-width: 300px; /* Match person profile */
+    aspect-ratio: 1 / 1.2; /* Approx profile aspect */
+    border-radius: var(--radius-lg);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-person-name {
+    height: 2.2em;
+    width: 60%;
+    max-width: 400px;
+    margin-bottom: 1rem;
+}
+.skeleton-person-meta {
+    height: 1.1em;
+    width: 40%;
+    margin-bottom: 0.6rem;
+}
+
+/* Other Skeletons */
+.skeleton-episode-still {
+    width: 100%;
+    max-width: 240px; /* Match episode still */
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-md);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-episode-title {
+    height: 1.2em;
+    width: 60%;
+    margin-bottom: 0.5rem;
+}
+.skeleton-episode-meta {
+    height: 0.9em;
+    width: 80%;
+    margin-bottom: 0.75rem;
+}
+.skeleton-episode-text {
+    height: 1em;
+    width: 95%;
+    margin-bottom: 0.5rem;
+}
+.skeleton-episode-button {
+    height: 31px; /* Match btn-sm */
+    width: 120px;
+    border-radius: var(--radius-sm);
+}
+
+.skeleton-spotify-img {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+    margin-right: 1rem;
+}
+.skeleton-spotify-title {
+    height: 1em;
+    width: 70%;
+    margin-bottom: 0.3rem;
+}
+.skeleton-spotify-artist {
+    height: 0.8em;
+    width: 50%;
+}
+.skeleton-spotify-button {
+    width: 31px; height: 31px; border-radius: var(--radius-sm); flex-shrink: 0;
+}
+
+.skeleton-network-logo {
+    width: 100px; /* Match network logo item size */
+    height: 55px;
+    border-radius: var(--radius-md);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Helper for grid containers */
+.skeleton-grid {
+    display: grid;
+    gap: 1rem; /* Adjust gap to match your card grid */
+    /* Use grid-template-columns similar to your Bootstrap cols */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Example */
+}
+@media (min-width: 576px) { .skeleton-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+@media (min-width: 992px) { .skeleton-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
+
+.skeleton-h-grid {
+    display: flex;
+    gap: 1rem; /* Match horizontal card gap */
+    overflow-x: hidden; /* Hide scrollbar during skeleton */
+}
+
+/* Ensure spinner doesn't overlay skeleton initially */
+.loading-spinner { position: relative; z-index: 1; }
+
+/* Person Bio Skeleton */
+.skeleton-bio-line { height: 1em; width: 100%; margin-bottom: 0.6rem; }
+.skeleton-bio-line.short { width: 80%; }
+.skeleton-bio-line.final { width: 50%; }
+
+/* --- Network Carousel --- */
+.network-carousel-wrapper {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.network-logos-container {
+    display: flex;
+    width: 100%;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 1rem 0.5rem;
+    scroll-padding-left: 50px;
+    scroll-padding-right: 50px;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.network-logos-container::-webkit-scrollbar {
+    display: none;
+}
+
+.network-logo-item {
+    flex-shrink: 0;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    background-size: 200%;
+    background-position: center;
+}
+
+.network-logo-item img {
+    width: 150px;
+    height: 80px;
+    object-fit: contain;
+    background: var(--gradient-primary); /* Match gradient background */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md);
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: block;
+    margin: 0 auto;
+}
+
+.network-logo-item img:hover {
+    box-shadow: 0 0.5rem 1rem rgba(var(--primary-accent-rgb), 0.15);
+}
+
+.network-logo-item span {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-medium);
+    margin-top: 0.3rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+}
+
+.network-logo-item:hover {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+}
+
+.network-logo-item:hover span {
+    opacity: 1;
+}
+
+.network-scroll-btn {
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(var(--bg-primary-rgb), 0.9);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, background-color 0.2s ease, border-color 0.2s ease;
+    color: var(--text-medium);
+}
+
+.network-carousel-wrapper:hover .network-scroll-btn:not(.disabled),
+.network-scroll-btn.visible:not(.disabled) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.network-scroll-btn.prev {
+    left: -30px;
+}
+
+.network-scroll-btn.next {
+    right: -30px;
+}
+
+.network-scroll-btn:not(.disabled):hover {
+    background: rgba(var(--primary-accent-rgb), 0.3);
+    border-color: var(--primary-accent);
+    color: var(--text-light);
+}
+
+.network-scroll-btn.disabled {
+    opacity: 0 !important;
+    cursor: default;
+    pointer-events: none;
+}
+
+.live-sport-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid transparent; /* Base border for smooth hover transition */
+    backdrop-filter: blur(5px); /* Optional: subtle blur */
+    display: flex; /* Ensure cards have flex layout if using h-100 */
+    flex-direction: column;
+}
+
+.live-sport-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(var(--primary-accent-rgb), 0.15);
+    border-color: rgba(var(--primary-accent-rgb), 0.3);
+}
+
+.live-card-header {
+    background: rgba(var(--surface-rgb), 0.3); /* Slightly different background */
+    border-bottom: 1px solid rgba(var(--border-rgb), 0.2); /* Softer border */
+}
+
+.live-card-header .league-info img {
+    max-height: 20px;
+     /* Make logos white-ish for dark themes by default */
+     filter: contrast(0) brightness(1.5);
+}
+
+.live-indicator .live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: var(--danger-color, #dc3545); /* Use theme danger or default red */
+    border-radius: 50%;
+    animation: pulse 1.5s infinite ease-in-out;
+    vertical-align: middle;
+    margin-top: -2px; /* Fine-tune alignment */
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.live-indicator .minute {
+    font-style: italic;
+    opacity: 0.9;
+    font-size: 0.9em; /* Make minute slightly smaller */
+}
+
+.team-info .team-logo {
+    max-width: 45px; /* Slightly larger logos */
+    max-height: 45px;
+    object-fit: contain;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); /* Add subtle shadow */
+}
+
+.team-info .team-name {
+    font-weight: 500; /* Slightly less bold */
+    font-size: 0.9rem; /* Adjust size */
+    line-height: 1.3;
+}
+
+.score-info span {
+    letter-spacing: 1px; /* Add spacing to score */
+    line-height: 1;
+    font-size: 1.7rem; /* Adjust score size */
+    color: var(--text-light); /* Ensure score is bright */
+}
+
+#livesports-view h1 {
+    border-bottom: 2px solid var(--primary-accent); display: inline-block; padding-bottom: 0.5rem; 
+}
+
+.live-sport-card .card-footer {
+     background: rgba(var(--surface-rgb), 0.1); /* Subtle footer background */
+     border-top: 1px solid rgba(var(--border-rgb), 0.15);
+     margin-top: auto; /* Push footer to bottom */
+}
+
+.event-web-search-btn {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.8rem; /* Slightly larger padding */
+}
+
+/* --- AI Insight Box --- */
+.ai-insight-box {
+    background: rgba(var(--primary-accent-rgb), 0.05);
+    border: 1px solid var(--border-light);
+    transition: background-color 0.3s ease;
+}
+
+.ai-insight-box .loading-spinner {
+    min-height: 50px;
+    padding: 1rem;
+}
+
+.ai-insight-box p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* --- Watchlist Button --- */
+.watchlist-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 11;
+    background: rgba(var(--bg-primary-rgb), 0.6);
+    color: var(--text-light);
+    border: 1px solid rgba(var(--surface-rgb), 0.2);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    opacity: 0.8;
+}
+
+.watchlist-btn:hover {
+    background: rgba(var(--primary-accent-rgb), 0.8);
+    color: #fff;
+    border-color: rgba(var(--primary-accent-rgb), 0.5);
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.watchlist-btn.in-watchlist {
+    background: var(--primary-accent);
+    border-color: var(--primary-accent);
+}
+
+.watchlist-btn.in-watchlist:hover {
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+    transform: scale(1.1);
+}
+
+.h-card .watchlist-btn {
+    top: 0.75rem;
+    right: 0.75rem;
+}
+
+/* --- Watchlist View --- */
+#watchlist-view .empty-watchlist {
+    min-height: 30vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-medium);
+}
+
+#watchlist-view .empty-watchlist i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+#watchlist-view .card {
+    position: relative;
+}
+
+#watchlist-view .remove-watchlist-btn {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 11;
+    background: rgba(var(--danger-color), 0.7);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    opacity: 0.85;
+}
+
+#watchlist-view .remove-watchlist-btn:hover {
+    background: var(--danger-color);
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+/* --- Continue Watching Section --- */
+#continue-watching-section .progress-bar-fill {
+    background: var(--primary-accent);
+}
+
+#continue-watching-section .horizontal-card-container {
+    padding-top: 0.5rem;
+    padding-bottom: 2rem;
+}
+
+#continue-watching-section .h-card {
+    position: relative;
+}
+
+#continue-watching-section .h-card .h-card-overlay {
+    padding-bottom: 1.5rem;
+}
+
+#continue-watching-section .progress-bar-container {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 1rem;
+    right: 1rem;
+    height: 5px;
+    background: rgba(var(--surface-rgb), 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+#continue-watching-section .progress-bar-fill {
+    height: 100%;
+    background: var(--primary-accent);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.5s ease-out;
+}
+
+#continue-watching-section .h-card-episode-title {
+    font-size: 0.8rem;
+    color: var(--text-medium);
+    margin-top: 0.3rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* --- Person View --- */
+#person-view .person-header {
+    position: relative;
+    gap: 2.5rem;
+    padding: 2rem;
+    border-radius: 20px;
+    border: 2px solid var(--border-color);
+    overflow: hidden;
+    z-index: 0;
+}
+
+.person-header::before {
+  content: '';
+  position: absolute;
+  top: -5%; /* Cover edges when scaling/blurring */
+  left: -5%;
+  right: -5%;
+  bottom: -5%;
+  background-image: var(--person-bg-image); /* Use the JS-set variable */
+  background-size: cover;
+  background-position: center center;
+  filter: blur(15px) brightness(0.7); /* Adjust blur and brightness */
+  transform: scale(1.1); /* Ensure blur covers edges */
+  z-index: -2; /* Place it behind the overlay and content */
+  transition: background-image 0.5s ease-in-out; /* Optional: Smooth transition */
+}
+
+/* Darkening Overlay for Text Contrast */
+.person-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(18, 20, 26, 0.9) 0%, rgba(18, 20, 26, 0.6) 60%, rgba(18, 20, 26, 0.4) 100%); /* Adjust gradient/color/opacity */
+  /* Or a solid color: background-color: rgba(18, 20, 26, 0.7); */
+  z-index: -1; /* Place it above the blurred image, but behind content */
+}
+
+/* Ensure Content is Above Pseudo-elements */
+.person-header .person-profile-pic,
+.person-header .person-info {
+  position: relative; /* Needed for z-index */
+  z-index: 1; /* Place content above the overlay and background */
+}
+
+.read-more-bio {
+    color: var(--bs-info); /* Example color */
+    text-decoration: none;
+}
+.read-more-bio:hover {
+    text-decoration: underline;
+}
+/* Ensure fallback icon displays correctly over the background */
+.person-profile-pic .img-fallback {
+    display: none; /* Hide broken image placeholder */
+}
+.person-profile-pic .img-fallback + .img-fallback-icon {
+    display: inline-block !important; /* Show icon when image fails */
+    font-size: 150px; /* Adjust size */
+    color: #adb5bd; /* Adjust color */
+    /* Add any other styling needed */
+    width: 100%;
+    max-width: 200px; /* Match image size */
+    height: auto;
+    text-align: center;
+}
+/* Responsive adjustments for fallback icon if needed */
+@media (min-width: 768px) {
+    .person-profile-pic .img-fallback + .img-fallback-icon {
+        /* max-width: 250px; */ /* Adjust as per your layout */
+        font-size: 180px;
+   }
+}
+@media (min-width: 992px) {
+    .person-profile-pic .img-fallback + .img-fallback-icon {
+       /* max-width: 200px; */
+       font-size: 150px;
+   }
+}
+
+/* Optional: Style for expanded bio */
+.person-bio {
+    max-height: 100px; /* Adjust initial visible height (e.g., ~4-5 lines) */
+    overflow: hidden;
+    transition: max-height 0.5s ease-out;
+    position: relative; /* For potential fade-out effect */
+}
+
+.person-bio.expanded {
+    max-height: 1000px; /* Set to a large enough value */
+    transition: max-height 0.7s ease-in;
+}
+
+
+.person-profile-pic {
+    position: relative;
+    min-height: 200px; /* Ensure space for the icon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#person-view .person-profile-pic img {
+    width: 100%;
+    max-width: 250px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 3px solid rgba(var(--surface-rgb), 0.1);
+    transition: opacity 0.3s ease;
+}
+
+.person-profile-pic img.img-fallback {
+    opacity: 0; /* Hide the broken image */
+}
+
+.person-profile-pic .img-fallback-icon {
+    font-size: 5rem; /* Large icon size */
+    color: var(--primary-accent); /* Use theme's primary accent color */
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.person-profile-pic img.img-fallback ~ .img-fallback-icon {
+    display: block !important; /* Show the icon when image fails */
+}
+
+#person-view .person-info h1 {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    margin-bottom: 0.8rem;
+}
+
+#person-view .person-meta {
+    font-size: 0.95rem;
+    color: var(--text-medium);
+    margin-bottom: 1.5rem;
+}
+
+#person-view .person-meta p {
+    margin-bottom: 0.25rem;
+    color: var(--text-light);
+}
+
+#person-view .person-meta strong {
+    font-weight: 500;
+    margin-right: 0.5em;
+}
+
+#person-view .person-bio {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-medium);
+    max-height: 200px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 0rem;
+    transition: max-height 0.5s ease-out;
+}
+
+#person-view .person-bio.expanded {
+    max-height: 1000px;
+}
+
+#person-view .person-bio p:last-child {
+    margin-bottom: 0;
+}
+
+#person-view .person-bio::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: linear-gradient(to top, var(--bg-primary), transparent);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+
+#person-view .person-bio.expanded::after {
+    opacity: 0;
+}
+
+#person-view .read-more-bio {
+    display: inline-block;
+    text-align: right;
+    margin-top: 0.5rem;
+    position: relative;
+    z-index: 2;
+    font-size: 0.9em;
+}
+
+#person-view .details-section + h4 {
+    margin-top: 2.5rem !important;
+}
+
+#person-view .filmography-section {
+    margin-top: 3rem;
+}
+
+#person-view .filmography-title {
+    font-size: 1.6rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-accent);
+    display: inline-block;
+}
+
+/* --- Theme Transition Animation --- */
+.theme-transition {
+    animation: themeFade 0.3s ease-in-out;
+}
+
+@keyframes themeFade {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 992px) {
+    .hero-content { max-width: 80%; }
+    #details-view .details-header { gap: 1.5rem; }
+    #details-view .details-poster img { max-width: 220px; }
+}
+
+@media (max-width: 768px) {
+    .navbar-collapse {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--surface-color);
+        padding: 1rem;
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        margin-top: 0;
+        border: 1px solid var(--border-color);
+        z-index: 1050;
+        box-shadow: var(--shadow-lg);
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+    }
+    .navbar-nav { align-items: stretch; }
+    #tmdb-search-form { width: 100%; margin-right: 0 !important; margin-bottom: 0.5rem; }
+    #spotify-status-nav { margin-left: 0 !important; width: 100%; justify-content: center; margin-top: 0.5rem !important; }
+    #spotify-search-form .input-group { flex-direction: column; gap: 0.5rem; }
+    #spotify-search-form button { width: 100%; }
+    .hero-content { max-width: 95%; padding-left: 2%; margin-top: 5vh; }
+    .hero-title { font-size: clamp(2.2rem, 7vw, 3.2rem); }
+    #details-view .details-header { flex-direction: column; text-align: center; }
+    #details-view .details-poster img { margin-left: auto; margin-right: auto; max-width: 250px; }
+    .network-logo-item img { width: 80px; height: 40px; }
+    .network-scroll-btn.prev { left: -5px; }
+    .network-scroll-btn.next { right: -5px; }
+    #person-view .person-header { flex-direction: column; text-align: center; }
+    #person-view .person-profile-pic img { margin: 0 auto 1.5rem auto; }
+    #person-view .person-bio { text-align: justify; text-align-last: left; }
+}
+
+@media (max-width: 576px) {
+    .hero-content { max-width: 90%; padding-left: 2%; }
+    .hero-title { font-size: clamp(2rem, 8vw, 2.8rem); }
+    .hero-description { display: none; }
+    #details-view .details-info h1 { font-size: clamp(1.8rem, 6vw, 2.5rem); }
+    .nav-pills { flex-wrap: wrap !important; justify-content: center; }
+    .nav-pills .nav-item { margin-bottom: 0.5rem; }
+    .network-logos-container { gap: 1rem; scroll-padding-left: 40px; scroll-padding-right: 40px; }
+    .network-logo-item img { width: 70px; height: 35px; }
+    .network-scroll-btn { width: 35px; height: 35px; }
+    .network-scroll-btn.prev { left: 0px; }
+    .network-scroll-btn.next { right: 0px; }
+    #person-view .person-info h1 { font-size: clamp(1.8rem, 6vw, 2.2rem); }
+    #person-view .person-profile-pic img { max-width: 200px; }
+}
+
+ /* --- Add these styles to your existing <style> block --- */
+
+ /* Like/Favorite Button */
+ .like-btn {
+     position: absolute;
+     top: 0.6rem;
+     left: 0.6rem; /* Position opposite to watchlist */
+     z-index: 5;
+     background-color: rgba(var(--surface-rgb), 0.6);
+     border: 1px solid rgba(255, 255, 255, 0.1);
+     color: var(--text-medium);
+     border-radius: 50%; /* Circle shape */
+     width: 34px;
+     height: 34px;
+     padding: 0;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     font-size: 1rem;
+     backdrop-filter: blur(5px);
+     transition: all var(--transition-fast);
+     box-shadow: var(--shadow-sm);
+ }
+ .like-btn:hover {
+     background-color: rgba(var(--tertiary-accent-rgb), 0.2);
+     color: var(--tertiary-accent);
+     transform: scale(1.1);
+     border-color: rgba(var(--tertiary-accent-rgb), 0.5);
+ }
+ .like-btn.is-favorite {
+     background-color: rgba(var(--tertiary-accent-rgb), 0.8);
+     color: #fff;
+     border-color: var(--tertiary-accent);
+     text-shadow: 0 0 5px rgba(0,0,0,0.5);
+ }
+ .like-btn.is-favorite:hover {
+    filter: brightness(1.1);
+    background-color: rgba(var(--tertiary-accent-rgb), 0.9);
+ }
+ .like-btn i {
+    transition: transform 0.2s ease-in-out; /* Animate icon */
+ }
+.like-btn.is-favorite i {
+    transform: scale(1.1);
+}
+
+ /* Analytics View Styles */
+ #analytics-view {
+    padding-top: 100px; /* Adjust for fixed navbar */
+    min-height: 80vh;
+ }
+ .stat-card {
+     background-color: var(--surface-color);
+     border-radius: var(--radius-lg);
+     padding: 1.5rem;
+     border: 1px solid var(--border-color);
+     text-align: center;
+     box-shadow: var(--shadow-md);
+     height: 100%;
+ }
+ .stat-card .stat-icon {
+     font-size: 2.5rem;
+     color: var(--primary-accent);
+     margin-bottom: 1rem;
+     display: block;
+ }
+ .stat-card .stat-value {
+     font-size: 2.8rem;
+     font-weight: 700;
+     color: #fff;
+     line-height: 1;
+     margin-bottom: 0.5rem;
+ }
+ .stat-card .stat-label {
+     font-size: 1rem;
+     color: var(--text-medium);
+ }
+
+ .chart-container {
+    background-color: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    /* min-height: 350px; */ /* You can keep min-height or remove it */
+    height:   80vh; /* <<< ADD THIS LINE (adjust value as needed) */
+    position: relative;
+    display: flex; /* Use flex to help center canvas if needed */
+    flex-direction: column; /* Stack title and canvas */
+    justify-content: center; /* Center content vertically */
+}
+
+/* Optional: Ensure canvas itself behaves within the container */
+.chart-container canvas {
+    max-width: 100%;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.chart-title { /* Keep existing style */
+   font-size: 1.3rem;
+   font-weight: 600;
+   color: var(--text-light);
+   margin-bottom: 1rem; /* Reduced bottom margin slightly */
+   text-align: center;
+   flex-shrink: 0; /* Prevent title from shrinking */
+}
+
+
+ /* Chart.js Tooltip Customization (Optional) */
+ .chartjs-tooltip {
+    background: rgba(0,0,0,0.8) !important;
+    border-radius: var(--radius-sm) !important;
+    color: #fff !important;
+    padding: 8px 12px !important;
+ }
+ /* Add specific skeleton styles if needed, or reuse existing */
+ #analytics-content .skeleton-card { /* Example reuse */
+    height: 150px; /* Adjust size */
+ }
+  #analytics-content .skeleton-chart {
+      background-color: var(--surface-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 2rem;
+      border: 1px solid var(--border-color);
+      height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  #analytics-content .skeleton-chart > div { /* Target the inner spinner div */
+      width: 50px; height: 50px;
+  }
+  #analytics-content .skeleton { background: linear-gradient(90deg, var(--border-color) 25%, rgba(var(--border-color-rgb), 0.6) 50%, var(--border-color) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite linear; border-radius: var(--radius-sm); }
+    
+  /* --- Styles for Recently Added Favorites --- */
+#recent-favorites-list {
+    /* Uses Bootstrap's row for layout, no specific styles needed on the row itself usually */
+    /* Optional: Add some top margin if needed */
+     margin-top: 0.5rem;
+}
+
+#recent-favorites-list .recent-favorite-item {
+    display: block; /* Make the anchor tag behave like a block for layout */
+    text-decoration: none;
+    position: relative; /* Needed for the absolute positioned title */
+    overflow: hidden; /* Hide anything overflowing the rounded corners */
+    border-radius: var(--radius-md); /* Consistent rounding */
+    transition: transform var(--transition-fast), box-shadow var(--transition-medium);
+    box-shadow: var(--shadow-sm);
+    background-color: var(--surface-color); /* Background for placeholder */
+}
+
+#recent-favorites-list .recent-favorite-item:hover {
+    transform: scale(1.05); /* Lift effect on hover */
+    box-shadow: var(--shadow-lg); /* Enhanced shadow on hover */
+    z-index: 10; /* Bring hovered item slightly forward */
+}
+
+#recent-favorites-list .recent-favorite-item img {
+    width: 100%;
+    aspect-ratio: 2 / 3; /* Standard poster aspect ratio */
+    object-fit: cover; /* Ensure image covers the area */
+    display: block; /* Remove any extra space below image */
+    border-radius: var(--radius-md); /* Match parent rounding */
+}
+
+/* Placeholder style if image fails (ensure you have the placeholder div in HTML if needed) */
+#recent-favorites-list .recent-favorite-item .card-img-placeholder {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background-color: var(--surface-color);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-medium);
+}
+
+#recent-favorites-list .recent-favorite-item .recent-favorite-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* Gradient overlay for better text readability */
+    background: linear-gradient(to top, rgba(var(--bg-primary-rgb), 0.95) 20%, rgba(var(--bg-primary-rgb), 0.7) 60%, transparent 100%);
+    color: var(--text-light);
+    font-size: 0.85rem; /* Slightly larger font */
+    font-weight: 500;
+    padding: 1.2rem 0.7rem 0.7rem; /* More top padding */
+    text-align: center;
+    white-space: nowrap; /* Prevent title wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add '...' if title is too long */
+    border-bottom-left-radius: var(--radius-md); /* Match rounding */
+    border-bottom-right-radius: var(--radius-md);
+    transition: opacity var(--transition-fast);
+    opacity: 0.9; /* Slightly transparent normally */
+}
+
+#recent-favorites-list .recent-favorite-item:hover .recent-favorite-title {
+    opacity: 1; /* Fully opaque on hover */
+}
+
+/* Ensure skeletons for recent list look correct if using */
+#recent-favorites-list .skeleton-card {
+    aspect-ratio: 2 / 3;
+    height: auto; /* Let aspect ratio control height */
+    padding: 0; /* No padding needed for image-like skeleton */
+}
+#recent-favorites-list .skeleton-card .skeleton-card-img {
+    height: 100%; /* Fill the card */
+}
+#recent-favorites-list .skeleton-card .skeleton-card-body {
+    display: none; /* Hide body elements for image-only skeleton */
+}
+
+
+/* Add these styles to your main <style> block */
+#connectionExplorerModal .modal-dialog {
+    /* Ensure the dialog itself can utilize height within the viewport limits */
+    /* Using max-height and height helps push sizing down */
+    max-height: 90vh;
+    height: 85vh; /* Use a slightly smaller viewport height to allow for margins */
+    display: flex; /* Essential for controlling internal heights */
+    flex-direction: column;
+    margin: 1.75rem auto; /* Standard Bootstrap large modal margin */
+}
+
+#connectionExplorerModal .modal-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    flex-grow: 1; /* Allow content to fill dialog height */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent content overflow */
+    box-shadow: var(--shadow-lg); /* Add some shadow */
+}
+
+
+#connectionExplorerModal .modal-header,
+#connectionExplorerModal .modal-footer {
+    border-color: var(--border-color) !important;
+    flex-shrink: 0; /* Prevent header/footer from shrinking */
+}
+
+#connectionExplorerModal .modal-body {
+    padding: 0; /* Remove body padding */
+    display: flex; /* Make body a flex container */
+    flex-direction: column; /* Stack children vertically */
+    flex-grow: 1; /* Make body take remaining vertical space */
+    overflow: hidden; /* Prevent scrollbars on the body itself */
+    background-color: var(--bg-primary); /* Match graph background */
+    position: relative; /* Needed for positioning overlay loading/error */
+}
+
+/* --- Graph Container --- */
+#connection-graph-container {
+    width: 100%;
+    flex-grow: 1; /* CRITICAL: Allow graph container to fill available flex space */
+    min-height: 200px; /* Ensure a minimum size */
+    display: none; /* Initially hidden - JS controls visibility via d-none */
+    overflow: hidden;
+    cursor: grab;
+}
+#connection-graph-container:active {
+    cursor: grabbing;
+}
+
+/* --- Loading and Error States (Overlay within modal-body) --- */
+#connection-graph-loading,
+#connection-graph-error {
+    /* Absolute position to overlay */
+    position: absolute;
+    inset: 0; /* Cover entire modal body */
+    display: flex; /* Use flex for centering content */
+    flex-direction: column; /* Stack icon/spinner and text */
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(var(--bg-primary-rgb), 0.9); /* Semi-transparent overlay */
+    z-index: 10; /* Ensure they are above the container if both shown briefly */
+    padding: 2rem;
+    text-align: center;
+    /* JS will toggle d-none */
+}
+
+
+/* --- Connection Explorer Modal Layout --- */
+
+#connectionExplorerModal .modal-dialog {
+    /* Ensure the dialog itself can utilize height within the viewport limits */
+    /* Using max-height and height helps push sizing down */
+    max-height: 90vh;
+    height: 85vh; /* Use a slightly smaller viewport height to allow for margins */
+    display: flex; /* Essential for controlling internal heights */
+    flex-direction: column;
+    margin: 1.75rem auto; /* Standard Bootstrap large modal margin */
+}
+
+#connectionExplorerModal .modal-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    flex-grow: 1; /* Allow content to fill dialog height */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent content overflow */
+    box-shadow: var(--shadow-lg); /* Add some shadow */
+}
+
+#connectionExplorerModal .modal-header,
+#connectionExplorerModal .modal-footer {
+    border-color: var(--border-color) !important;
+    flex-shrink: 0; /* Prevent header/footer from shrinking */
+}
+
+#connectionExplorerModal .modal-body {
+    padding: 0; /* Remove body padding */
+    display: flex; /* Make body a flex container */
+    flex-direction: column; /* Stack children vertically */
+    flex-grow: 1; /* Make body take remaining vertical space */
+    overflow: hidden; /* Prevent scrollbars on the body itself */
+    background-color: var(--bg-primary); /* Match graph background */
+    position: relative; /* Needed for positioning overlay loading/error */
+}
+
+/* --- Graph Container --- */
+#connection-graph-container {
+    width: 100%;
+    flex-grow: 1; /* CRITICAL: Allow graph container to fill available flex space */
+    min-height: 200px; /* Ensure a minimum size */
+    display: none; /* Initially hidden - JS controls visibility via d-none */
+    overflow: hidden;
+    cursor: grab;
+}
+#connection-graph-container:active {
+    cursor: grabbing;
+}
+
+/* --- Loading and Error States (Overlay within modal-body) --- */
+#connection-graph-loading,
+#connection-graph-error {
+    /* Absolute position to overlay */
+    position: absolute;
+    inset: 0; /* Cover entire modal body */
+    display: flex; /* Use flex for centering content */
+    flex-direction: column; /* Stack icon/spinner and text */
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(var(--bg-primary-rgb), 0.9); /* Semi-transparent overlay */
+    z-index: 10; /* Ensure they are above the container if both shown briefly */
+    padding: 2rem;
+    text-align: center;
+    /* JS will toggle d-none */
+}
+
+#connection-graph-error {
+    display: none; /* Hidden initially */
+    color: var(--tertiary-accent);
+}
+
+#connection-graph-error i { /* Optional icon */
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+#connection-graph-loading .spinner-border {
+     width: 3rem;
+     height: 3rem;
+}
+
+/* Styling for vis.js nodes (can be overridden in JS options) */
+.vis-network .vis-node {
+    font-family: var(--font-family-base);
+    font-size: 13px;
+    color: var(--text-light) !important; /* Force text color */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+}
+.vis-network .vis-node.vis-label {
+     color: var(--text-light) !important;
+}
+
+/* Style image nodes */
+.vis-network .vis-node.vis-shape.vis-image {
+     border: 2px solid var(--border-color);
+     background-color: var(--surface-color); /* Fallback bg */
+     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.vis-network .vis-node.vis-shape.vis-image.vis-hover {
+     border-color: var(--primary-accent);
+}
+.vis-network .vis-node.vis-shape.vis-image.vis-selected {
+     border-color: var(--secondary-accent);
+     box-shadow: 0 0 15px rgba(var(--secondary-accent-rgb), 0.5);
+}
+
+/* Style edges */
+.vis-network .vis-edge {
+    /* Default edge styles can be set here or in JS options */
+}
+
+/* Ensure loading spinner is centered */
+#connection-graph-loading {
+    background-color: var(--bg-primary);
+}
+
+/* Style for the trigger button on details page */
+.btn-connection-explorer {
+    /* Add specific styles if needed, e.g., */
+    /* margin-top: 1rem; */
+}
+
+
+/* --- Most Viewed Section Styles --- */
+#most-viewed-section {
+    /* Initially hidden by inline style, JS will show it */
+}
+
+/* Container within the section for horizontal cards */
+#most-viewed-section .most-viewed-container {
+    /* These styles apply to the `.horizontal-card-container` inside */
+    display: flex;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    overflow-y: hidden; /* Hide vertical scrollbar */
+    padding-bottom: 1.5rem; /* Space for scrollbar + card hover */
+    margin-bottom: -1.5rem; /* Compensate padding */
+    gap: 1rem; /* Space between cards */
+    scroll-snap-type: x mandatory; /* Optional: Makes scrolling snap to cards */
+    scroll-behavior: smooth;
+    scrollbar-width: thin; /* Firefox scrollbar style */
+    scrollbar-color: var(--primary-accent) rgba(var(--surface-rgb), 0.5); /* Firefox scrollbar color */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Webkit scrollbar styles */
+#most-viewed-section .most-viewed-container::-webkit-scrollbar {
+    height: 8px;
+}
+#most-viewed-section .most-viewed-container::-webkit-scrollbar-track {
+    background: rgba(var(--surface-rgb), 0.5);
+    border-radius: 4px;
+}
+#most-viewed-section .most-viewed-container::-webkit-scrollbar-thumb {
+    background-color: var(--primary-accent);
+    border-radius: 4px;
+    border: 2px solid transparent; /* Creates padding around thumb */
+    background-clip: content-box; /* Important for border */
+}
+#most-viewed-section .most-viewed-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--secondary-accent);
+}
+
+
+/* Styling for cards inside the "Most Viewed" horizontal container */
+/* Leveraging the existing .h-card styles is ideal */
+#most-viewed-section .h-card {
+    /* Inherits most styles from the general .h-card rule */
+    flex: 0 0 auto; /* Prevent cards from shrinking */
+    width: 280px; /* Adjust width as needed for posters */
+    max-width: 75%; /* Prevent extremely wide cards on huge screens */
+    scroll-snap-align: start; /* For snap scrolling */
+    position: relative; /* For positioning view count */
+    /* Add any specific overrides if needed */
+}
+
+/* Add specific styles for the "Most Viewed" section cards if desired */
+#most-viewed-section .h-card .h-card-overlay {
+   /* Maybe make overlay slightly stronger */
+   background: linear-gradient(to top, rgba(var(--bg-primary-rgb), 0.95) 25%, rgba(var(--bg-primary-rgb), 0.7) 65%, transparent 100%);
+}
+
+
+/* View Count Badge Style (Optional - Only needed if implementing renderMostViewedCards) */
+/* Add this if you create the renderMostViewedCards function to show counts */
+
+#most-viewed-section .h-card .view-count-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 6;
+    background-color: rgba(var(--tertiary-accent-rgb), 0.85);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+}
+#most-viewed-section .h-card .view-count-badge i {
+    font-size: 0.8em;
+    margin-right: 0.2rem;
+    position: relative;
+    top: -1px;
+}
+
+
+/* Style the initial placeholder within the container */
+#most-viewed-section .initial-placeholder {
+    /* Style to fit nicely */
+    width: 100%;
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-medium);
+    font-style: italic;
+}
+
+
+
+
+/* Adjustments if the section title takes space */
+#most-viewed-section .section-title {
+     margin-bottom: 1.5rem; /* Add space below title */
+}
+
+/* Adjust skeletons if needed specifically for most-viewed */
+#most-viewed-section .skeleton-h-card {
+   width: 280px; /* Match card width */
+}
+    
+#app-user-info-area {
+    /* Bootstrap's align-items-center usually does the vertical alignment */
+    /* Add specific layout styles if needed based on your header structure */
+    gap: 0.75rem; /* Adds a small gap between avatar, name, and button */
+}
+
+/* General Avatar Circle Styles (Same as Landing Page potentially) */
+/* If you already have `.user-avatar` styled globally, you might not need all of this */
+.user-avatar {
+    width: 36px;             /* Adjust size as needed */
+    height: 36px;            /* Adjust size as needed */
+    border-radius: 50%;      /* Makes it a circle */
+    background-color: var(--bs-primary, #0d6efd); /* Default background color for initials */
+    color: white;            /* Text color for initials */
+    display: inline-flex;    /* Allows alignment with other elements */
+    align-items: center;     /* Center content vertically */
+    justify-content: center; /* Center content horizontally */
+    font-weight: 600;
+    font-size: 0.8rem;       /* Size for initials */
+    overflow: hidden;        /* IMPORTANT: Clips the image to the circle */
+    cursor: pointer;         /* Suggests it might be clickable (e.g., profile dropdown) */
+    border: 1px solid rgba(255, 255, 255, 0.15); /* Optional subtle border */
+    flex-shrink: 0;          /* Prevent avatar from shrinking in flex layouts */
+}
+
+/* Style for the Actual Image within the Avatar */
+#app-user-avatar-image { /* Target the specific ID in app.html */
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the image covers the circle without stretching */
+}
+
+/* Style for the Initials Span */
+#app-user-avatar-initials { /* Target the specific ID */
+    line-height: 1; /* Helps vertical centering */
+}
+
+/* Display Name (Bootstrap classes handle most styling) */
+#app-user-display-name { /* Target the specific ID */
+    /* Add specific styles if needed, e.g.: */
+    /* color: #e9ecef; */
+    white-space: nowrap;     /* Prevent name wrapping if space is tight */
+    overflow: hidden;        /* Hide overflow */
+    text-overflow: ellipsis; /* Show '...' if name is too long */
+    max-width: 150px;        /* Optional: limit name width */
+}
+
+/* Logout Button (Bootstrap handles most) */
+#app-logout-button { /* Target the specific ID */
+    /* Add specific hover/active states if the default btn-secondary-outline needs adjustment */
+     white-space: nowrap; /* Prevent text wrapping */
+}
+
+
+/* Login/Signup Prompt Button (Bootstrap handles most) */
+#app-login-prompt .btn-primary {
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap; /* Prevent text wrapping */
+    padding: 0.5rem 1.5rem; /* Adjust padding for better touch targets */
+}
+
+#app-login-prompt .btn-primary:hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.8); /* Slightly darker on hover */
+    color: #fff; /* Ensure text is readable */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); /* Optional glow effect */
+}
+
+/* --- Visibility Handled by JS --- */
+/* The d-none class provided by Bootstrap handles showing/hiding */
+/* #app-login-prompt initially visible */
+/* #app-user-info-area initially hidden via d-none */
+
+/* Optional Hover Effects */
+.user-avatar:hover {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+#hero-video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Behind overlay and content */
+    pointer-events: none; /* Prevent interaction with the background video */
+}
+
+#hero-video-player { /* The div YT API targets */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150%; /* Over-scale to ensure coverage */
+    padding-bottom: 84.375%; /* 150% * (9/16) - Maintain 16:9 aspect ratio scaled up */
+    transform: translate(-50%, -50%);
+    /* Adjust width/padding-bottom % for different aspect ratios if needed */
+}
+
+#hero-video-player iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
