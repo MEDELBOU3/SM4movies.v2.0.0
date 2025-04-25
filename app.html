@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AuraStream - Person View Build</title>
 
-  
+
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     
     <!-- Chart.js Library -->
@@ -23,8 +22,8 @@
 </head>
 <body>
 
-   
-      <!-- Navbar -->
+
+    <!-- Navbar -->
     <header class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid">
@@ -65,7 +64,7 @@
                                <li><button class="dropdown-item theme-select-btn" data-theme="cyberpunk"><i class="bi bi-circle-fill me-2" style="color:#f72585;"></i> Cyberpunk</button></li>
 
                                <li><hr class="dropdown-divider"></li>
-                               <li><button class="dropdown-item theme-select-btn" data-theme="light"> Light Mode</button></li> 
+                               <li><button class="dropdown-item theme-select-btn" data-theme="light"><i class="bi bi-circle-fill me-2" style="color:#ffffff;"></i>  Light Mode</button></li> 
                             </ul>
                        </li>
                    </ul>
@@ -111,10 +110,19 @@
 
             <!-- HERO VIEW -->
             <section id="hero-view" class="view active">
-                 <!-- Hero content loaded dynamically -->
-                 <div class="loading-spinner vh-100"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
+                <!-- Video Background Container -->
+                <div id="hero-video-container">
+                    <div id="hero-video-player"></div> <!-- YouTube API inserts iframe here -->
+                </div>
+                <!-- Static Image Fallback (Initially hidden or shown if no video) -->
+                <img id="hero-backdrop-fallback" src="" class="hero-backdrop d-none" alt="Hero backdrop">
+                <!-- Overlay and Content (Must be above the video container) -->
+                <div class="hero-overlay"></div>
+                <div id="hero-content-container" class="container hero-content">
+                    <!-- Hero content loaded dynamically here -->
+                    <div class="loading-spinner"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
+                </div>
             </section>
-
             <!-- DISCOVER VIEW (Home Content) -->
             <section id="discover-view" class="view content-wrapper">
                 <div class="container">
@@ -401,11 +409,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <!-- vis.js Network CSS -->
     <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" type="text/css" />
-    <!--Firebase-->
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js"></script>
+    
+      <!-- IMPORTANT: Load firebase-app-compat.js FIRST! -->
+      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+      <!-- Then load the modules for the services you use (Auth and Firestore) -->
+      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+  
     <!-- Add this JS library AFTER Chart.js and BEFORE your main app script -->
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <script src="js/script.js"></script>
