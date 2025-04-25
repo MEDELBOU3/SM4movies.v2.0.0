@@ -1,4 +1,4 @@
-    /* --- CSS Reset & Base Styles --- */
+ /* --- CSS Reset & Base Styles --- */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -124,29 +124,30 @@ body.theme-nebula {
 }
 
 body.theme-light {
-    --bg-primary: #f5f7fa; /* Light Grayish Blue */
-    --bg-secondary: #e5e7eb; /* Soft Gray */
-    --surface-color: #ffffff; /* Pure White */
-    --bg-primary-rgb: 245, 247, 250;
-    --bg-secondary-rgb: 229, 231, 235;
+    --bg-primary: #f9fafb; /* Softer Gray */
+    --bg-secondary: #f3f4f6;
+    --surface-color: #ffffff;
+    --bg-primary-rgb: 249, 250, 251;
+    --bg-secondary-rgb: 243, 244, 246;
     --surface-rgb: 255, 255, 255;
-    --primary-accent: #60a5fa; /* Soft Blue */
-    --primary-accent-rgb: 96, 165, 250;
-    --secondary-accent: #34d399; /* Emerald Green */
-    --secondary-accent-rgb: 52, 211, 153;
+    --primary-accent: #3b82f6; /* Tailwind blue-500 */
+    --primary-accent-rgb: 59, 130, 246;
+    --secondary-accent: #10b981; /* Tailwind emerald-500 */
+    --secondary-accent-rgb: 16, 185, 129;
     --spotify-green: #1db954;
     --spotify-green-rgb: 29, 185, 84;
-    --text-light: #1f2937; /* Dark Gray */
-    --text-medium: #1a1d22; /* Medium Gray */
-    --text-dark: #111827; /* Near Black */
-    --border-color: #d1d5db; /* Light Gray */
-    --border-light: rgba(var(--primary-accent-rgb), 0.3);
-    --warning-color: #f59e0b; /* Amber */
-    --danger-color: #ef4444; /* Red */
-    --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.15);
+    --text-light: #111827;
+    --text-medium: #374151;
+    --text-dark: #1f2937;
+    --border-color: #e5e7eb;
+    --border-light: rgba(59, 130, 246, 0.2);
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
     --gradient-primary: linear-gradient(95deg, var(--primary-accent), var(--secondary-accent));
 }
+
 
 body.theme-ocean {
     --bg-primary: #0d1b2a;
@@ -619,15 +620,41 @@ body.theme-light .dropdown-item:focus {
     transform: scale(1);
 }
 
-.hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-primary) 10%, rgba(11, 13, 24, 0.8) 50%, rgba(11, 13, 24, 0.3) 80%, transparent 100%); z-index: 2; }
+.hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-primary) 10%, rgba(11, 13, 24, 0.8) 50%, rgba(11, 13, 24, 0.3) 80%, transparent 100%); z-index: 2;    pointer-events: none; }
 
-.hero-content {
-    position: relative; /* To stack above overlay */
-    z-index: 3; /* Above overlay */
-    padding-top: 5rem; /* Adjust padding as needed */
-    padding-bottom: 5rem;
+
+
+.hero-content { /* Your existing #hero-content-container */
+    position: relative; /* Or absolute if needed, depends on your layout */
+    z-index: 3; /* Above overlay and video */
+    /* Keep existing padding, text alignment etc. */
+     display: flex;
+     flex-direction: column;
+     justify-content: center; /* Adjust alignment as needed */
+     min-height: 80vh; /* Example min height */
+     padding-top: 80px; /* Example padding */
+     padding-bottom: 40px;
 }
 
+
+/* Static fallback image */
+#hero-backdrop-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1; /* Same level as video container */
+}
+
+/* Class to show fallback when no video */
+#hero-view.no-video #hero-backdrop-fallback {
+    display: block !important; /* Override d-none */
+}
+#hero-view.no-video #hero-video-container {
+    display: none; /* Hide video container if using fallback */
+}
 
 @keyframes fadeInSlideUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -637,6 +664,7 @@ body.theme-light .dropdown-item:focus {
 .hero-genres span {
     display: inline-block;
     border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
     padding: 0.25rem 0.6rem;
     border-radius: var(--radius-sm); /* Use your radius variable */
     font-size: 0.85rem;
@@ -1404,15 +1432,49 @@ body.theme-light .dropdown-item:focus {
   100% { background-position: 1000px 0; }
 }
 
+
 .skeleton {
-  background-color: rgba(255, 255, 255, 0.06); /* Slightly lighter than surface */
-  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0px, rgba(255, 255, 255, 0.12) 40px, rgba(255, 255, 255, 0.06) 80px);
-  background-size: 1000px 100%; /* Make shimmer wider */
-  animation: skeleton-shimmer 2s infinite linear;
+  /* Default dark theme colors */
+  background-color: rgba(255, 255, 255, 0.06);
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.06) 100%);
+  background-size: 1000px 100%;
+  animation: skeleton-shimmer 1.5s infinite linear; /* Adjusted timing slightly */
   border-radius: var(--radius-sm);
   display: block;
-  line-height: 1; /* Prevent text line height issues */
+  line-height: 1;
 }
+
+
+/* Light Theme Skeleton Overrides */
+body.theme-light .skeleton {
+  /* Use dark grays for contrast on light background */
+  background-color: rgba(0, 0, 0, 0.08); /* Base gray */
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.08) 100%); /* Darker gray shimmer */
+}
+
+/* Also override specific elements if needed */
+body.theme-light .skeleton-card-img,
+body.theme-light .skeleton-h-card-backdrop,
+body.theme-light .skeleton-details-poster,
+body.theme-light .skeleton-person-profile,
+body.theme-light .skeleton-episode-still,
+body.theme-light .skeleton-network-logo {
+    background-color: rgba(0, 0, 0, 0.1); /* Slightly darker base for images/blocks */
+}
+
+body.theme-light .skeleton-card,
+body.theme-light .skeleton-h-card {
+   background-color: var(--bg-secondary); /* Use a slightly off-white background */
+   /* Or keep using surface-color if you want white cards,
+      but ensure the inner skeletons use the darker grays defined above */
+}
+
+/* You might need to adjust the overlay gradient too */
+body.theme-light .skeleton-h-card-overlay {
+    background: linear-gradient(to top, rgba(var(--bg-secondary-rgb), 0.9) 10%, transparent 90%); /* Use light theme background */
+}
+
+
 
 /* Specific Skeleton Element Types */
 .skeleton-card {
@@ -2875,4 +2937,33 @@ body.theme-light .dropdown-item:focus {
 .user-avatar:hover {
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.5);
+}
+
+#hero-video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Behind overlay and content */
+    pointer-events: none; /* Prevent interaction with the background video */
+}
+
+#hero-video-player { /* The div YT API targets */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150%; /* Over-scale to ensure coverage */
+    padding-bottom: 84.375%; /* 150% * (9/16) - Maintain 16:9 aspect ratio scaled up */
+    transform: translate(-50%, -50%);
+    /* Adjust width/padding-bottom % for different aspect ratios if needed */
+}
+
+#hero-video-player iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
