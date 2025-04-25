@@ -1,4 +1,4 @@
-    // --- Configuration ---
+ // --- Configuration ---
         const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
@@ -2516,283 +2516,313 @@
             
 
 
-            loadHomeSections: async () => {
-                console.log("[Home Sections] Starting load (Firebase Version)...");
-                const mainContainer = DOM.homeContentSectionsContainer;
-                if (!mainContainer) {
-                   console.error("[Home Sections] Main container (#home-content-sections) not found!");
-                   return;
-                }
-
-                // 1. Clear Container & Reset State
-                mainContainer.innerHTML = Utils.getSpinnerHTML("Loading content sections...", true);
-                State.horizontalScrollContainers = [];
-                await new Promise(resolve => setTimeout(resolve, 50)); // Allow spinner to render
-                mainContainer.innerHTML = ''; // Clear spinner 
-
-                // --- Prepare Promises for sections that require async checks BEFORE rendering structure ---
-                let continueWatchingPromise = ContinueWatching.getList(); // Get list sync (already loaded in init)
-                let mostViewedCheckPromise = (async () => { // Wrap Firestore check in async IIFE
-                if (!db) return []; // Firestore not ready
-                try {
-                    const querySnapshot = await db.collection("viewCounts").limit(1).get(); // Check if *any* document exists
-                    return querySnapshot.empty ? [] : [{}]; // Return non-empty array if views exist
-                } catch(e){ console.error("Firestore check failed:", e); return []; }
-                })();
-
-
-            // 2. Iterate through Section Configurations
-            for (const sectionConfig of config.HOME_SECTIONS) {
-            console.log(`[Home Sections] Processing config: "${sectionConfig.title}"`);
-            let shouldCreateSection = false;
-            let sectionDiv = null; // Will be created or found
-
-            // --- Handle Special Section Logic ---
-            if (sectionConfig.id === 'continue-watching') {
-                if (continueWatchingPromise.length > 0) { // Use loaded list
-                     console.log(`[Home Sections] Creating "Continue Watching" section.`);
-                     shouldCreateSection = true;
-                     sectionDiv = document.createElement('section');
-                     sectionDiv.id = 'continue-watching-section';
-                 } else {
-                     console.log(`[Home Sections] Skipping "Continue Watching" (list is empty).`);
-                 }
-            } else if (sectionConfig.id === 'most-viewed') {
-                console.log('[Home Sections] Processing "Most Viewed" section (HTML expected).');
-                sectionDiv = document.getElementById('most-viewed-section'); // Find existing
-                if (!sectionDiv) {
-                    console.warn('[Home Sections] Pre-defined HTML section "most-viewed-section" not found.');
-                } else {
-                     const mostViewedExists = (await mostViewedCheckPromise).length > 0; // Check result of Firestore query
-                     if (mostViewedExists) {
-                        console.log('[Home Sections] Global views found, "Most Viewed" section will be populated.');
-                         shouldCreateSection = false; // Structure exists, just need to make visible & load
-                         Utils.setElementVisibility(sectionDiv, true); // Make it visible now
-                         const container = sectionDiv.querySelector('.most-viewed-container');
-                         if(container){ // Add skeletons before load
-                             const isHorizontal = container.classList.contains('horizontal-card-container');
-                             container.innerHTML = isHorizontal ? Utils.getSkeletonHorizontalCardHTML(5) : Utils.getSkeletonCardHTML(6);
-                         }
-                         // Load function will be called below if sectionDiv is valid
-                     } else {
-                         console.log('[Home Sections] No global views tracked, hiding "Most Viewed" section.');
-                         Utils.setElementVisibility(sectionDiv, false); // Ensure it's hidden
-                         shouldCreateSection = false; // Do not proceed further
-                     }
-                 }
-            } else if (sectionConfig.endpoint) {
-                // Standard sections are always created (might show 'no results' later)
-                console.log(`[Home Sections] Creating standard section: "${sectionConfig.title}"`);
-                shouldCreateSection = true;
-                sectionDiv = document.createElement('section');
-            } else {
-                // Skip misconfigured sections
-                console.warn(`[Home Sections] Skipping section "${sectionConfig.title}" - Invalid config.`);
-            }
-
-
-            // --- If section should be displayed (created or found & visible) ---
-            if (sectionDiv && (shouldCreateSection || sectionConfig.id === 'most-viewed')) {
-
-                 // Common setup for sections that *will* be added or populated
-                 sectionDiv.className = sectionDiv.className || 'content-section mb-5'; // Add default class if needed
-                 let isHorizontal = sectionConfig.display_style?.startsWith('horizontal');
-                 let containerSelector = sectionConfig.id === 'continue-watching' ? '.continue-watching-container'
-                                     : sectionConfig.id === 'most-viewed' ? '.most-viewed-container'
-                                     : isHorizontal ? '.horizontal-card-container' : '.row';
-                 let skeletonHtml = '';
-
-                 // --- Build Inner Structure (If section was dynamically created) ---
-                 if (shouldCreateSection) { // Only build if we created it dynamically
-                     if (sectionConfig.id === 'continue-watching') {
-                         skeletonHtml = Utils.getSkeletonHorizontalCardHTML(Math.min(continueWatchingPromise.length, 5));
-                         sectionDiv.innerHTML = `
-                            <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
-                            <div class="horizontal-scroll-wrapper">
-                                <button class="btn h-scroll-btn prev disabled"><i class="bi bi-chevron-left"></i></button>
-                                <div class="horizontal-card-container continue-watching-container">${skeletonHtml}</div>
-                                <button class="btn h-scroll-btn next disabled"><i class="bi bi-chevron-right"></i></button>
-                            </div>`;
-                     } else { // Standard endpoint section
-                         const skeletonCount = isHorizontal ? 5 : 6;
-                         skeletonHtml = isHorizontal ? Utils.getSkeletonHorizontalCardHTML(skeletonCount) : Utils.getSkeletonCardHTML(skeletonCount);
-                         sectionDiv.innerHTML = `
-                             <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
-                             ${isHorizontal ? `
-                                <div class="horizontal-scroll-wrapper">
-                                    <button class="btn h-scroll-btn prev disabled"><i class="bi bi-chevron-left"></i></button>
-                                    <div class="horizontal-card-container">${skeletonHtml}</div>
-                                    <button class="btn h-scroll-btn next disabled"><i class="bi bi-chevron-right"></i></button>
-                                </div>
-                             ` : `
-                                <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">${skeletonHtml}</div>
-                             `}
-                         `;
-                    }
-                 }
-
-                 // Append *dynamically created* sections to the DOM
-                  if (shouldCreateSection && !sectionDiv.parentNode) {
-                       mainContainer.appendChild(sectionDiv);
-                  }
-
-
-                // --- Trigger Asynchronous Load Function for the Section ---
-                if (sectionConfig.id === 'continue-watching') {
-                     App.loadContinueWatchingSection(sectionDiv); // Function loads data and replaces skeleton
-                } else if (sectionConfig.id === 'most-viewed') {
-                     App.loadMostViewedSection(sectionDiv, sectionConfig); // Function loads data and replaces skeleton
-                } else if (sectionConfig.endpoint) {
-                     // Load standard section using IIFE
-                    (async (currentSectionDiv, currentConfig, currentContainerSelector, isH) => {
-                         try {
-                             console.log(`[Home Sections][Async Load] Fetching standard data for "${currentConfig.title}"...`);
-                             const data = await API.fetchTMDB(currentConfig.endpoint, { page: 1 });
-                             const resultsContainer = currentSectionDiv.querySelector(currentContainerSelector);
-
-                             if (data?.results && resultsContainer) {
-                                if(data.results.length > 0){
-                                     if (isH) {
-                                         App.renderHorizontalCards(data.results.slice(0, 20), resultsContainer, currentConfig.type || null, currentConfig.show_trailer_button || false);
-                                          // --- Setup horizontal scroll ---
-                                          const scrollWrapper = currentSectionDiv.querySelector('.horizontal-scroll-wrapper');
-                                          const prevBtn = scrollWrapper?.querySelector('.h-scroll-btn.prev');
-                                          const nextBtn = scrollWrapper?.querySelector('.h-scroll-btn.next');
-                                          if (resultsContainer && prevBtn && nextBtn) {
-                                              if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
-                                                   State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
-                                                   resultsContainer.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn), 100), { passive: true });
-                                                   prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
-                                                   nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
-                                              }
-                                              App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn); // Update buttons immediately
-                                          }
-                                          // -----------------------------
-                                     } else { // Vertical
-                                         App.renderTmdbCards(data.results.slice(0, 12), resultsContainer, currentConfig.type || null, false);
-                                     }
-                                 } else { // No API results
-                                      console.log(`[Home Sections][Async Load] No results for "${currentConfig.title}".`);
-                                      if(resultsContainer) resultsContainer.innerHTML = '<p class="text-muted px-3 col-12">No content found.</p>';
-                                      if(isH){ App.updateHScrollButtons(resultsContainer, currentSectionDiv.querySelector('.prev'), currentSectionDiv.querySelector('.next'));}
-                                 }
-                             } else { // API Error or invalid data
-                                throw new Error(`Invalid data received for "${currentConfig.title}".`);
-                            }
-                         } catch (error) {
-                             console.error(`[Home Sections][Async Load] Error loading "${currentConfig.title}":`, error);
-                             const resultsContainer = currentSectionDiv.querySelector(currentContainerSelector);
-                             if (resultsContainer) resultsContainer.innerHTML = Utils.getErrorHTML(`Could not load "${currentConfig.title}".`);
-                             if(isH){ App.updateHScrollButtons(resultsContainer, currentSectionDiv.querySelector('.prev'), currentSectionDiv.querySelector('.next'));} // Update buttons on error too
-                         }
-                    })(sectionDiv, sectionConfig, containerSelector, isHorizontal); // Pass current context to IIFE
-                 } // End standard endpoint handler
-
-            } // End if (sectionDiv is valid)
-
-        } // End for loop
-
-        console.log("[Home Sections] Finished setting up all section structures and initiated async loads.");
-    }, 
-   
-             
-    loadMostViewedSection: async (sectionDiv, sectionConfig) => {
-        const container = sectionDiv.querySelector('.most-viewed-container');
-        if (!container) { /* ... handle missing container error ... */ return; }
-        const isHorizontal = container.classList.contains('horizontal-card-container');
-        const maxItems = sectionConfig.max_items || (isHorizontal ? 15 : 12);
-        const skeletonCount = isHorizontal ? 5 : 6;
-
-        console.log('[Most Viewed Load] Loading global most viewed items from Firestore...');
-        // Skeletons should have already been added by loadHomeSections
-
-        if (!db) { // Check if Firestore is initialized
-            container.innerHTML = Utils.getErrorHTML("Database service unavailable.");
-            if (isHorizontal) App.updateHScrollButtons(container, sectionDiv.querySelector('.prev'), sectionDiv.querySelector('.next'));
+             loadHomeSections: async () => {
+        console.log("[Home Sections] Starting home sections load...");
+        const mainContainer = DOM.homeContentSectionsContainer;
+        if (!mainContainer) {
+            console.error("[Home Sections] Main container (#home-content-sections) not found!");
             return;
         }
 
-        try {
-            // --- Query Firestore ---
-            const querySnapshot = await db.collection("viewCounts")
-                .orderBy("viewCount", "desc") // Order by count
-                .limit(maxItems) // Limit to top N
-                .get();
-            // ---------------------
+        // 1. Clear Container & Reset State
+        mainContainer.innerHTML = Utils.getSpinnerHTML("Loading content sections...", true); // Show initial spinner
+        State.horizontalScrollContainers = []; // Reset scroll container tracking
+        // Short delay to allow spinner to render before potentially heavy operations
+        await new Promise(resolve => setTimeout(resolve, 50));
+        mainContainer.innerHTML = ''; // Clear spinner before adding sections
 
-            if (querySnapshot.empty) {
-                console.log('[Most Viewed Load] No view data found in Firestore.');
-                container.innerHTML = `<p class="text-muted px-3 col-12">Be the first to watch something popular!</p>`;
-                 if(isHorizontal){ App.updateHScrollButtons(container, sectionDiv.querySelector('.prev'), sectionDiv.querySelector('.next'));}
-                return;
+        // 2. Prepare Promises/Data Needed Before the Loop
+        const continueWatchingList = ContinueWatching.getList(); // Get list synchronously
+
+        // Check ONCE if any global view data exists in Firestore
+        const mostViewedCheckPromise = (async () => {
+            if (typeof appDb === 'undefined' || !appDb) {
+                console.warn("[Home Sections] Firestore (appDb) not available for 'Most Viewed' check.");
+                return false; // Assume no data if DB is not ready
+            }
+            try {
+                console.log("[Home Sections] Checking Firestore for 'viewCounts' existence...");
+                const querySnapshot = await appDb.collection("viewCounts").limit(1).get();
+                const exists = !querySnapshot.empty;
+                console.log(`[Home Sections] Firestore 'viewCounts' check complete. Data exists: ${exists}`);
+                return exists;
+            } catch (e) {
+                console.error("[Home Sections] Firestore check for 'viewCounts' failed:", e);
+                return false; // Assume no data on error
+            }
+        })(); // Immediately invoke the async function
+
+        // Await the Firestore check result *before* starting the loop
+        const globalViewsExist = await mostViewedCheckPromise;
+        console.log(`[Home Sections] Proceeding with loop. Global views exist: ${globalViewsExist}`);
+
+        // 3. Iterate Through Section Configurations and Build Structure
+        for (const sectionConfig of config.HOME_SECTIONS) {
+            console.log(`[Home Sections] Processing config: "${sectionConfig.title}" (ID: ${sectionConfig.id || 'N/A'})`);
+            let sectionDiv = null;
+            let shouldRender = false; // Flag to determine if the section needs rendering/population
+
+            // --- Determine if section should be rendered/populated ---
+            if (sectionConfig.id === 'continue-watching') {
+                if (continueWatchingList.length > 0) {
+                    console.log(`[Home Sections] 'Continue Watching' has ${continueWatchingList.length} items. Will render.`);
+                    sectionDiv = document.createElement('section'); // Create dynamically
+                    sectionDiv.id = 'continue-watching-section'; // Assign ID
+                    shouldRender = true;
+                } else {
+                    console.log(`[Home Sections] Skipping 'Continue Watching' (list is empty).`);
+                }
+            } else if (sectionConfig.id === 'most-viewed') {
+                sectionDiv = document.getElementById('most-viewed-section'); // Find existing HTML element
+                if (!sectionDiv) {
+                    console.warn('[Home Sections] Pre-defined HTML section "most-viewed-section" not found.');
+                } else {
+                    if (globalViewsExist) {
+                        console.log('[Home Sections] Global views found. Will populate "Most Viewed" section.');
+                        Utils.setElementVisibility(sectionDiv, true); // Make sure it's visible
+                        shouldRender = true; // Mark for population (skeletons added below)
+                    } else {
+                        console.log('[Home Sections] No global views tracked. Hiding "Most Viewed" section.');
+                        Utils.setElementVisibility(sectionDiv, false); // Ensure it's hidden
+                        shouldRender = false; // Skip population
+                    }
+                }
+            } else if (sectionConfig.endpoint) {
+                // Standard sections fetched from TMDB endpoint
+                console.log(`[Home Sections] Standard section "${sectionConfig.title}". Will render.`);
+                sectionDiv = document.createElement('section'); // Create dynamically
+                shouldRender = true;
+            } else {
+                // Skip sections without ID or endpoint
+                console.warn(`[Home Sections] Skipping section "${sectionConfig.title}" due to invalid configuration (missing ID or endpoint).`);
             }
 
-            // Extract data needed for TMDB lookup
-            const topItemsData = querySnapshot.docs.map(doc => ({
-                id: doc.data().tmdbId, // Assumes you store 'tmdbId' field
-                type: doc.data().type,   // Assumes you store 'type' field
-                count: doc.data().viewCount // Get the count
-            }));
+            // --- If section needs rendering/population, build its structure ---
+            if (shouldRender && sectionDiv) {
+                // Common setup
+                sectionDiv.className = sectionDiv.className || 'content-section mb-5'; // Default class if new
+                const isHorizontal = sectionConfig.display_style?.startsWith('horizontal');
+                const skeletonCount = isHorizontal ? 5 : 6; // Skeletons per section
+                let skeletonHtml = isHorizontal
+                    ? Utils.getSkeletonHorizontalCardHTML(skeletonCount)
+                    : Utils.getSkeletonCardHTML(skeletonCount);
+                let containerHtml = '';
 
-             console.log('[Most Viewed Load] Fetched top items from Firestore:', topItemsData);
+                // Build the inner HTML structure with title and skeleton container
+                if (isHorizontal) {
+                    // Special container class for specific sections if needed
+                    let containerClass = 'horizontal-card-container';
+                    if (sectionConfig.id === 'continue-watching') containerClass += ' continue-watching-container';
+                    if (sectionConfig.id === 'most-viewed') containerClass += ' most-viewed-container';
+
+                    containerHtml = `
+                        <div class="horizontal-scroll-wrapper">
+                            <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
+                            <div class="${containerClass}">${skeletonHtml}</div>
+                            <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
+                        </div>`;
+                } else {
+                    // Vertical grid layout
+                    containerHtml = `
+                        <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">${skeletonHtml}</div>`;
+                }
+
+                // Set the inner HTML for the sectionDiv
+                // Avoid replacing if it's the 'most-viewed' section (already has structure)
+                if (sectionConfig.id !== 'most-viewed') {
+                     sectionDiv.innerHTML = `
+                        <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
+                        ${containerHtml}`;
+                } else {
+                    // For 'most-viewed', just inject skeletons into existing container
+                    const existingContainer = sectionDiv.querySelector('.most-viewed-container');
+                    if (existingContainer) {
+                        existingContainer.innerHTML = skeletonHtml;
+                    } else {
+                         console.error(`[Home Sections] Could not find .most-viewed-container within #most-viewed-section`);
+                    }
+                }
 
 
-            // --- Fetch TMDB Details for these items (Similar to before) ---
-            const itemDetailPromises = topItemsData.map(viewData =>
-                API.fetchTMDB(`/${viewData.type}/${viewData.id}`).catch(err => {
-                    console.warn(`[Most Viewed Load] Failed to fetch TMDB details for ${viewData.type}-${viewData.id}`, err);
-                    return null; // Return null on error
-                })
-            );
-            const detailedItems = (await Promise.all(itemDetailPromises))
-                                      .filter(item => item !== null); // Filter out failed fetches
+                // Append dynamically created sections to the main container
+                if (!sectionDiv.parentNode) { // Append only if it's not already in the DOM
+                    mainContainer.appendChild(sectionDiv);
+                }
 
-            if (detailedItems.length === 0) {
-                 throw new Error("Could not fetch details for popular items from TMDB.");
-            }
-            // -----------------------------------------------------------
+                // --- Trigger Asynchronous Data Loading for This Section ---
+                // Use IIFE to capture current loop variables (sectionDiv, sectionConfig)
+                (async (currentSectionDiv, currentConfig) => {
+                    const currentIsHorizontal = currentConfig.display_style?.startsWith('horizontal');
+                    // Determine the selector for the content container within this specific section
+                    let currentContainerSelector = '.row'; // Default for vertical
+                    if (currentIsHorizontal) {
+                         if (currentConfig.id === 'continue-watching') currentContainerSelector = '.continue-watching-container';
+                         else if (currentConfig.id === 'most-viewed') currentContainerSelector = '.most-viewed-container';
+                         else currentContainerSelector = '.horizontal-card-container';
+                    }
+                    const resultsContainer = currentSectionDiv.querySelector(currentContainerSelector);
+                    const prevBtn = currentIsHorizontal ? currentSectionDiv.querySelector('.h-scroll-btn.prev') : null;
+                    const nextBtn = currentIsHorizontal ? currentSectionDiv.querySelector('.h-scroll-btn.next') : null;
 
-            // Combine TMDB details with view counts (Optional, if displaying count)
-             const itemsToRender = detailedItems.map(item => {
-                  const type = item.title ? 'movie' : 'tv';
-                  // Find the original view data to get the count back
-                  const originalViewData = topItemsData.find(v => v.id === item.id && v.type === type);
-                  return {
-                       ...item,
-                       media_type: type,
-                       viewCount: originalViewData ? originalViewData.count : '?', // Add count back
-                   };
-              });
+                    if (!resultsContainer) {
+                        console.error(`[Home Sections Load] Could not find results container ('${currentContainerSelector}') for "${currentConfig.title}"`);
+                        return;
+                    }
 
-            // --- Render using appropriate function (replace skeletons) ---
-             console.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items.`);
-             if (isHorizontal) {
-                 App.renderHorizontalCards(itemsToRender, container, null, false);
-                 // Setup scroll for THIS specific section
-                 const scrollWrapper = sectionDiv.querySelector('.horizontal-scroll-wrapper');
-                 const prevBtn = scrollWrapper?.querySelector('.h-scroll-btn.prev');
-                 const nextBtn = scrollWrapper?.querySelector('.h-scroll-btn.next');
-                 if (container && prevBtn && nextBtn) {
-                      if (!State.horizontalScrollContainers.some(c => c.container === container)) {
-                          State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
-                          container.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(container, prevBtn, nextBtn), 100), { passive: true });
-                          prevBtn.addEventListener('click', () => App.handleHScrollPrev(container));
-                          nextBtn.addEventListener('click', () => App.handleHScrollNext(container));
-                      }
-                      App.updateHScrollButtons(container, prevBtn, nextBtn);
-                  }
-             } else {
-                 App.renderTmdbCards(itemsToRender, container, null, false);
-                 // If you want to show counts on vertical cards, add logic here
-             }
-            // --------------------------------------------------------------
+                    try {
+                        console.log(`[Home Sections Load] Starting async load for "${currentConfig.title}"`);
+                        if (currentConfig.id === 'continue-watching') {
+                            // Use the pre-fetched list
+                            App.loadContinueWatchingSection(currentSectionDiv, continueWatchingList); // Pass list
+                        } else if (currentConfig.id === 'most-viewed') {
+                            // Fetch from Firestore and TMDB
+                            await App.loadMostViewedSection(currentSectionDiv, currentConfig);
+                        } else if (currentConfig.endpoint) {
+                            // Fetch from TMDB endpoint
+                            const data = await API.fetchTMDB(currentConfig.endpoint, { page: 1 });
+                            if (data?.results && data.results.length > 0) {
+                                const itemsToRender = data.results.slice(0, currentIsHorizontal ? 20 : 12); // Limit items
+                                if (currentIsHorizontal) {
+                                    App.renderHorizontalCards(itemsToRender, resultsContainer, currentConfig.type || null, currentConfig.show_trailer_button || false);
+                                } else {
+                                    App.renderTmdbCards(itemsToRender, resultsContainer, currentConfig.type || null, false);
+                                }
+                            } else {
+                                console.log(`[Home Sections Load] No results from API for "${currentConfig.title}".`);
+                                resultsContainer.innerHTML = `<p class="text-muted px-3 ${currentIsHorizontal ? '' : 'col-12'}">No content found for this section.</p>`;
+                            }
+                        }
 
-        } catch (error) {
-            console.error("[Most Viewed Load] Error fetching or processing items:", error);
-            container.innerHTML = Utils.getErrorHTML(`Could not display popular items: ${error.message}`);
-            if(isHorizontal){ App.updateHScrollButtons(container, sectionDiv.querySelector('.prev'), sectionDiv.querySelector('.next'));}
+                        // Setup/Update horizontal scroll AFTER rendering content for horizontal sections
+                        if (currentIsHorizontal && resultsContainer && prevBtn && nextBtn) {
+                            // Add to state tracking if not already present
+                            if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
+                                State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
+                                // Add scroll listener only once
+                                resultsContainer.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn), 100), { passive: true });
+                                prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
+                                nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
+                                console.log(`[Home Sections Load] Added scroll listeners for "${currentConfig.title}"`);
+                            }
+                            // Update button state immediately after rendering/loading
+                            App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
+                        }
+
+                    } catch (error) {
+                        console.error(`[Home Sections Load] Error loading data for "${currentConfig.title}":`, error);
+                        if (resultsContainer) {
+                            resultsContainer.innerHTML = Utils.getErrorHTML(`Could not load "${currentConfig.title}".`);
+                        }
+                        // Ensure buttons are updated even on error for horizontal sections
+                        if (currentIsHorizontal && resultsContainer && prevBtn && nextBtn) {
+                             App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
+                        }
+                    }
+                })(sectionDiv, sectionConfig); // Pass current section element and config to the IIFE
+
+            } // End if(shouldRender && sectionDiv)
+
+        } // End for...of loop
+
+        console.log("[Home Sections] Finished processing all section configurations.");
+    }, // End loadHomeSections
+             
+    loadMostViewedSection: async (sectionDiv, sectionConfig) => {
+    const container = sectionDiv.querySelector('.most-viewed-container');
+    const isHorizontal = container?.classList.contains('horizontal-card-container');
+    const maxItems = sectionConfig.max_items || (isHorizontal ? 15 : 12);
+    const prevBtn = isHorizontal ? sectionDiv.querySelector('.h-scroll-btn.prev') : null;
+    const nextBtn = isHorizontal ? sectionDiv.querySelector('.h-scroll-btn.next') : null;
+
+
+    if (!container) {
+         console.error('[Most Viewed Load] Container .most-viewed-container not found within section.');
+         return;
+    }
+    console.log('[Most Viewed Load] Loading global most viewed items from Firestore...');
+    // Skeletons should have been added by loadHomeSections
+
+    if (typeof appDb === 'undefined' || !appDb) { // Check if Firestore is initialized
+        container.innerHTML = Utils.getErrorHTML("Database service unavailable for popular items.");
+        if (isHorizontal && prevBtn && nextBtn) App.updateHScrollButtons(container, prevBtn, nextBtn);
+        return;
+    }
+
+    try {
+        // --- Query Firestore ---
+        const querySnapshot = await appDb.collection("viewCounts")
+            .orderBy("viewCount", "desc") // Order by count
+            .limit(maxItems) // Limit to top N
+            .get();
+        // ---------------------
+
+        if (querySnapshot.empty) {
+            console.log('[Most Viewed Load] No view data found in Firestore.');
+            container.innerHTML = `<p class="text-muted px-3 col-12">Be the first to watch something popular!</p>`;
+            if(isHorizontal && prevBtn && nextBtn){ App.updateHScrollButtons(container, prevBtn, nextBtn);}
+            return;
         }
-    }, 
+
+        // Extract data needed for TMDB lookup
+        const topItemsData = querySnapshot.docs.map(doc => ({
+            id: doc.data().tmdbId,
+            type: doc.data().type,
+            count: doc.data().viewCount
+        }));
+
+        console.log('[Most Viewed Load] Fetched top items from Firestore:', topItemsData.map(i => `${i.type}-${i.id}(${i.count})`));
+
+        // --- Fetch TMDB Details for these items ---
+        const itemDetailPromises = topItemsData.map(viewData =>
+            API.fetchTMDB(`/${viewData.type}/${viewData.id}`).catch(err => {
+                console.warn(`[Most Viewed Load] Failed to fetch TMDB details for ${viewData.type}-${viewData.id}`, err);
+                return null; // Return null on error
+            })
+        );
+        const detailedItems = (await Promise.all(itemDetailPromises))
+                                  .filter(item => item !== null); // Filter out failed fetches
+
+        if (detailedItems.length === 0) {
+             throw new Error("Could not fetch details for popular items from TMDB.");
+        }
+
+        // --- Combine TMDB details with view counts (Optional) ---
+         const itemsToRender = detailedItems.map(item => {
+              const type = item.title ? 'movie' : 'tv'; // Re-determine type just in case
+              const originalViewData = topItemsData.find(v => v.id === item.id && v.type === type);
+              return {
+                   ...item,
+                   media_type: type, // Ensure media_type is set
+                   viewCount: originalViewData ? originalViewData.count : '?',
+               };
+          });
+
+        // --- Render using appropriate function (replace skeletons) ---
+         console.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items.`);
+         if (isHorizontal) {
+             App.renderHorizontalCards(itemsToRender, container, null, false); // Pass items, container
+             // Setup scroll for THIS specific section
+             if (container && prevBtn && nextBtn) {
+                  if (!State.horizontalScrollContainers.some(c => c.container === container)) {
+                      State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
+                      container.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(container, prevBtn, nextBtn), 100), { passive: true });
+                      prevBtn.addEventListener('click', () => App.handleHScrollPrev(container));
+                      nextBtn.addEventListener('click', () => App.handleHScrollNext(container));
+                  }
+                  App.updateHScrollButtons(container, prevBtn, nextBtn); // Update immediately after render
+              }
+         } else {
+             // Assuming default is vertical card grid
+             App.renderTmdbCards(itemsToRender, container, null, false); // Pass items, container
+             // Optional: Add view count display logic for vertical cards here if needed
+         }
+
+    } catch (error) {
+        console.error("[Most Viewed Load] Error fetching or processing items:", error);
+        container.innerHTML = Utils.getErrorHTML(`Could not display popular items: ${error.message}`);
+        if(isHorizontal && prevBtn && nextBtn){ App.updateHScrollButtons(container, prevBtn, nextBtn);}
+    }
+},
               // --- NEW: Function to specifically load and render Continue Watching ---
               loadContinueWatchingSection: (sectionDiv) => {
                 if (!sectionDiv) {
