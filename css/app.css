@@ -3073,50 +3073,40 @@ body.theme-light .skeleton-h-card-overlay {
 }
 
 /* --- View Count Styling (For Cards) --- */
-
-/* Style for Horizontal Card Meta */
-.h-card-meta .view-count-meta {
-    display: inline-flex; /* Align icon and text */
-    align-items: center;
-    color: var(--text-medium); /* Match other meta text */
-    opacity: 0.85;
-    font-size: 0.9em; /* Slightly smaller than main meta */
-}
-.h-card-meta .view-count-meta i {
-    font-size: 0.9em; /* Icon size relative to text */
-    margin-right: 0.3em;
-    opacity: 0.7; /* Slightly faded icon */
-     color: var(--secondary-accent); /* Optional: Give icon a color */
-}
-
-/* Style for Vertical Card Badge */
-.view-count-badge-vertical {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3em;
-    background-color: rgba(var(--surface-rgb), 0.6); /* Subtle background */
-    color: var(--text-medium);
-    padding: 0.2em 0.5em;
+/* --- Rank Badge Styling (Top Left) --- */
+.rank-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 5; /* Ensure it's above the image */
+    background: rgba(var(--bg-primary-rgb), 0.8); /* Dark semi-transparent background */
+    color: var(--text-light);
+    font-family: var(--font-family-headings); /* Use heading font */
+    font-size: clamp(0.8rem, 2.5vw, 1rem); /* Responsive size */
+    font-weight: 700; /* Bold */
+    line-height: 1.2;
+    padding: 0.25em 0.6em;
     border-radius: var(--radius-sm);
-    border: 1px solid rgba(var(--border-color), 0.4);
-    backdrop-filter: blur(2px);
-}
-.view-count-badge-vertical i {
-    font-size: 0.9em; /* Icon size */
-    opacity: 0.7;
-     color: var(--secondary-accent); /* Optional: Icon color */
+    min-width: 28px; /* Minimum width */
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Stronger shadow */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(var(--border-color), 0.5);
+    backdrop-filter: blur(3px);
 }
 
-/* Optional: Light theme adjustments if needed */
-body.theme-light .h-card-meta .view-count-meta,
-body.theme-light .view-count-badge-vertical {
-    color: var(--text-medium); /* Adjust text color */
+/* Optional: Slight adjustments for horizontal cards if needed */
+.h-card .rank-badge {
+    /* top: 0.6rem; */
+    /* left: 0.6rem; */
+    /* Adjust if needed */
 }
-body.theme-light .view-count-badge-vertical {
-     background-color: rgba(var(--bs-light-rgb), 0.7); /* Lighter background */
-     border-color: rgba(var(--border-color), 0.2);
-}
-body.theme-light .h-card-meta .view-count-meta i,
-body.theme-light .view-count-badge-vertical i {
-     color: var(--secondary-accent); /* Ensure icon color stands out */
+
+/* Light Theme Adjustment */
+body.theme-light .rank-badge {
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--text-dark);
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    text-shadow: none;
 }
