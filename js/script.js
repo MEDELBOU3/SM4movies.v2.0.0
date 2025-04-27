@@ -1,4 +1,4 @@
- // --- Configuration ---
+// --- Configuration ---
         const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
@@ -2726,134 +2726,103 @@
 
         console.log("[Home Sections] Finished processing all section configurations.");
     }, // End loadHomeSections
-
-
-       loadMostViewedSection: async (sectionDiv, sectionConfig) => {
+             
+ loadMostViewedSection: async (sectionDiv, sectionConfig) => {
     const container = sectionDiv.querySelector('.most-viewed-container');
-    const isHorizontal = container?.classList.contains('horizontal-card-container') ?? false;
+    const isHorizontal = container?.classList.contains('horizontal-card-container');
     const maxItems = sectionConfig.max_items || (isHorizontal ? 15 : 12);
     const prevBtn = isHorizontal ? sectionDiv.querySelector('.h-scroll-btn.prev') : null;
     const nextBtn = isHorizontal ? sectionDiv.querySelector('.h-scroll-btn.next') : null;
-    const utils = App.utils; // Use App's utils
+
 
     if (!container) {
-         utils.error('[Most Viewed Load] Container .most-viewed-container not found!');
-         if(sectionDiv) sectionDiv.innerHTML = utils.getErrorHTML("Section layout error.");
+         console.error('[Most Viewed Load] Container .most-viewed-container not found within section.');
          return;
     }
-    utils.log('[Most Viewed Load] Starting - Populating skeletons...');
-    const skeletonCount = isHorizontal ? 5 : 6;
-    container.innerHTML = isHorizontal ? utils.getSkeletonHorizontalCardHTML(skeletonCount) : utils.getSkeletonCardHTML(skeletonCount);
-    if (isHorizontal && prevBtn && nextBtn) { prevBtn.classList.add('disabled'); nextBtn.classList.add('disabled'); }
+    console.log('[Most Viewed Load] Loading global most viewed items from Firestore...');
+    // Skeletons should have been added by loadHomeSections
 
-    if (typeof appDb === 'undefined' || !appDb) {
-        utils.error('[Most Viewed Load] Firestore (appDb) not available!');
-        container.innerHTML = utils.getErrorHTML("Database service unavailable.");
+    if (typeof appDb === 'undefined' || !appDb) { // Check if Firestore is initialized
+        container.innerHTML = Utils.getErrorHTML("Database service unavailable for popular items.");
         if (isHorizontal && prevBtn && nextBtn) App.updateHScrollButtons(container, prevBtn, nextBtn);
         return;
     }
 
-    let topItemsData = []; // Keep track of Firestore results
-
     try {
         // --- Query Firestore ---
-        utils.log('[Most Viewed Load] Querying Firestore viewCounts...');
-        let querySnapshot;
-        try {
-             querySnapshot = await appDb.collection("viewCounts")
-                .orderBy("viewCount", "desc")
-                .limit(maxItems)
-                .get();
-        } catch (firestoreError) {
-             utils.error('[Most Viewed Load] Firestore query failed!', firestoreError);
-             // Check console specifically for INDEX errors here!
-             throw new Error(`Firestore query error: ${firestoreError.message}`); // Re-throw to be caught by outer block
-        }
+        const querySnapshot = await appDb.collection("viewCounts")
+            .orderBy("viewCount", "desc") // Order by count
+            .limit(maxItems) // Limit to top N
+            .get();
+        // ---------------------
 
-        utils.log(`[Most Viewed Load] Firestore query successful. Docs found: ${querySnapshot.size}`);
         if (querySnapshot.empty) {
-            utils.log('[Most Viewed Load] No view data found.');
-            container.innerHTML = `<p class="text-muted px-3 col-12 text-center small fst-italic py-5">Not enough view data yet.</p>`;
+            console.log('[Most Viewed Load] No view data found in Firestore.');
+            container.innerHTML = `<p class="text-muted px-3 col-12">Be the first to watch something popular!</p>`;
             if(isHorizontal && prevBtn && nextBtn){ App.updateHScrollButtons(container, prevBtn, nextBtn);}
             return;
         }
 
-        topItemsData = querySnapshot.docs.map(doc => ({
+        // Extract data needed for TMDB lookup
+        const topItemsData = querySnapshot.docs.map(doc => ({
             id: doc.data().tmdbId,
             type: doc.data().type,
             count: doc.data().viewCount
         }));
-        utils.log('[Most Viewed Load] Extracted top items from Firestore:', topItemsData);
 
-        // --- Fetch TMDB Details ---
-        utils.log('[Most Viewed Load] Fetching TMDB details for top items...');
+        console.log('[Most Viewed Load] Fetched top items from Firestore:', topItemsData.map(i => `${i.type}-${i.id}(${i.count})`));
+
+        // --- Fetch TMDB Details for these items ---
         const itemDetailPromises = topItemsData.map(viewData =>
-            API.fetchTMDB(`/${viewData.type}/${viewData.id}`)
-               .catch(err => { // Catch individual fetch errors
-                   utils.warn(`[Most Viewed Load] Failed TMDB fetch for ${viewData.type}-${viewData.id}`, err);
-                   return null; // Important: return null so Promise.allSettled works
-               })
+            API.fetchTMDB(`/${viewData.type}/${viewData.id}`).catch(err => {
+                console.warn(`[Most Viewed Load] Failed to fetch TMDB details for ${viewData.type}-${viewData.id}`, err);
+                return null; // Return null on error
+            })
         );
-        // Use allSettled to see which ones failed if any
-        const tmdbResults = await Promise.allSettled(itemDetailPromises);
-        utils.log('[Most Viewed Load] TMDB detail fetch results (settled):', tmdbResults);
-
-        const detailedItems = tmdbResults
-                                  .filter(result => result.status === 'fulfilled' && result.value !== null) // Get only successful fetches
-                                  .map(result => result.value); // Extract the data
+        const detailedItems = (await Promise.all(itemDetailPromises))
+                                  .filter(item => item !== null); // Filter out failed fetches
 
         if (detailedItems.length === 0) {
-             // This means ALL TMDB fetches failed or returned null
-             utils.error('[Most Viewed Load] Could not fetch details for ANY popular items from TMDb.');
-             throw new Error("Failed to retrieve details for popular items.");
+             throw new Error("Could not fetch details for popular items from TMDB.");
         }
-         utils.log(`[Most Viewed Load] Successfully fetched details for ${detailedItems.length} items.`);
 
-        // --- Combine Data & Add Rank ---
-        utils.log('[Most Viewed Load] Combining data and adding rank...');
-        let itemsToRender;
-        try {
-            itemsToRender = detailedItems
-                .map(item => {
-                    const type = item.title ? 'movie' : 'tv';
-                    const originalViewData = topItemsData.find(v => v.id === item.id && v.type === type);
-                    if (!originalViewData) {
-                         utils.warn(`[Most Viewed Load] Could not find original view data for ${type}-${item.id}`);
-                    }
-                    return {
-                        ...item,
-                        media_type: type,
-                        viewCount: originalViewData ? originalViewData.count : 0,
-                    };
-                })
-                .sort((a, b) => b.viewCount - a.viewCount)
-                .map((item, index) => ({
-                    ...item,
-                    rank: index + 1
-                }));
-        } catch (mapError) {
-             utils.error('[Most Viewed Load] Error during data combination/ranking:', mapError);
-             throw new Error("Internal error processing popular items.");
-        }
-        utils.log('[Most Viewed Load] Data combined and ranked:', itemsToRender.map(i => `${i.rank}: ${i.title} (${i.viewCount})`));
+        // --- Combine TMDB details with view counts (Optional) ---
+         const itemsToRender = detailedItems.map(item => {
+              const type = item.title ? 'movie' : 'tv'; // Re-determine type just in case
+              const originalViewData = topItemsData.find(v => v.id === item.id && v.type === type);
+              return {
+                   ...item,
+                   media_type: type, // Ensure media_type is set
+                   viewCount: originalViewData ? originalViewData.count : '?',
+               };
+          });
 
+        // --- Render using appropriate function (replace skeletons) ---
+         console.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items.`);
+         if (isHorizontal) {
+             App.renderHorizontalCards(itemsToRender, container, null, false); // Pass items, container
+             // Setup scroll for THIS specific section
+             if (container && prevBtn && nextBtn) {
+                  if (!State.horizontalScrollContainers.some(c => c.container === container)) {
+                      State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
+                      container.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(container, prevBtn, nextBtn), 100), { passive: true });
+                      prevBtn.addEventListener('click', () => App.handleHScrollPrev(container));
+                      nextBtn.addEventListener('click', () => App.handleHScrollNext(container));
+                  }
+                  App.updateHScrollButtons(container, prevBtn, nextBtn); // Update immediately after render
+              }
+         } else {
+             // Assuming default is vertical card grid
+             App.renderTmdbCards(itemsToRender, container, null, false); // Pass items, container
+             // Optional: Add view count display logic for vertical cards here if needed
+         }
 
-        // --- Render ---
-        utils.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items...`);
-        if (isHorizontal) {
-            App.renderHorizontalCards(itemsToRender, container, null, false, true, true);
-        } else {
-            App.renderTmdbCards(itemsToRender, container, null, false, true, true);
-        }
-        utils.log('[Most Viewed Load] Rendering function called.');
-
-    } catch (error) { // Catch errors from any step above
-        utils.error("[Most Viewed Load] Overall error processing section:", error);
-        container.innerHTML = utils.getErrorHTML(`Could not display popular items: ${error.message}`);
-        // Still update buttons in case of error after skeletons shown
+    } catch (error) {
+        console.error("[Most Viewed Load] Error fetching or processing items:", error);
+        container.innerHTML = Utils.getErrorHTML(`Could not display popular items: ${error.message}`);
         if(isHorizontal && prevBtn && nextBtn){ App.updateHScrollButtons(container, prevBtn, nextBtn);}
     }
-}, 
+},
 
 
          
@@ -2982,87 +2951,109 @@
            
 
             // --- NEW Rendering Function for Horizontal Cards ---
-             renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false, showViewCount = false, showRank = false) => { // <<< Added showRank
-    const utils = App.utils;
-    const config = App.config;
-    if (!utils || !config) { console.error("renderHorizontalCards: Missing utils/config!"); return; }
-    if (!containerElement) { utils.error("renderHorizontalCards: Target container missing!"); return; }
+                 // Inside App object
 
-    containerElement.innerHTML = '';
-    if (!items || items.length === 0) {
-        containerElement.innerHTML = `<p class="text-muted px-3 w-100 text-center small fst-italic py-4">No items found.</p>`;
-        App.updateHScrollButtons(containerElement, containerElement.previousElementSibling, containerElement.nextElementSibling);
-        return;
-    }
+   renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false) => {
+                 if (!containerElement) return;
+                 containerElement.innerHTML = ''; // Clear spinner/previous
 
-    const fragment = document.createDocumentFragment();
-    items.forEach(item => {
-        let itemType = item.media_type || defaultType || (item.title ? 'movie' : 'tv');
-        if (itemType === 'person' || !item.id) return;
+                 if (!items || items.length === 0) {
+                     containerElement.innerHTML = `<p class="text-muted px-3" style="width: 100%;">No items found.</p>`;
+                     return;
+                 }
 
-        const title = utils.escapeHtml(item.title || item.name || 'N/A');
-        const imagePath = item.backdrop_path || item.poster_path;
-        const imageUrl = imagePath ? `${config.IMAGE_BASE_URL}w780${imagePath}` : null;
-        const year = utils.getYear(item.release_date || item.first_air_date);
-        const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
-        const viewCount = item.viewCount;
-        const rank = item.rank; // <<< Get rank
-        const genreIds = item.genre_ids || [];
+                 items.forEach(item => {
+                    // Determine type (movie/tv)
+                    let itemType = item.media_type || defaultType;
+                    if (!itemType) {
+                        if (item.title) itemType = 'movie';
+                        else if (item.name) itemType = 'tv';
+                        else return; // Skip if unknown
+                    }
+                    if (itemType === 'person' || !item.id) return; // Skip people or items without ID
 
-        const cardLink = document.createElement('a');
-        cardLink.href = `#details=${itemType}/${item.id}`;
-        cardLink.className = 'h-card';
-        cardLink.title = `${title}${year ? ` (${year})` : ''}`;
-        cardLink.style.position = 'relative';
+                    const title = Utils.escapeHtml(item.title || item.name || 'N/A');
+                    // Use backdrop for horizontal cards, fallback to poster if needed
+                    const imagePath = item.backdrop_path || item.poster_path;
+                    // Use a larger backdrop size (w780)
+                    const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+                    const year = (item.release_date || item.first_air_date || '').substring(0, 4);
+                    const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
 
-        const imageHtml = imageUrl ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">` : `<div class="h-card-backdrop d-flex align-items-center justify-content-center bg-secondary"><i class="bi bi-film fs-1 text-muted"></i></div>`;
+                    const cardLink = document.createElement('a');
+                    cardLink.href = `#details=${itemType}/${item.id}`;
+                    cardLink.className = 'h-card';
+                    cardLink.title = title;
 
-        let metaHtml = '';
-        if(year) metaHtml += `<span>${year}</span>`;
-        if (rating && parseFloat(rating) > 0) metaHtml += `<span class="ms-2"><i class="bi bi-star-fill text-warning"></i> ${rating}</span>`;
-        // Show view count if flag is true and count exists
-        if (showViewCount && viewCount !== undefined && viewCount !== '?') {
-            metaHtml += `<span class="ms-2 view-count-meta"><i class="bi bi-eye-fill"></i> ${viewCount.toLocaleString()}</span>`;
-        }
+                    // Image or Placeholder
+                    const imageHtml = imageUrl
+                        ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+                        : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`; // Placeholder icon
 
-        const overlayHtml = `
-            <div class="h-card-overlay">
-                <h3 class="h-card-title">${title}</h3>
-                <p class="h-card-meta small opacity-80">${metaHtml}</p>
-            </div>
-        `;
+                     // Overlay Content
+                    const overlayHtml = `
+                        <div class="h-card-overlay">
+                            <h3 class="h-card-title">${title}</h3>
+                             <p class="h-card-meta small opacity-80">
+                                ${year ? `<span>${year}</span>` : ''}
+                                ${rating && parseFloat(rating) > 0 ? `<span class="ms-2"><i class="bi bi-star-fill text-warning"></i> ${rating}</span>` : ''}
+                             </p>
+                        </div>
+                    `;
 
-        const trailerButtonHtml = showTrailerButton ? `<button class="btn btn-sm h-card-play-trailer-btn" data-item-id="${item.id}" data-item-type="${itemType}" aria-label="Play Trailer"><i class="bi bi-play-fill"></i></button>` : '';
-        const isInWatchlist = Watchlist.isFavorite(item.id, itemType);
-        const watchlistBtnHtml = `<button class="btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}" data-item-id="${item.id}" ...><i class="bi ${isInWatchlist ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i></button>`; // Shortened for brevity
-        const isFavorite = Favorites.isFavorite(item.id, itemType);
-        const likeBtnHtml = `<button class="btn action-btn like-btn ${isFavorite ? 'is-favorite' : ''}" data-item-id="${item.id}" ...><i class="bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}"></i></button>`; // Shortened for brevity
+                    // Trailer Button (only added if showTrailerButton is true)
+                    const trailerButtonHtml = showTrailerButton
+                        ? `<button class="h-card-play-trailer-btn"
+                                   aria-label="Play Trailer for ${title}"
+                                   data-item-id="${item.id}"
+                                   data-item-type="${itemType}">
+                              <i class="bi bi-play-fill"></i>
+                          </button>`
+                        : '';
+                    
+                    const isInList = Watchlist.isInWatchlist(item.id, itemType);
+                    const watchlistBtnHtml = `
+                         <button class="btn watchlist-btn ${isInList ? 'in-watchlist' : ''}"
+                                 title="${isInList ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
+                                 aria-label="${isInList ? 'Remove from Watchlist' : 'Add to Watchlist'}"
+                                 data-item-id="${item.id}"
+                                 data-item-type="${itemType}"
+                                 data-item-title="${Utils.escapeHtml(item.title || item.name || '')}"
+                                 data-item-poster="${item.poster_path || null}"
+                                 data-item-backdrop="${item.backdrop_path || null}"
+                                 data-item-rating="${item.vote_average || null}"
+                                 style="/* Adjust positioning if needed for h-card */ top: 0.6rem; right: 0.6rem;"
+                                 >
+                             <i class="bi ${isInList ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
+                         </button>
+                    `;
 
-        // --- ADD RANK BADGE (Conditional) ---
-        const rankBadgeHtml = (showRank && rank)
-            ? `<div class="rank-badge">#${rank}</div>`
-            : '';
-        // ------------------------------------
+                    cardLink.innerHTML = imageHtml + overlayHtml + trailerButtonHtml + watchlistBtnHtml;
 
-        // Assemble - Rank first, then image, overlay, then buttons
-        cardLink.innerHTML = rankBadgeHtml + imageHtml + overlayHtml + trailerButtonHtml + watchlistBtnHtml + likeBtnHtml;
 
-        // Add Listeners
-        const trailerButton = cardLink.querySelector('.h-card-play-trailer-btn');
-        if (trailerButton) trailerButton.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); App.handlePlayTrailerClick(e.currentTarget); });
-        const watchlistButton = cardLink.querySelector('.watchlist-btn');
-        if (watchlistButton) watchlistButton.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); App.handleAddOrRemoveWatchlist(e.currentTarget); });
-        const likeButton = cardLink.querySelector('.like-btn');
-        if (likeButton) likeButton.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); App.handleAddOrRemoveFavorite(e.currentTarget); });
+                    // Add click listener for trailer button IF it exists
+                    const trailerButton = cardLink.querySelector('.h-card-play-trailer-btn');
+                    if (trailerButton) {
+                        trailerButton.addEventListener('click', (e) => {
+                            e.preventDefault(); // Prevent navigation from the link
+                            e.stopPropagation(); // Stop event bubbling
+                            App.handlePlayTrailerClick(e.currentTarget);
+                        });
+                    }
 
-        fragment.appendChild(cardLink);
-    });
+                    const addedWatchlistButton = cardLink.querySelector('.watchlist-btn');
+                    if (addedWatchlistButton) {
+                        addedWatchlistButton.addEventListener('click', (e) => {
+                            e.preventDefault(); // Prevent link navigation
+                            e.stopPropagation();
+                            App.handleAddOrRemoveWatchlist(e.currentTarget);
+                        });
+                    }
 
-    containerElement.appendChild(fragment);
-    if (App.initializeTooltips) App.initializeTooltips(containerElement);
-    App.updateHScrollButtons(containerElement, containerElement.previousElementSibling, containerElement.nextElementSibling);
-}, // End renderHorizontalCards
 
+                    containerElement.appendChild(cardLink);
+                });
+            },
            
              // --- NEW: Handler for Trailer Button Click ---
              handlePlayTrailerClick: async (button) => {
@@ -4230,75 +4221,111 @@
 
 
             /* --- Rendering Functions --- */
-renderTmdbCards: (items, gridContainerElement, defaultType = null, append = false, showViewCount = false, showRank = false) => { // <<< Added showRank
-    const utils = App.utils;
-    const config = App.config;
-     if (!utils || !config) { console.error("renderTmdbCards: Missing utils/config!"); return; }
-    if (!gridContainerElement) { utils.error("renderTmdbCards: Target grid container missing!"); return; }
 
-    if (!append) gridContainerElement.innerHTML = '';
-    if (!items || items.length === 0) { if (!append) gridContainerElement.innerHTML = `<p class="col-12 py-4 text-center text-muted">No items found.</p>`; return; }
+                renderTmdbCards: (items, containerElement, defaultType = null, append = false) => {
+                if (!containerElement) return;
 
-    const fragment = document.createDocumentFragment();
-    items.forEach(item => {
-        let itemType = item.media_type || defaultType || (item.title ? 'movie' : 'tv');
-        if (itemType === 'person' || !item.id || !item.poster_path) return;
+                if (!append) { // Clear container if not appending
+                    containerElement.innerHTML = '';
+                }
 
-        const title = utils.escapeHtml(item.title || item.name || 'N/A');
-        const posterUrl = `${config.IMAGE_BASE_URL}${config.POSTER_SIZE}${item.poster_path}`;
-        const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
-        const viewCount = item.viewCount; // Get view count
-        const rank = item.rank; // <<< Get rank
-        const genreIds = item.genre_ids || [];
+                if (!items || items.length === 0) {
+                    if (!append) { // Show 'No items' only if container was cleared
+                         containerElement.innerHTML = `<p class="col-12 py-4 text-center text-muted">No items found.</p>`;
+                    }
+                    return;
+                }
 
-        const colDiv = document.createElement('div');
-        colDiv.className = 'col';
+                items.forEach(item => {
+                    // Determine media_type if missing (common in person credits)
+                    let itemType = item.media_type || defaultType;
+                    if (!itemType) { // Infer from presence of title/name
+                        if (item.title) itemType = 'movie';
+                        else if (item.name) itemType = 'tv';
+                        else {
+                            console.warn("Skipping item without determinable type:", item);
+                            return; // Skip if cannot determine type
+                        }
+                    }
 
-        const cardLink = document.createElement('a');
-        cardLink.href = `#details=${itemType}/${item.id}`;
-        cardLink.className = 'card text-decoration-none h-100 d-flex flex-column';
-        cardLink.title = title;
-        cardLink.style.position = 'relative';
+                    // Skip persons in general lists (they should go to #person view)
+                    if (itemType === 'person') return;
+                    // Basic check for essential data
+                    if (!item.id) return;
 
-        const imageHtml = `<img src="${posterUrl}" class="card-img-top" alt="${title} Poster" loading="lazy" onerror="this.parentElement.innerHTML = '<div class=\\'card-img-placeholder d-flex align-items-center justify-content-center\\'><i class=\\'bi bi-film fs-1 text-muted\\'></i></div>'; this.onerror=null;">`;
 
-        let cardBodyHtml = `
-            <div class="card-body d-flex flex-column flex-grow-1 p-3">
-                <h3 class="card-title fs-6 fw-medium mb-2 text-truncate">${title}</h3>
-                <div class="mt-auto d-flex justify-content-between align-items-center">
-                    ${rating && parseFloat(rating) > 0 ? `<span class="card-rating small"><i class="bi bi-star-fill me-1 text-warning"></i>${rating}</span>` : '<span class="card-rating text-muted small">NR</span>'}
-                    ${showViewCount && viewCount !== undefined && viewCount !== '?' ? `<span class="view-count-badge-vertical small"><i class="bi bi-eye-fill me-1"></i>${viewCount.toLocaleString()}</span>` : ''}
-                </div>
-            </div>`;
+                     const title = Utils.escapeHtml(item.title || item.name || 'N/A');
+                     const posterPath = item.poster_path;
+                     const posterUrl = posterPath ? `${config.IMAGE_BASE_URL}${posterPath}` : null;
+                     const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
+                     const genreIds = item.genre_ids || [];
 
-        const isInWatchlist = Watchlist.isFavorite(item.id, itemType);
-        const watchlistBtnHtml = `<button class="btn action-btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}" data-item-id="${item.id}" ...><i class="bi ${isInWatchlist ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i></button>`; // Shortened
-        const isFavorite = Favorites.isFavorite(item.id, itemType);
-        const likeBtnHtml = `<button class="btn action-btn like-btn ${isFavorite ? 'is-favorite' : ''}" data-item-id="${item.id}" ...><i class="bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}"></i></button>`; // Shortened
+                     // Create card elements
+                     const colDiv = document.createElement('div');
+                     colDiv.className = 'col'; // Let the row's classes handle sizing
 
-         // --- ADD RANK BADGE (Conditional) ---
-         const rankBadgeHtml = (showRank && rank)
-             ? `<div class="rank-badge">#${rank}</div>`
-             : '';
-         // ------------------------------------
+                     const cardLink = document.createElement('a');
+                     cardLink.href = `#details=${itemType}/${item.id}`;
+                     cardLink.className = 'card text-decoration-none h-100 d-flex flex-column'; // Use flex for structure
+                     cardLink.title = title; // Tooltip with full title
 
-        // Assemble - Rank first, then image, body, then buttons
-        cardLink.innerHTML = rankBadgeHtml + imageHtml + cardBodyHtml;
-        cardLink.innerHTML += watchlistBtnHtml + likeBtnHtml;
+                     // Image or Placeholder
+                     const imageHtml = posterUrl ? `<img src="${posterUrl}" class="card-img-top" alt="${title} Poster" loading="lazy">` : `<div class="card-img-placeholder d-flex align-items-center justify-content-center"><i class="bi bi-film fs-1"></i></div>`;
+                     // Card Body
+                     const bodyHtml = `<div class="card-body d-flex flex-column flex-grow-1 p-3"> <h3 class="card-title fs-6 fw-medium mb-2">${title}</h3> ${rating && parseFloat(rating) > 0 ? `<span class="card-rating mt-auto"><i class="bi bi-star-fill me-1"></i>${rating}</span>` : '<span class="card-rating text-muted small mt-auto">NR</span>'} </div>`;
 
-        colDiv.appendChild(cardLink);
-        fragment.appendChild(colDiv);
 
-        // Add Listeners
-        const watchlistButton = cardLink.querySelector('.watchlist-btn');
-        if (watchlistButton) watchlistButton.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); App.handleAddOrRemoveWatchlist(e.currentTarget); });
-        const likeButton = cardLink.querySelector('.like-btn');
-        if (likeButton) likeButton.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); App.handleAddOrRemoveFavorite(e.currentTarget); });
-    });
+                      // --- NEW: Add Watchlist Button ---
+                    const isInWatchlist = Watchlist.isInWatchlist(item.id, itemType);
+                    const watchlistBtnHtml = `
+                        <button class="btn action-btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}"
+                            title="${isInWatchlist ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
+                            aria-label="${isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}"
+                            data-item-id="${item.id}" data-item-type="${itemType}"
+                            data-item-title="${Utils.escapeHtml(item.title || item.name || '')}" data-item-poster="${item.poster_path || null}"
+                            data-item-backdrop="${item.backdrop_path || null}" data-item-rating="${item.vote_average || null}"
+                            style="top: 0.6rem; right: 0.6rem;">
+                            <i class="bi ${isInWatchlist ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
+                        </button>`;
 
-    gridContainerElement.appendChild(fragment);
-     if (App.initializeTooltips) App.initializeTooltips(gridContainerElement);
-}, // End renderTmdbCards
+                        const isFavorite = Favorites.isFavorite(item.id, itemType);
+                        const likeBtnHtml = `
+                            <button class="btn action-btn like-btn ${isFavorite ? 'is-favorite' : ''}"
+                                title="${isFavorite ? 'Favorited (Click to unfavorite)' : 'Add to Favorites'}"
+                                aria-label="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}"
+                                data-item-id="${item.id}" data-item-type="${itemType}"
+                                data-item-title="${Utils.escapeHtml(item.title || item.name || '')}" data-item-poster="${item.poster_path || null}"
+                                data-item-rating="${item.vote_average || null}"
+                                data-item-genres="${JSON.stringify(genreIds)}"> 
+                                <i class="bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}"></i>
+                            </button>`;
+
+                    cardLink.innerHTML = imageHtml + bodyHtml;
+                    cardLink.style.position = 'relative'; // Needed for absolute positioning of button
+                    cardLink.innerHTML += watchlistBtnHtml + likeBtnHtml ; // Append button HTM
+                    colDiv.appendChild(cardLink);
+                    containerElement.appendChild(colDiv);
+
+                    // Add listener AFTER appending
+                    const addedWatchlistButton = colDiv.querySelector('.watchlist-btn');
+                    if (addedWatchlistButton) {
+                        addedWatchlistButton.addEventListener('click', (e) => {
+                            e.preventDefault(); e.stopPropagation();
+                            App.handleAddOrRemoveWatchlist(e.currentTarget);
+                        });
+                    }
+
+                    // Add listener for the NEW like button
+                    const addedLikeButton = colDiv.querySelector('.like-btn');
+                    if (addedLikeButton) {
+                        addedLikeButton.addEventListener('click', (e) => {
+                           e.preventDefault(); e.stopPropagation();
+                           App.handleAddOrRemoveFavorite(e.currentTarget); // Call new handler
+                        });
+                    }
+                });
+                App.initializeTooltips(containerElement); 
+            },
              // Renders the Hero section item
              renderHeroItem: (item) => {
                  if (!DOM.views.hero) return;
