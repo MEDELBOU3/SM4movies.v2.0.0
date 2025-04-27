@@ -4215,111 +4215,75 @@
 
 
             /* --- Rendering Functions --- */
+renderTmdbCards: (items, gridContainerElement, defaultType = null, append = false, showViewCount = false, showRank = false) => { // <<< Added showRank
+    const utils = App.utils;
+    const config = App.config;
+     if (!utils || !config) { console.error("renderTmdbCards: Missing utils/config!"); return; }
+    if (!gridContainerElement) { utils.error("renderTmdbCards: Target grid container missing!"); return; }
 
-                renderTmdbCards: (items, containerElement, defaultType = null, append = false) => {
-                if (!containerElement) return;
+    if (!append) gridContainerElement.innerHTML = '';
+    if (!items || items.length === 0) { if (!append) gridContainerElement.innerHTML = `<p class="col-12 py-4 text-center text-muted">No items found.</p>`; return; }
 
-                if (!append) { // Clear container if not appending
-                    containerElement.innerHTML = '';
-                }
+    const fragment = document.createDocumentFragment();
+    items.forEach(item => {
+        let itemType = item.media_type || defaultType || (item.title ? 'movie' : 'tv');
+        if (itemType === 'person' || !item.id || !item.poster_path) return;
 
-                if (!items || items.length === 0) {
-                    if (!append) { // Show 'No items' only if container was cleared
-                         containerElement.innerHTML = `<p class="col-12 py-4 text-center text-muted">No items found.</p>`;
-                    }
-                    return;
-                }
+        const title = utils.escapeHtml(item.title || item.name || 'N/A');
+        const posterUrl = `${config.IMAGE_BASE_URL}${config.POSTER_SIZE}${item.poster_path}`;
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
+        const viewCount = item.viewCount; // Get view count
+        const rank = item.rank; // <<< Get rank
+        const genreIds = item.genre_ids || [];
 
-                items.forEach(item => {
-                    // Determine media_type if missing (common in person credits)
-                    let itemType = item.media_type || defaultType;
-                    if (!itemType) { // Infer from presence of title/name
-                        if (item.title) itemType = 'movie';
-                        else if (item.name) itemType = 'tv';
-                        else {
-                            console.warn("Skipping item without determinable type:", item);
-                            return; // Skip if cannot determine type
-                        }
-                    }
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col';
 
-                    // Skip persons in general lists (they should go to #person view)
-                    if (itemType === 'person') return;
-                    // Basic check for essential data
-                    if (!item.id) return;
+        const cardLink = document.createElement('a');
+        cardLink.href = `#details=${itemType}/${item.id}`;
+        cardLink.className = 'card text-decoration-none h-100 d-flex flex-column';
+        cardLink.title = title;
+        cardLink.style.position = 'relative';
 
+        const imageHtml = `<img src="${posterUrl}" class="card-img-top" alt="${title} Poster" loading="lazy" onerror="this.parentElement.innerHTML = '<div class=\\'card-img-placeholder d-flex align-items-center justify-content-center\\'><i class=\\'bi bi-film fs-1 text-muted\\'></i></div>'; this.onerror=null;">`;
 
-                     const title = Utils.escapeHtml(item.title || item.name || 'N/A');
-                     const posterPath = item.poster_path;
-                     const posterUrl = posterPath ? `${config.IMAGE_BASE_URL}${posterPath}` : null;
-                     const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
-                     const genreIds = item.genre_ids || [];
+        let cardBodyHtml = `
+            <div class="card-body d-flex flex-column flex-grow-1 p-3">
+                <h3 class="card-title fs-6 fw-medium mb-2 text-truncate">${title}</h3>
+                <div class="mt-auto d-flex justify-content-between align-items-center">
+                    ${rating && parseFloat(rating) > 0 ? `<span class="card-rating small"><i class="bi bi-star-fill me-1 text-warning"></i>${rating}</span>` : '<span class="card-rating text-muted small">NR</span>'}
+                    ${showViewCount && viewCount !== undefined && viewCount !== '?' ? `<span class="view-count-badge-vertical small"><i class="bi bi-eye-fill me-1"></i>${viewCount.toLocaleString()}</span>` : ''}
+                </div>
+            </div>`;
 
-                     // Create card elements
-                     const colDiv = document.createElement('div');
-                     colDiv.className = 'col'; // Let the row's classes handle sizing
+        const isInWatchlist = Watchlist.isFavorite(item.id, itemType);
+        const watchlistBtnHtml = `<button class="btn action-btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}" data-item-id="${item.id}" ...><i class="bi ${isInWatchlist ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i></button>`; // Shortened
+        const isFavorite = Favorites.isFavorite(item.id, itemType);
+        const likeBtnHtml = `<button class="btn action-btn like-btn ${isFavorite ? 'is-favorite' : ''}" data-item-id="${item.id}" ...><i class="bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}"></i></button>`; // Shortened
 
-                     const cardLink = document.createElement('a');
-                     cardLink.href = `#details=${itemType}/${item.id}`;
-                     cardLink.className = 'card text-decoration-none h-100 d-flex flex-column'; // Use flex for structure
-                     cardLink.title = title; // Tooltip with full title
+         // --- ADD RANK BADGE (Conditional) ---
+         const rankBadgeHtml = (showRank && rank)
+             ? `<div class="rank-badge">#${rank}</div>`
+             : '';
+         // ------------------------------------
 
-                     // Image or Placeholder
-                     const imageHtml = posterUrl ? `<img src="${posterUrl}" class="card-img-top" alt="${title} Poster" loading="lazy">` : `<div class="card-img-placeholder d-flex align-items-center justify-content-center"><i class="bi bi-film fs-1"></i></div>`;
-                     // Card Body
-                     const bodyHtml = `<div class="card-body d-flex flex-column flex-grow-1 p-3"> <h3 class="card-title fs-6 fw-medium mb-2">${title}</h3> ${rating && parseFloat(rating) > 0 ? `<span class="card-rating mt-auto"><i class="bi bi-star-fill me-1"></i>${rating}</span>` : '<span class="card-rating text-muted small mt-auto">NR</span>'} </div>`;
+        // Assemble - Rank first, then image, body, then buttons
+        cardLink.innerHTML = rankBadgeHtml + imageHtml + cardBodyHtml;
+        cardLink.innerHTML += watchlistBtnHtml + likeBtnHtml;
 
+        colDiv.appendChild(cardLink);
+        fragment.appendChild(colDiv);
 
-                      // --- NEW: Add Watchlist Button ---
-                    const isInWatchlist = Watchlist.isInWatchlist(item.id, itemType);
-                    const watchlistBtnHtml = `
-                        <button class="btn action-btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}"
-                            title="${isInWatchlist ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
-                            aria-label="${isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}"
-                            data-item-id="${item.id}" data-item-type="${itemType}"
-                            data-item-title="${Utils.escapeHtml(item.title || item.name || '')}" data-item-poster="${item.poster_path || null}"
-                            data-item-backdrop="${item.backdrop_path || null}" data-item-rating="${item.vote_average || null}"
-                            style="top: 0.6rem; right: 0.6rem;">
-                            <i class="bi ${isInWatchlist ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
-                        </button>`;
+        // Add Listeners
+        const watchlistButton = cardLink.querySelector('.watchlist-btn');
+        if (watchlistButton) watchlistButton.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); App.handleAddOrRemoveWatchlist(e.currentTarget); });
+        const likeButton = cardLink.querySelector('.like-btn');
+        if (likeButton) likeButton.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); App.handleAddOrRemoveFavorite(e.currentTarget); });
+    });
 
-                        const isFavorite = Favorites.isFavorite(item.id, itemType);
-                        const likeBtnHtml = `
-                            <button class="btn action-btn like-btn ${isFavorite ? 'is-favorite' : ''}"
-                                title="${isFavorite ? 'Favorited (Click to unfavorite)' : 'Add to Favorites'}"
-                                aria-label="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}"
-                                data-item-id="${item.id}" data-item-type="${itemType}"
-                                data-item-title="${Utils.escapeHtml(item.title || item.name || '')}" data-item-poster="${item.poster_path || null}"
-                                data-item-rating="${item.vote_average || null}"
-                                data-item-genres="${JSON.stringify(genreIds)}"> 
-                                <i class="bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}"></i>
-                            </button>`;
-
-                    cardLink.innerHTML = imageHtml + bodyHtml;
-                    cardLink.style.position = 'relative'; // Needed for absolute positioning of button
-                    cardLink.innerHTML += watchlistBtnHtml + likeBtnHtml ; // Append button HTM
-                    colDiv.appendChild(cardLink);
-                    containerElement.appendChild(colDiv);
-
-                    // Add listener AFTER appending
-                    const addedWatchlistButton = colDiv.querySelector('.watchlist-btn');
-                    if (addedWatchlistButton) {
-                        addedWatchlistButton.addEventListener('click', (e) => {
-                            e.preventDefault(); e.stopPropagation();
-                            App.handleAddOrRemoveWatchlist(e.currentTarget);
-                        });
-                    }
-
-                    // Add listener for the NEW like button
-                    const addedLikeButton = colDiv.querySelector('.like-btn');
-                    if (addedLikeButton) {
-                        addedLikeButton.addEventListener('click', (e) => {
-                           e.preventDefault(); e.stopPropagation();
-                           App.handleAddOrRemoveFavorite(e.currentTarget); // Call new handler
-                        });
-                    }
-                });
-                App.initializeTooltips(containerElement); 
-            },
+    gridContainerElement.appendChild(fragment);
+     if (App.initializeTooltips) App.initializeTooltips(gridContainerElement);
+}, // End renderTmdbCards
              // Renders the Hero section item
              renderHeroItem: (item) => {
                  if (!DOM.views.hero) return;
