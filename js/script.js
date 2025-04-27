@@ -4284,111 +4284,139 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
 
             /* --- Rendering Functions --- */
 
-             // Renders a grid of TMDB movie/TV cards
-            renderTmdbCards: (items, containerElement, defaultType = null, append = false) => {
-                if (!containerElement) return;
+             /**
+ * Renders items as vertical cards (poster focus) in a Bootstrap grid container.
+ * @param {Array} items - Array of movie/TV show objects from TMDb.
+ * @param {HTMLElement} gridContainerElement - The DOM element (usually a .row) to render cards into.
+ * @param {string|null} [defaultType=null] - Default media type ('movie' or 'tv') if not present on item.
+ * @param {boolean} [append=false] - If true, appends cards instead of clearing the container.
+ * @param {boolean} [showViewCount=false] - Whether to display the view count.
+ */
+renderTmdbCards: (items, gridContainerElement, defaultType = null, append = false, showViewCount = false) => {
+    const utils = App.utils; // Assuming App.utils is accessible
+    const config = App.config; // Assuming App.config is accessible
 
-                if (!append) { // Clear container if not appending
-                    containerElement.innerHTML = '';
-                }
+    if (!utils || !config) {
+         console.error("renderTmdbCards: Missing App.utils or App.config!");
+         if(gridContainerElement) gridContainerElement.innerHTML = '<p class="text-danger col-12">Error: App utilities missing.</p>';
+         return;
+     }
+    if (!gridContainerElement) {
+        utils.error("renderTmdbCards: Target grid container element is missing!");
+        return;
+    }
 
-                if (!items || items.length === 0) {
-                    if (!append) { // Show 'No items' only if container was cleared
-                         containerElement.innerHTML = `<p class="col-12 py-4 text-center text-muted">No items found.</p>`;
-                    }
-                    return;
-                }
+    // Clear container only if not appending
+    if (!append) {
+        gridContainerElement.innerHTML = '';
+    }
 
-                items.forEach(item => {
-                    // Determine media_type if missing (common in person credits)
-                    let itemType = item.media_type || defaultType;
-                    if (!itemType) { // Infer from presence of title/name
-                        if (item.title) itemType = 'movie';
-                        else if (item.name) itemType = 'tv';
-                        else {
-                            console.warn("Skipping item without determinable type:", item);
-                            return; // Skip if cannot determine type
-                        }
-                    }
+    if (!items || items.length === 0) {
+        if (!append) { // Show 'No items' only if container was cleared
+             gridContainerElement.innerHTML = `<p class="col-12 py-4 text-center text-muted">No items found.</p>`;
+        }
+        return;
+    }
 
-                    // Skip persons in general lists (they should go to #person view)
-                    if (itemType === 'person') return;
-                    // Basic check for essential data
-                    if (!item.id) return;
+    const fragment = document.createDocumentFragment(); // For efficient appending
 
+    items.forEach(item => {
+        // Determine type and validate item
+        let itemType = item.media_type || defaultType;
+        if (!itemType) { if (item.title) itemType = 'movie'; else if (item.name) itemType = 'tv'; else return; }
+        if (itemType === 'person' || !item.id || !item.poster_path) return; // Requires poster for vertical card
 
-                     const title = Utils.escapeHtml(item.title || item.name || 'N/A');
-                     const posterPath = item.poster_path;
-                     const posterUrl = posterPath ? `${config.IMAGE_BASE_URL}${posterPath}` : null;
-                     const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
-                     const genreIds = item.genre_ids || [];
+        // Extract data
+        const title = utils.escapeHtml(item.title || item.name || 'N/A');
+        const posterUrl = `${config.IMAGE_BASE_URL}${config.POSTER_SIZE}${item.poster_path}`;
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
+        const viewCount = item.viewCount; // Expect viewCount property if showViewCount is true
+        const genreIds = item.genre_ids || []; // For favorite button
 
-                     // Create card elements
-                     const colDiv = document.createElement('div');
-                     colDiv.className = 'col'; // Let the row's classes handle sizing
+        // Create Bootstrap column wrapper
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col'; // Let parent .row define column count (e.g., row-cols-*-*)
 
-                     const cardLink = document.createElement('a');
-                     cardLink.href = `#details=${itemType}/${item.id}`;
-                     cardLink.className = 'card text-decoration-none h-100 d-flex flex-column'; // Use flex for structure
-                     cardLink.title = title; // Tooltip with full title
+        // Create card link element
+        const cardLink = document.createElement('a');
+        cardLink.href = `#details=${itemType}/${item.id}`;
+        cardLink.className = 'card text-decoration-none h-100 d-flex flex-column'; // Standard vertical card
+        cardLink.title = title; // Tooltip with full title
+        cardLink.style.position = 'relative'; // Context for absolute buttons
 
-                     // Image or Placeholder
-                     const imageHtml = posterUrl ? `<img src="${posterUrl}" class="card-img-top" alt="${title} Poster" loading="lazy">` : `<div class="card-img-placeholder d-flex align-items-center justify-content-center"><i class="bi bi-film fs-1"></i></div>`;
-                     // Card Body
-                     const bodyHtml = `<div class="card-body d-flex flex-column flex-grow-1 p-3"> <h3 class="card-title fs-6 fw-medium mb-2">${title}</h3> ${rating && parseFloat(rating) > 0 ? `<span class="card-rating mt-auto"><i class="bi bi-star-fill me-1"></i>${rating}</span>` : '<span class="card-rating text-muted small mt-auto">NR</span>'} </div>`;
+        // Image or Placeholder
+        const imageHtml = `<img src="${posterUrl}" class="card-img-top" alt="${title} Poster" loading="lazy" onerror="this.parentElement.innerHTML = '<div class=\\'card-img-placeholder d-flex align-items-center justify-content-center\\'><i class=\\'bi bi-film fs-1 text-muted\\'></i></div>'; this.onerror=null;">`;
 
+        // Card Body with Rating and View Count (if enabled)
+        let cardBodyHtml = `
+            <div class="card-body d-flex flex-column flex-grow-1 p-3">
+                <h3 class="card-title fs-6 fw-medium mb-2 text-truncate">${title}</h3>
+                <div class="mt-auto d-flex justify-content-between align-items-center"> ${/* Flex container */''}
+                    ${rating && parseFloat(rating) > 0 ? `<span class="card-rating small"><i class="bi bi-star-fill me-1 text-warning"></i>${rating}</span>` : '<span class="card-rating text-muted small">NR</span>'}
+                    ${showViewCount && viewCount !== undefined && viewCount !== '?' ? `<span class="view-count-badge-vertical small"><i class="bi bi-eye-fill me-1"></i>${viewCount.toLocaleString()}</span>` : ''}
+                </div>
+            </div>`;
 
-                      // --- NEW: Add Watchlist Button ---
-                    const isInWatchlist = Watchlist.isInWatchlist(item.id, itemType);
-                    const watchlistBtnHtml = `
-                        <button class="btn action-btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}"
-                            title="${isInWatchlist ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
-                            aria-label="${isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}"
-                            data-item-id="${item.id}" data-item-type="${itemType}"
-                            data-item-title="${Utils.escapeHtml(item.title || item.name || '')}" data-item-poster="${item.poster_path || null}"
-                            data-item-backdrop="${item.backdrop_path || null}" data-item-rating="${item.vote_average || null}"
-                            style="top: 0.6rem; right: 0.6rem;">
-                            <i class="bi ${isInWatchlist ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
-                        </button>`;
+        // --- Watchlist Button ---
+        const isInWatchlist = Watchlist.isFavorite(item.id, itemType); // Check watchlist status
+        const watchlistBtnHtml = `
+            <button class="btn action-btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}"
+                    title="${isInWatchlist ? 'In Watchlist (Remove)' : 'Add to Watchlist'}"
+                    aria-label="${isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}"
+                    data-item-id="${item.id}" data-item-type="${itemType}"
+                    data-item-title="${title}" data-item-poster="${item.poster_path || ''}"
+                    data-item-backdrop="${item.backdrop_path || ''}" data-item-rating="${item.vote_average || ''}"
+                    >
+                <i class="bi ${isInWatchlist ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
+            </button>`;
 
-                        const isFavorite = Favorites.isFavorite(item.id, itemType);
-                        const likeBtnHtml = `
-                            <button class="btn action-btn like-btn ${isFavorite ? 'is-favorite' : ''}"
-                                title="${isFavorite ? 'Favorited (Click to unfavorite)' : 'Add to Favorites'}"
-                                aria-label="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}"
-                                data-item-id="${item.id}" data-item-type="${itemType}"
-                                data-item-title="${Utils.escapeHtml(item.title || item.name || '')}" data-item-poster="${item.poster_path || null}"
-                                data-item-rating="${item.vote_average || null}"
-                                data-item-genres="${JSON.stringify(genreIds)}"> 
-                                <i class="bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}"></i>
-                            </button>`;
+        // --- Favorite Button ---
+        const isFavorite = Favorites.isFavorite(item.id, itemType); // Check favorite status
+        const likeBtnHtml = `
+            <button class="btn action-btn like-btn ${isFavorite ? 'is-favorite' : ''}"
+                    title="${isFavorite ? 'Favorited (Unfavorite)' : 'Add to Favorites'}"
+                    aria-label="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}"
+                    data-item-id="${item.id}" data-item-type="${itemType}"
+                    data-item-title="${title}" data-item-poster="${item.poster_path || ''}"
+                    data-item-rating="${item.vote_average || ''}"
+                    data-item-genres="${JSON.stringify(genreIds)}">
+                <i class="bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}"></i>
+            </button>`;
 
-                    cardLink.innerHTML = imageHtml + bodyHtml;
-                    cardLink.style.position = 'relative'; // Needed for absolute positioning of button
-                    cardLink.innerHTML += watchlistBtnHtml + likeBtnHtml ; // Append button HTM
-                    colDiv.appendChild(cardLink);
-                    containerElement.appendChild(colDiv);
+        // Assemble card structure
+        cardLink.innerHTML = imageHtml + cardBodyHtml;
+        // Append buttons AFTER setting innerHTML (they are absolutely positioned)
+        cardLink.innerHTML += watchlistBtnHtml + likeBtnHtml;
 
-                    // Add listener AFTER appending
-                    const addedWatchlistButton = colDiv.querySelector('.watchlist-btn');
-                    if (addedWatchlistButton) {
-                        addedWatchlistButton.addEventListener('click', (e) => {
-                            e.preventDefault(); e.stopPropagation();
-                            App.handleAddOrRemoveWatchlist(e.currentTarget);
-                        });
-                    }
+        // Append card link to column, then column to fragment
+        colDiv.appendChild(cardLink);
+        fragment.appendChild(colDiv);
 
-                    // Add listener for the NEW like button
-                    const addedLikeButton = colDiv.querySelector('.like-btn');
-                    if (addedLikeButton) {
-                        addedLikeButton.addEventListener('click', (e) => {
-                           e.preventDefault(); e.stopPropagation();
-                           App.handleAddOrRemoveFavorite(e.currentTarget); // Call new handler
-                        });
-                    }
-                });
-                App.initializeTooltips(containerElement); 
-            },
+        // Add event listeners AFTER elements are in the fragment (or DOM)
+        const watchlistButton = cardLink.querySelector('.watchlist-btn');
+        if (watchlistButton) {
+            watchlistButton.addEventListener('click', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                if(App.handleAddOrRemoveWatchlist) App.handleAddOrRemoveWatchlist(e.currentTarget);
+                else utils.error("App.handleAddOrRemoveWatchlist not found!");
+            });
+        }
+
+        const likeButton = cardLink.querySelector('.like-btn');
+        if (likeButton) {
+            likeButton.addEventListener('click', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                if(App.handleAddOrRemoveFavorite) App.handleAddOrRemoveFavorite(e.currentTarget);
+                else utils.error("App.handleAddOrRemoveFavorite not found!");
+            });
+        }
+    });
+
+    gridContainerElement.appendChild(fragment); // Append all cards from fragment
+    // Initialize tooltips for the newly added cards
+     if (App.initializeTooltips) App.initializeTooltips(gridContainerElement);
+
+}, // End renderTmdbCards
 
              // Renders the Hero section item
              renderHeroItem: (item) => {
