@@ -2727,23 +2727,26 @@
         console.log("[Home Sections] Finished processing all section configurations.");
     }, // End loadHomeSections
              
-    loadMostViewedSection: async (sectionDiv, sectionConfig) => {
+  loadMostViewedSection: async (sectionDiv, sectionConfig) => {
     const container = sectionDiv.querySelector('.most-viewed-container');
     const isHorizontal = container?.classList.contains('horizontal-card-container');
     const maxItems = sectionConfig.max_items || (isHorizontal ? 15 : 12);
     const prevBtn = isHorizontal ? sectionDiv.querySelector('.h-scroll-btn.prev') : null;
     const nextBtn = isHorizontal ? sectionDiv.querySelector('.h-scroll-btn.next') : null;
-
+    const utils = App.utils; // Use App's utils
 
     if (!container) {
-         console.error('[Most Viewed Load] Container .most-viewed-container not found within section.');
+         utils.error('[Most Viewed Load] Container .most-viewed-container not found within section.');
          return;
     }
-    console.log('[Most Viewed Load] Loading global most viewed items from Firestore...');
-    // Skeletons should have been added by loadHomeSections
+    utils.log('[Most Viewed Load] Loading global most viewed items from Firestore...');
+    // Show Skeletons (Assuming they were added by loadHomeSections)
+    const skeletonCount = isHorizontal ? 5 : 6;
+    container.innerHTML = isHorizontal ? utils.getSkeletonHorizontalCardHTML(skeletonCount) : utils.getSkeletonCardHTML(skeletonCount);
 
-    if (typeof appDb === 'undefined' || !appDb) { // Check if Firestore is initialized
-        container.innerHTML = Utils.getErrorHTML("Database service unavailable for popular items.");
+
+    if (typeof appDb === 'undefined' || !appDb) { // Check Firestore instance
+        container.innerHTML = utils.getErrorHTML("Database service unavailable for popular items.");
         if (isHorizontal && prevBtn && nextBtn) App.updateHScrollButtons(container, prevBtn, nextBtn);
         return;
     }
@@ -2754,28 +2757,27 @@
             .orderBy("viewCount", "desc") // Order by count
             .limit(maxItems) // Limit to top N
             .get();
-        // ---------------------
 
         if (querySnapshot.empty) {
-            console.log('[Most Viewed Load] No view data found in Firestore.');
+            utils.log('[Most Viewed Load] No view data found in Firestore.');
             container.innerHTML = `<p class="text-muted px-3 col-12">Be the first to watch something popular!</p>`;
             if(isHorizontal && prevBtn && nextBtn){ App.updateHScrollButtons(container, prevBtn, nextBtn);}
             return;
         }
 
-        // Extract data needed for TMDB lookup
+        // Extract data needed for TMDB lookup, INCLUDING viewCount
         const topItemsData = querySnapshot.docs.map(doc => ({
             id: doc.data().tmdbId,
             type: doc.data().type,
-            count: doc.data().viewCount
+            count: doc.data().viewCount // <<< Make sure viewCount is retrieved
         }));
 
-        console.log('[Most Viewed Load] Fetched top items from Firestore:', topItemsData.map(i => `${i.type}-${i.id}(${i.count})`));
+        utils.log('[Most Viewed Load] Fetched top items from Firestore:', topItemsData.map(i => `${i.type}-${i.id}(${i.count})`));
 
         // --- Fetch TMDB Details for these items ---
         const itemDetailPromises = topItemsData.map(viewData =>
             API.fetchTMDB(`/${viewData.type}/${viewData.id}`).catch(err => {
-                console.warn(`[Most Viewed Load] Failed to fetch TMDB details for ${viewData.type}-${viewData.id}`, err);
+                utils.warn(`[Most Viewed Load] Failed to fetch TMDB details for ${viewData.type}-${viewData.id}`, err);
                 return null; // Return null on error
             })
         );
@@ -2786,22 +2788,25 @@
              throw new Error("Could not fetch details for popular items from TMDB.");
         }
 
-        // --- Combine TMDB details with view counts (Optional) ---
+        // --- Combine TMDB details with view counts ---
          const itemsToRender = detailedItems.map(item => {
-              const type = item.title ? 'movie' : 'tv'; // Re-determine type just in case
+              const type = item.title ? 'movie' : 'tv'; // Re-determine type
+              // Find the original view data to get the count back
               const originalViewData = topItemsData.find(v => v.id === item.id && v.type === type);
               return {
-                   ...item,
+                   ...item, // Spread all TMDB details
                    media_type: type, // Ensure media_type is set
-                   viewCount: originalViewData ? originalViewData.count : '?',
+                   viewCount: originalViewData ? originalViewData.count : '?', // <<< Add viewCount here
                };
           });
+        // ----------------------------------------------
 
-        // --- Render using appropriate function (replace skeletons) ---
-         console.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items.`);
+        // --- Render using appropriate function ---
+         utils.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items.`);
          if (isHorizontal) {
-             App.renderHorizontalCards(itemsToRender, container, null, false); // Pass items, container
-             // Setup scroll for THIS specific section
+             // Pass itemsToRender (which now includes viewCount)
+             App.renderHorizontalCards(itemsToRender, container, null, false, true); // <<< Added 'true' for showViewCount
+             // Setup scroll
              if (container && prevBtn && nextBtn) {
                   if (!State.horizontalScrollContainers.some(c => c.container === container)) {
                       State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
@@ -2809,20 +2814,20 @@
                       prevBtn.addEventListener('click', () => App.handleHScrollPrev(container));
                       nextBtn.addEventListener('click', () => App.handleHScrollNext(container));
                   }
-                  App.updateHScrollButtons(container, prevBtn, nextBtn); // Update immediately after render
+                  App.updateHScrollButtons(container, prevBtn, nextBtn);
               }
          } else {
              // Assuming default is vertical card grid
-             App.renderTmdbCards(itemsToRender, container, null, false); // Pass items, container
-             // Optional: Add view count display logic for vertical cards here if needed
+             // Pass itemsToRender (which now includes viewCount)
+             App.renderTmdbCards(itemsToRender, container, null, false, true); // <<< Added 'true' for showViewCount
          }
 
     } catch (error) {
-        console.error("[Most Viewed Load] Error fetching or processing items:", error);
-        container.innerHTML = Utils.getErrorHTML(`Could not display popular items: ${error.message}`);
+        utils.error("[Most Viewed Load] Error fetching or processing items:", error);
+        container.innerHTML = utils.getErrorHTML(`Could not display popular items: ${error.message}`);
         if(isHorizontal && prevBtn && nextBtn){ App.updateHScrollButtons(container, prevBtn, nextBtn);}
     }
-},
+}, // End loadMostViewedSection
               // --- NEW: Function to specifically load and render Continue Watching ---
               loadContinueWatchingSection: (sectionDiv) => {
                 if (!sectionDiv) {
