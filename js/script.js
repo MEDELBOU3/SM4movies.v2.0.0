@@ -4369,222 +4369,488 @@ if (State.visNetworkInstance) {
      },
 
      // Renders the details page content
-     renderDetailsPage: (itemData) => {
-         if (!DOM.detailsWrapper) return;
-         DOM.detailsWrapper.innerHTML = ''; // Clear previous
+  // Renders the details page content
+             renderDetailsPage: (itemData) => {
+                 if (!DOM.detailsWrapper) return;
+                 DOM.detailsWrapper.innerHTML = ''; // Clear previous
 
-         const type = itemData.title ? 'movie' : 'tv';
-         const displayTitle = Utils.escapeHtml(itemData.title || itemData.name || 'N/A');
-         const backdropUrl = itemData.backdrop_path ? `${config.BACKDROP_BASE_URL}${itemData.backdrop_path}` : '';
-         const posterUrl = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : '';
-         const rating = itemData.vote_average ? itemData.vote_average.toFixed(1) : null;
-         const year = (itemData.release_date || itemData.first_air_date || '').substring(0, 4);
-         const formattedRuntime = type === 'movie' && itemData.runtime ? Utils.formatRuntime(itemData.runtime) : null;
-         const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
-         const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
+                 const type = itemData.title ? 'movie' : 'tv';
+                 const displayTitle = Utils.escapeHtml(itemData.title || itemData.name || 'N/A');
+                 const backdropUrl = itemData.backdrop_path ? `${config.BACKDROP_BASE_URL}${itemData.backdrop_path}` : '';
+                 const posterUrl = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : '';
+                 const rating = itemData.vote_average ? itemData.vote_average.toFixed(1) : null;
+                 const year = (itemData.release_date || itemData.first_air_date || '').substring(0, 4);
+                 const formattedRuntime = type === 'movie' && itemData.runtime ? Utils.formatRuntime(itemData.runtime) : null;
+                 const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
+                 const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
 
-        // --- Add Connection Explorer Button near Actions ---
-        const connectionButtonHtml = `
-            <button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2"
-               data-item-id="${itemData.id}"
-               data-item-type="${type}"
-               data-item-title="${Utils.escapeHtml(itemData.title || itemData.name || '')}">
-               <i class="bi bi-diagram-3-fill me-1"></i> Show Connections
-            </button>
-         `;
+                // --- Add Connection Explorer Button near Actions ---
+                const connectionButtonHtml = `
+                    <button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2"
+                       data-item-id="${itemData.id}"
+                       data-item-type="${type}"
+                       data-item-title="${Utils.escapeHtml(itemData.title || itemData.name || '')}">
+                       <i class="bi bi-diagram-3-fill me-1"></i> Show Connections
+                    </button>
+                 `;
 
-         // Extract credits
-         const credits = itemData.credits;
-         const director = credits?.crew?.find(p => p.job === 'Director')?.name;
-         const creators = type === 'tv' ? credits?.crew?.filter(p => p.department === 'Writing' && (p.job === 'Creator' || p.job === 'Writer')).map(c => Utils.escapeHtml(c.name)).slice(0, 3).join(', ') : ''; // Get up to 3 creators/writers
-         const castList = credits?.cast?.slice(0, 12) || []; // Top 12 cast members
+                 // Extract credits
+                 const credits = itemData.credits;
+                 const director = credits?.crew?.find(p => p.job === 'Director')?.name;
+                 const creators = type === 'tv' ? credits?.crew?.filter(p => p.department === 'Writing' && (p.job === 'Creator' || p.job === 'Writer')).map(c => Utils.escapeHtml(c.name)).slice(0, 3).join(', ') : ''; // Get up to 3 creators/writers
+                 const castList = credits?.cast?.slice(0, 12) || []; // Top 12 cast members
 
-         // Similar items
-         const similarList = itemData.similar?.results?.slice(0, 12) || [];
+                 // Similar items
+                 const similarList = itemData.similar?.results?.slice(0, 12) || [];
+              
+                // Watch Providers (US Flatrate only)
+                const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
+            
+                const actionsContainerSelector = '.details-actions';
+                 let detailsHtml = `
+                     <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
+                     <div class="container details-content-overlay">
+                         <button onclick="Utils.goBackOrHome();" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                         <div class="details-header row mb-5 align-items-center">
+                             <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
+                                 ${posterUrl ? `<img src="${posterUrl}" alt="${displayTitle} Poster" class="img-fluid shadow-lg" style="border-radius: var(--radius-lg); border: 3px solid rgba(255,255,255,0.1);" loading="lazy">` : `<div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center mx-auto" style="width:100%; aspect-ratio:2/3; max-width:280px;">No Poster</div>`}
+                             </div>
+                             <div class="details-info col-lg-9 col-md-8">
+                                 <h1 class="text-white mb-2 custom-color">${displayTitle}</h1>
+                                 <div class="details-meta mb-3 d-flex align-items-center flex-wrap">
+                                     ${rating && parseFloat(rating) > 0 ? `<span class="d-flex align-items-center me-3"><i class="bi bi-star-fill text-warning me-1"></i> ${rating}/10</span>` : ''}
+                                     ${year ? `<span class="d-flex align-items-center me-3"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
+                                     ${formattedRuntime ? `<span class="d-flex align-items-center me-3"><i class="bi bi-clock me-1"></i> ${formattedRuntime}</span>` : ''}
+                                     ${numberOfSeasons ? `<span class="d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${numberOfSeasons} Season${numberOfSeasons > 1 ? 's' : ''}</span>` : ''}
+                                 </div>
+                                 <div class="genres mb-3">
+                                     ${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}
+                                 </div>
+                                 ${displayOverview !== 'No overview available.' ? `<h4 id="text-white" class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
+                                 ${director ? `<p class="small mb-1"><strong class="text-white-50"">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
+                                 ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
+                                <div class="details-section mt-4">
+                                    <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
+                                    <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;">
+                                        <p class="text-muted small mb-0">Click the button to generate AI-powered insights.</p>
+                                    </div>
+                                    <button id="get-ai-insight-btn" class="btn btn-sm btn-outline-info"
+                                        data-item-id="${itemData.id}"
+                                        data-item-type="${type}"
+                                        data-item-title="${displayTitle}"
+                                        data-item-year="${year}">
+                                        <i class="bi bi-magic me-1"></i> Get AI Insight
+                                    </button>
+                                    <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
+                                </div>
+                                 <div class="details-actions mt-4">
+                                     <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
+                                      <!-- Add Trailer Button if videos exist -->
+                                      ${itemData.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ?
+                                          `<button class="btn btn-outline-secondary btn-lg" onclick="App.playTrailer('${itemData.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}')"><i class="bi bi-film me-2"></i> Play Trailer</button>` : ''
+                                      }
+                                 </div>
+                             </div>
+                    </div>
+                 `;
 
-        
-        // Watch Providers (US Flatrate only)
-        const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
+                 // Seasons & Episodes Section (for TV only)
+                 if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
+                     // Filter out "Specials" (season 0) unless it's the only season
+                     const validSeasons = itemData.seasons.filter(s => s.season_number > 0 || itemData.seasons.length === 1);
+                     if (validSeasons.length > 0) {
+                         detailsHtml += App.renderTVSeasonsSection(itemData.id, validSeasons);
+                     }
+                 }
 
-        const actionsContainerSelector = '.details-actions';
-         let detailsHtml = `
-             <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
-             <div class="container details-content-overlay">
-                 <button onclick="Utils.goBackOrHome();" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                 <div class="details-header row mb-5 align-items-center">
-                     <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
-                         ${posterUrl ? `<img src="${posterUrl}" alt="${displayTitle} Poster" class="img-fluid shadow-lg" style="border-radius: var(--radius-lg); border: 3px solid rgba(255,255,255,0.1);" loading="lazy">` : `<div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center mx-auto" style="width:100%; aspect-ratio:2/3; max-width:280px;">No Poster</div>`}
-                     </div>
-                     <div class="details-info col-lg-9 col-md-8">
-                         <h1 class="text-white mb-2 custom-color">${displayTitle}</h1>
-                         <div class="details-meta mb-3 d-flex align-items-center flex-wrap">
-                             ${rating && parseFloat(rating) > 0 ? `<span class="d-flex align-items-center me-3"><i class="bi bi-star-fill text-warning me-1"></i> ${rating}/10</span>` : ''}
-                             ${year ? `<span class="d-flex align-items-center me-3"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
-                             ${formattedRuntime ? `<span class="d-flex align-items-center me-3"><i class="bi bi-clock me-1"></i> ${formattedRuntime}</span>` : ''}
-                             ${numberOfSeasons ? `<span class="d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${numberOfSeasons} Season${numberOfSeasons > 1 ? 's' : ''}</span>` : ''}
+                // Cast Section - UPDATED to use links to #person view
+                if (castList.length > 0) {
+                    detailsHtml += `
+                        
+                        <div class="details-section mt-5">
+                            <h2 class="details-section-title">Cast</h2>
+                            <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
+                                ${castList.map(member => {
+                                    const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A'; // Use smaller image for cast grid
+                                    // Wrap in an anchor tag linking to the person view
+                                return `
+
+                            <div class="col mb-3">
+                                <a href="#person=${member.id}" class="cast-member-link">
+                                    <i class="bi bi-person-circle img-fallback-icon-init d-none"></i>
+                                   <img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy" onerror="this.previousElementSibling.classList.remove('d-none'); this.classList.add('d-none');">
+                                   <div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div>
+                                   <div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div>
+                                </a>
+                                <style>
+                                    .d-none {
+                                        display: none;
+                                    }
+
+                                    .img-fallback-icon-init {
+                                        font-size: 8rem;  /* Adjust size of the fallback icon */
+                                        color: #ccc;  /* You can adjust the color to match your design */
+                                        display: inline-block;
+                                        width: 120px;  /* Match the size of your images */
+                                        height: 180px; /* Match the size of your images */
+                                        text-align: center;
+                                        line-height: 180px;  /* Center the icon vertically */
+                                    }
+
+                                </style>
+                           </div>
+                        `;
+                           }).join('')}
                          </div>
-                         <div class="genres mb-3">
-                             ${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}
-                         </div>
-                         ${displayOverview !== 'No overview available.' ? `<h4 id="text-white" class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
-                         ${director ? `<p class="small mb-1"><strong class="text-white-50"">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
-                         ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
-                        <div class="details-section mt-4">
-                            <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
-                            <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;">
-                                <p class="text-muted small mb-0">Click the button to generate AI-powered insights.</p>
-                            </div>
-                            <button id="get-ai-insight-btn" class="btn btn-sm btn-outline-info"
-                                data-item-id="${itemData.id}"
-                                data-item-type="${type}"
-                                data-item-title="${displayTitle}"
-                                data-item-year="${year}">
-                                <i class="bi bi-magic me-1"></i> Get AI Insight
-                            </button>
-                            <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
-                        </div>
-                         <div class="details-actions mt-4">
-                             <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
-                              <!-- Add Trailer Button if videos exist -->
-                              ${itemData.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ?
-                                  `<button class="btn btn-outline-secondary btn-lg" onclick="App.playTrailer('${itemData.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}')"><i class="bi bi-film me-2"></i> Play Trailer</button>` : ''
-                              }
-                         </div>
-                     </div>
-                 </div>
-         `;
-
-         // Seasons & Episodes Section (for TV only)
-         if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
-             // Filter out "Specials" (season 0) unless it's the only season
-             const validSeasons = itemData.seasons.filter(s => s.season_number > 0 || itemData.seasons.length === 1);
-             if (validSeasons.length > 0) {
-                 detailsHtml += App.renderTVSeasonsSection(itemData.id, validSeasons);
-             }
-         }
-
-        // Cast Section - UPDATED to use links to #person view
-        if (castList.length > 0) {
-            detailsHtml += `
-                <div class="details-section mt-5">
-                    <h2 class="details-section-title">Cast</h2>
-                    <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
-                        ${castList.map(member => {
-                            const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A'; // Use smaller image for cast grid
-                            // Wrap in an anchor tag linking to the person view
-                        return `
-                    <div class="col mb-3">
-                        <a href="#person=${member.id}" class="cast-member-link">
-                            <i class="bi bi-person-circle img-fallback-icon-init d-none"></i>
-                           <img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy" onerror="this.previousElementSibling.classList.remove('d-none'); this.classList.add('d-none');">
-                           <div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div>
-                           <div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div>
-                        </a>
-                        <style>
-                            .d-none {
-                                display: none;
-                            }
-
-                            .img-fallback-icon-init {
-                                font-size: 8rem;  /* Adjust size of the fallback icon */
-                                color: #ccc;  /* You can adjust the color to match your design */
-                                display: inline-block;
-                                width: 120px;  /* Match the size of your images */
-                                height: 180px; /* Match the size of your images */
-                                text-align: center;
-                                line-height: 180px;  /* Center the icon vertically */
-                            }
-
-                        </style>
-                   </div>
-                `;
-                   }).join('')}
-                 </div>
-              </div>
-            `;
-        }
-
-
-         // Similar Section
-         if (similarList.length > 0) {
-             detailsHtml += `
-                 <div class="details-section mt-5">
-                     <h2 class="details-section-title">You Might Also Like</h2>
-                     <div id="similar-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
-                         <!-- Similar items rendered after main HTML insertion -->
-                         ${Utils.getSpinnerHTML("Loading recommendations...")}
-                     </div>
-                 </div>
-             `;
-         }
-
-         // Streaming Providers Section
-         if (usSubProviders.length > 0) {
-             detailsHtml += `
-                  <div class="details-section mt-5">
-                      <h2 class="details-section-title">Stream on (US Subscriptions)</h2>
-                      <div class="d-flex flex-wrap gap-3 align-items-center">
-                          ${usSubProviders.map(p => `
-                              <a href="#network=${p.provider_id}" title="Browse ${Utils.escapeHtml(p.provider_name)}">
-                                  <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;" loading="lazy">
-                              </a>`).join('')}
                       </div>
-                      <small class="d-block mt-2 text-muted">Streaming availability via JustWatch/TMDb.</small>
-                  </div>
-              `;
-          }
+                    `;
+                }
+                // --- <<<SPOTIFY SECTION INSERTION >>> ---
+                detailsHtml += `
+                    <div class="details-section mt-5" id="spotify-soundtrack-section" > <!-- Start hidden -->
+                        <h2 class="details-section-title d-flex align-items-center">
+                            <i class="bi bi-spotify me-2" style="color: #1DB954;"></i> Soundtrack on Spotify
+                        </h2>
+                        <div id="spotify-soundtrack-content" class="d-flex flex-column flex-md-row align-items-start gap-4">
+                            <!-- Content loaded by JS -->
+                            <div class="spinner-border text-light spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading soundtrack...</span>
+                            </div>
+                            <span class="text-muted small">Searching Spotify...</span>
+                        </div>
+                    </div>
+                `;
+                // --- <<< END SPOTIFY SECTION INSERTION >>> ---
+
+                 // Similar Section
+                 if (similarList.length > 0) {
+                     detailsHtml += `
+                         <div class="details-section mt-5">
+                             <h2 class="details-section-title">You Might Also Like</h2>
+                             <div id="similar-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                                 <!-- Similar items rendered after main HTML insertion -->
+                                 ${Utils.getSpinnerHTML("Loading recommendations...")}
+                             </div>
+                         </div>
+                     `;
+                 }
+
+                 // Streaming Providers Section
+                 if (usSubProviders.length > 0) {
+                     detailsHtml += `
+                          <div class="details-section mt-5">
+                              <h2 class="details-section-title">Stream on (US Subscriptions)</h2>
+                              <div class="d-flex flex-wrap gap-3 align-items-center">
+                                  ${usSubProviders.map(p => `
+                                      <a href="#network=${p.provider_id}" title="Browse ${Utils.escapeHtml(p.provider_name)}">
+                                          <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;" loading="lazy">
+                                      </a>`).join('')}
+                              </div>
+                              <small class="d-block mt-2 text-muted">Streaming availability via JustWatch/TMDb.</small>
+                          </div>
+                      `;
+                  }
 
 
-         detailsHtml += `</div>`; // Close main container
-         DOM.detailsWrapper.innerHTML = detailsHtml;
+                 detailsHtml += `</div>`; // Close main container
+                 DOM.detailsWrapper.innerHTML = detailsHtml;
+    
+                 // --- Post-Render Actions ---
+                 // Render similar cards
+                 if (similarList.length > 0) {
+                     const similarGrid = document.getElementById('similar-grid');
+                     if (similarGrid) {
+                         App.renderTmdbCards(similarList, similarGrid, type, false); // Pass type hint
+                     }
+                 }
 
-         // --- Post-Render Actions ---
-         // Render similar cards
-         if (similarList.length > 0) {
-             const similarGrid = document.getElementById('similar-grid');
-             if (similarGrid) {
-                 App.renderTmdbCards(similarList, similarGrid, type, false); // Pass type hint
-             }
-         }
+                 // Initialize season tabs and load first season if TV
+                 if (type === 'tv' && itemData.seasons?.filter(s => s.season_number > 0 || itemData.seasons.length === 1).length > 0) {
+                     App.addSeasonTabListeners(itemData.id);
+                     // Trigger click on the first non-disabled tab to load its content
+                     const firstTab = DOM.detailsWrapper.querySelector('.nav-pills .nav-link:not(.disabled)');
+                     firstTab?.click();
+                 }
 
-         // Initialize season tabs and load first season if TV
-         if (type === 'tv' && itemData.seasons?.filter(s => s.season_number > 0 || itemData.seasons.length === 1).length > 0) {
-             App.addSeasonTabListeners(itemData.id);
-             // Trigger click on the first non-disabled tab to load its content
-             const firstTab = DOM.detailsWrapper.querySelector('.nav-pills .nav-link:not(.disabled)');
-             firstTab?.click();
-         }
+                // Add listener for the connection button *after* rendering
+                const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
+                if (actionsContainer) {
+                   // Create button element and add listener
+                   const btnDiv = document.createElement('div'); // Temporary div
+                   btnDiv.innerHTML = connectionButtonHtml.trim();
+                   const connectionButton = btnDiv.firstChild;
+                   connectionButton.addEventListener('click', App.handleShowConnectionsClick);
+                   actionsContainer.appendChild(connectionButton); // Append the button
+                }
 
-        // Add listener for the connection button *after* rendering
-        const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
-        if (actionsContainer) {
-           // Create button element and add listener
-           const btnDiv = document.createElement('div'); // Temporary div
-           btnDiv.innerHTML = connectionButtonHtml.trim();
-           const connectionButton = btnDiv.firstChild;
-           connectionButton.addEventListener('click', App.handleShowConnectionsClick);
-           actionsContainer.appendChild(connectionButton); // Append the button
+
+                // --- NEW: Add AI Button Listener ---
+                DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn');
+                DOM.detailsAiInsightContainer = DOM.detailsWrapper.querySelector('#ai-insight-container');
+                if (DOM.detailsAiInsightBtn) {
+                    DOM.detailsAiInsightBtn.addEventListener('click', (e) => {
+                        const btn = e.currentTarget;
+                        App.handleGetAiInsight(
+                            btn.dataset.itemType,
+                            btn.dataset.itemId,
+                            btn.dataset.itemTitle,
+                            btn.dataset.itemYear
+                        );
+                    });
+                }
+                console.log(`[renderDetailsPage] Calling loadAndRenderSoundtrack for ${displayTitle} (${year})`); 
+                App.loadAndRenderSoundtrack(type, displayTitle, year);
+
+                 App.initializeTooltips(DOM.detailsWrapper); // Activate tooltips within details view
+             },
+
+
+/**
+ * Fetches the Spotify soundtrack for a given movie/TV item and renders it.
+ * Selects DOM elements dynamically within the function.
+ * @param {string} itemType - 'movie' or 'tv'
+ * @param {string} itemTitle - The title of the item (already escaped if needed for display, but raw needed for search)
+ * @param {string} itemYear - The release year (e.g., '2023')
+ */
+ loadAndRenderSoundtrack: async (itemType, itemTitle, itemYear) => {
+    console.log("[Spotify Load] Initiated for:", itemTitle, `(${itemYear})`); // DEBUG LOG
+
+    // --- Select Elements Dynamically ---
+    const soundtrackSection = document.getElementById('spotify-soundtrack-section');
+    const soundtrackContent = document.getElementById('spotify-soundtrack-content');
+    // ------------------------------------
+
+    // --- Validate Elements ---
+    if (!soundtrackSection || !soundtrackContent) {
+        console.warn("[Spotify Load] Soundtrack section/content elements not found in DOM. Aborting.");
+        return; // Exit if elements aren't rendered yet
+    }
+    // ------------------------
+
+    // --- Reset and Show Loading State ---
+    Utils.setElementVisibility(soundtrackSection, true); // Make the section visible
+    soundtrackContent.innerHTML = `
+        <div class="d-flex align-items-center text-muted small p-2">
+             <div class="spinner-border spinner-border-sm me-2" role="status">
+                 <span class="visually-hidden">Loading soundtrack...</span>
+             </div>
+             Searching Spotify for soundtrack...
+         </div>`;
+    // ---------------------------------
+
+    try {
+        // --- Ensure Spotify App Token ---
+        console.log("[Spotify Load] Attempting to get Spotify token..."); // DEBUG LOG
+        const token = await API.getSpotifyAppToken();
+        if (!token) {
+            throw new Error("Spotify token not available. Cannot search.");
+        }
+        console.log("[Spotify Load] Spotify token acquired."); // DEBUG LOG
+        // -----------------------------
+
+        // --- Construct Search Query ---
+        // Use the raw title for search accuracy, handle potential escaping issues if needed
+        const searchQueryTitle = itemTitle; // Assuming itemTitle passed is suitable for search
+        const query = `${searchQueryTitle} ${itemType === 'tv' ? 'Original Series' : ''} Soundtrack ${itemYear || ''}`.trim();
+        console.log(`[Spotify Load] Constructed Search Query: "${query}"`); // DEBUG LOG
+        // -----------------------------
+
+        // --- Search Spotify for Albums ---
+        console.log("[Spotify Load] Sending search request to Spotify API..."); // DEBUG LOG
+        const searchResults = await API.fetchSpotify(`/search?q=${encodeURIComponent(query)}&type=album&limit=10`);
+        console.log("[Spotify Load] Search API Response:", searchResults); // DEBUG LOG
+
+        if (!searchResults || !searchResults.albums || searchResults.albums.items.length === 0) {
+            // Try a broader search without year/type qualifiers
+            const simplerQuery = `${searchQueryTitle} Soundtrack`;
+            console.log(`[Spotify Load] Initial search failed, trying simpler query: "${simplerQuery}"`);
+            const simplerResults = await API.fetchSpotify(`/search?q=${encodeURIComponent(simplerQuery)}&type=album&limit=5`);
+            console.log("[Spotify Load] Simpler Search API Response:", simplerResults); // DEBUG LOG
+
+            if (!simplerResults || !simplerResults.albums || simplerResults.albums.items.length === 0) {
+                 throw new Error("No potential soundtracks found on Spotify after multiple attempts.");
+            }
+            searchResults.albums = simplerResults.albums; // Use results from simpler search
+        }
+        // -----------------------------
+
+        // --- Filtering Logic ---
+        let bestMatch = null;
+        const lowerSearchTitle = searchQueryTitle.toLowerCase();
+        const albums = searchResults.albums.items;
+
+        // Priority 1: Exact "Official Soundtrack" or "Original Score" + Title Match
+        bestMatch = albums.find(album =>
+            (album.name.toLowerCase().includes("official soundtrack") || album.name.toLowerCase().includes("original score")) &&
+            album.name.toLowerCase().includes(lowerSearchTitle)
+        );
+
+        // Priority 2: Contains "Soundtrack" or "Score" + Fuzzy Title Match
+        if (!bestMatch) {
+            bestMatch = albums.find(album =>
+                (album.name.toLowerCase().includes("soundtrack") || album.name.toLowerCase().includes("score")) &&
+                album.name.toLowerCase().includes(lowerSearchTitle.substring(0, Math.min(lowerSearchTitle.length, 10))) // Match first ~10 chars
+            );
         }
 
-
-        // --- NEW: Add AI Button Listener ---
-        DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn');
-        DOM.detailsAiInsightContainer = DOM.detailsWrapper.querySelector('#ai-insight-container');
-        if (DOM.detailsAiInsightBtn) {
-            DOM.detailsAiInsightBtn.addEventListener('click', (e) => {
-                const btn = e.currentTarget;
-                App.handleGetAiInsight(
-                    btn.dataset.itemType,
-                    btn.dataset.itemId,
-                    btn.dataset.itemTitle,
-                    btn.dataset.itemYear
-                );
-            });
+        // Priority 3: Fuzzy Title Match Only
+        if (!bestMatch) {
+            bestMatch = albums.find(album =>
+               album.name.toLowerCase().includes(lowerSearchTitle.substring(0, Math.min(lowerSearchTitle.length, 10)))
+            );
         }
 
-         App.initializeTooltips(DOM.detailsWrapper); // Activate tooltips within details view
-     },
+         // Fallback: Just take the first result if no better match found
+         if (!bestMatch && albums.length > 0) {
+             bestMatch = albums[0];
+             console.log("[Spotify Load] No ideal match found using filtering, falling back to first result."); // DEBUG LOG
+         }
 
+        console.log("[Spotify Load] Determined Best Match Album:", bestMatch); // DEBUG LOG
+
+        if (!bestMatch) {
+             throw new Error("Could not determine the correct soundtrack from search results.");
+        }
+        // ------------------------
+
+        // --- Fetch Tracks for Album ---
+        const albumId = bestMatch.id;
+        console.log(`[Spotify Load] Fetching tracks for Album ID: ${albumId}`); // DEBUG LOG
+        const tracksData = await API.fetchSpotify(`/albums/${albumId}/tracks?limit=50`);
+        console.log("[Spotify Load] Tracks API Response:", tracksData); // DEBUG LOG
+
+        if (!tracksData || !tracksData.items) {
+            // Check if tracksData.items is empty array vs null/undefined
+            if (tracksData && tracksData.items && tracksData.items.length === 0) {
+                 console.warn(`[Spotify Load] Album ${albumId} found, but it contains no tracks.`);
+                 // Decide how to handle: show album art only, or show error? Showing album is better.
+                 App.renderSoundtrackDetails(bestMatch, []); // Render with empty track list
+                 return; // Exit successfully after rendering album info
+            } else {
+                 throw new Error(`Could not load tracks for the selected soundtrack (Album ID: ${albumId}).`);
+            }
+        }
+        // ---------------------------
+
+        // --- Render Soundtrack Details ---
+        console.log("[Spotify Load] Calling renderSoundtrackDetails..."); // DEBUG LOG
+        App.renderSoundtrackDetails(bestMatch, tracksData.items);
+        // ------------------------------
+
+    } catch (error) {
+        console.error("[Spotify Load] Error during soundtrack processing:", error); // DEBUG LOG
+        // Use the locally selected content element to display the error
+        soundtrackContent.innerHTML = `
+            <div class="d-flex align-items-center text-warning small p-2">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span>${Utils.escapeHtml(error.message) || 'Could not load soundtrack from Spotify.'}</span>
+            </div>`;
+         // Optionally hide the section entirely on error after a short delay
+         // setTimeout(() => Utils.setElementVisibility(soundtrackSection, false), 4000);
+    } finally {
+         console.log("[Spotify Load] Finished attempt for:", itemTitle); // DEBUG LOG
+    }
+}, // End loadAndRenderSoundtrack
+
+              /**
+ * Renders the fetched Spotify album details and tracklist into the designated container.
+ * Selects DOM elements dynamically within the function.
+ * @param {object} album - The Spotify Album object.
+ * @param {Array} tracks - An array of Spotify Track objects.
+ */
+renderSoundtrackDetails: (album, tracks) => {
+    console.log("[Spotify Render] Starting render for album:", album?.name); // DEBUG LOG
+
+    // --- Select Element Dynamically ---
+    const soundtrackContent = document.getElementById('spotify-soundtrack-content');
+    // ---------------------------------
+
+    // --- Validate Element ---
+    if (!soundtrackContent) {
+        console.warn("[Spotify Render] Soundtrack content element not found in DOM. Cannot render.");
+        return; // Exit if element isn't available
+    }
+    // ------------------------
+
+    const albumImageUrl = album.images?.[1]?.url || album.images?.[0]?.url || 'https://via.placeholder.com/150'; // Prefer medium image
+    const albumName = Utils.escapeHtml(album.name);
+    const artistName = Utils.escapeHtml(album.artists.map(a => a.name).join(', '));
+    const spotifyAlbumUrl = album.external_urls?.spotify;
+
+    // --- Album Info HTML (Left Side) ---
+    const albumInfoHtml = `
+        <div class="soundtrack-album-info text-center text-md-start flex-shrink-0 mb-3 mb-md-0" style="max-width: 200px;">
+            <a href="${spotifyAlbumUrl || '#'}" ${spotifyAlbumUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} title="Listen to ${albumName} on Spotify">
+                <img src="${albumImageUrl}" alt="${albumName}" class="img-fluid rounded shadow-sm mb-2 border border-secondary border-opacity-10" loading="lazy" style="max-width: 180px;">
+            </a>
+            <h5 class="fs-6 mb-1 text-light text-truncate" title="${albumName}">${albumName}</h5>
+            <p class="small text-muted mb-2 text-truncate" title="${artistName}">${artistName}</p>
+            ${spotifyAlbumUrl ? `<a href="${spotifyAlbumUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success spotify-btn"><i class="bi bi-spotify me-1"></i> Listen on Spotify</a>` : ''}
+        </div>
+    `;
+    // ------------------------------------
+
+    // --- Tracklist HTML (Right Side) ---
+    // Handle empty tracks array gracefully
+    const tracklistItemsHtml = tracks && tracks.length > 0
+        ? tracks.map((track, index) => {
+            const trackName = Utils.escapeHtml(track.name);
+            const trackArtists = Utils.escapeHtml(track.artists.map(a => a.name).join(', '));
+            const duration = Utils.formatTime(track.duration_ms);
+            const previewUrl = track.preview_url;
+
+            return `
+            <li class="list-group-item bg-transparent px-0 py-2 d-flex justify-content-between align-items-center">
+                <div class="me-3 overflow-hidden d-flex align-items-center">
+                     <span class="text-muted me-2 small" style="min-width: 20px; text-align: right;">${index + 1}.</span>
+                     <div>
+                        <div class="track-name text-light text-truncate small" title="${trackName}">${trackName}</div>
+                        <div class="artist-name text-muted text-truncate smaller" title="${trackArtists}">${trackArtists}</div>
+                     </div>
+                </div>
+                <div class="d-flex align-items-center flex-shrink-0">
+                    <span class="badge fw-normal bg-light bg-opacity-10 text-light-emphasis me-2 small" style="min-width: 45px;">${duration}</span>
+                    ${previewUrl ? `
+                        <button class="btn btn-sm btn-outline-secondary play-preview-btn flex-shrink-0" data-preview-url="${previewUrl}" title="Play 30s Preview">
+                            <i class="bi bi-play-fill"></i>
+                        </button>` : `
+                        <button class="btn btn-sm btn-outline-secondary flex-shrink-0 disabled opacity-50" title="No Preview Available">
+                            <i class="bi bi-play-fill"></i>
+                        </button>
+                    `}
+                </div>
+            </li>
+            `;
+        }).join('')
+        : '<li class="list-group-item bg-transparent px-0 py-2 text-muted small">No tracks listed for this album on Spotify.</li>'; // Message for empty tracklist
+
+    const tracklistHtml = `
+        <div class="soundtrack-tracklist flex-grow-1 overflow-hidden">
+            <h6 class="text-muted mb-1 small text-uppercase ls-1">Tracks</h6>
+            <ul class="list-group list-group-flush soundtrack-list bg-transparent border-top border-secondary border-opacity-10 pt-1" style="max-height: 300px; overflow-y: auto;">
+                ${tracklistItemsHtml}
+            </ul>
+        </div>
+    `;
+    // ------------------------------------
+
+    // --- Update DOM ---
+    soundtrackContent.innerHTML = albumInfoHtml + tracklistHtml;
+    // -----------------
+
+    // --- Add Event Listeners for Preview Buttons ---
+    // Use the locally selected soundtrackContent element
+    soundtrackContent.querySelectorAll('.play-preview-btn:not(.disabled)').forEach(button => {
+        button.addEventListener('click', (e) => {
+            console.log("[Spotify Render] Play preview button clicked for:", e.currentTarget.dataset.previewUrl); // DEBUG LOG
+            App.playPreview(e.currentTarget); // Reuse existing preview function
+        });
+    });
+    // ------------------------------------------
+    console.log("[Spotify Render] Finished rendering and adding listeners for:", album?.name); // DEBUG LOG
+}, // End renderSoundtrackDetails
+
+    
     // Renders the Season Tabs and Episode Panes structure
     renderTVSeasonsSection: (tvId, seasons) => {
          if (!seasons || seasons.length === 0) return '';
