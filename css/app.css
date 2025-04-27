@@ -2856,6 +2856,43 @@ body.theme-light .skeleton-h-card-overlay {
    background: linear-gradient(to top, rgba(var(--bg-primary-rgb), 0.95) 25%, rgba(var(--bg-primary-rgb), 0.7) 65%, transparent 100%);
 }
 
+/* --- Ranking Badge Styling --- */
+.h-card .ranking-badge {
+    position: absolute;
+    top: 0; /* Align with the top edge */
+    left: 0; /* Align with the left edge */
+    z-index: 10; /* Ensure it's above the image and overlay */
+    background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.9), rgba(var(--bs-danger-rgb), 0.7)); /* Use theme color */
+    color: #fff;
+    padding: 5px 12px 8px 10px; /* Top, Right, Bottom, Left - Create slant */
+    font-weight: 700;
+    font-size: 1.1rem; /* Adjust size as needed */
+    line-height: 1;
+    /* Create a clipped corner effect */
+    clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 80% 100%, 0% 100%);
+    border-bottom-right-radius: 8px; /* Soften the bottom right */
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+    border-left: 2px solid rgba(255,255,255,0.3); /* Subtle left border */
+    border-top: 2px solid rgba(255,255,255,0.3); /* Subtle top border */
+    min-width: 40px; /* Ensure minimum width */
+    text-align: center;
+}
+
+/* Optional: Slightly different style for #1 */
+.h-card .ranking-badge.rank-1 {
+    font-size: 1.3rem;
+    padding: 6px 15px 10px 12px;
+    background: linear-gradient(135deg, rgba(var(--bs-warning-rgb), 0.95), rgba(var(--bs-warning-rgb), 0.75)); /* Gold/Yellow for #1? */
+    color: #000; /* Darker text for contrast on yellow */
+    text-shadow: none;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Ensure horizontal card allows overflow for the badge */
+.h-card {
+  overflow: visible !important; /* Important might be needed to override Bootstrap card styles */
+}
 
 /* View Count Badge Style (Optional - Only needed if implementing renderMostViewedCards) */
 /* Add this if you create the renderMostViewedCards function to show counts */
