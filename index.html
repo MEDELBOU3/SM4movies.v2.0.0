@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Loading Screen -->
+    <!-- Loading Screen -->
     <div class="loading-screen">
         <div class="loader"><div></div><div></div><div></div></div>
         <div class="loading-text">LOADING AURASTREAM</div>
@@ -266,7 +266,7 @@
                              <!-- Card 1: Home Interface -->
                              <div class="gallery-card" data-index="0" data-name="Home Interface">
                                  <div class="card-front">
-                                     <img src="https://picsum.photos/seed/aurahome/640/420" alt="AuraStream Home Interface" class="card-image" loading="lazy">
+                                     <img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/interface.png?raw=true" alt="AuraStream Home Interface" class="card-image" loading="lazy">
                                      <div class="card-overlay"></div>
                                      <div class="card-content">
                                          <span class="card-tag">Dashboard</span>
@@ -278,7 +278,7 @@
                              <!-- Card 2: Recommendations -->
                              <div class="gallery-card" data-index="1" data-name="Smart Recommendations">
                                  <div class="card-front">
-                                     <img src="https://picsum.photos/seed/aurarecs/640/420" alt="AuraStream Recommendations" class="card-image" loading="lazy">
+                                     <img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/ai-powered.png?raw=true" alt="AuraStream Recommendations" class="card-image" loading="lazy">
                                      <div class="card-overlay"></div>
                                      <div class="card-content">
                                          <span class="card-tag">AI Powered</span>
@@ -290,7 +290,7 @@
                              <!-- Card 3: Watchlist -->
                              <div class="gallery-card" data-index="2" data-name="Watchlist Feature">
                                  <div class="card-front">
-                                     <img src="https://picsum.photos/seed/aurawatch/640/420" alt="AuraStream Watchlist" class="card-image" loading="lazy">
+                                     <img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/watchlist.png?raw=true" alt="AuraStream Watchlist" class="card-image" loading="lazy">
                                      <div class="card-overlay"></div>
                                      <div class="card-content">
                                          <span class="card-tag">Organization</span>
@@ -302,7 +302,7 @@
                              <!-- Card 4: Detail View -->
                              <div class="gallery-card" data-index="3" data-name="Detailed View">
                                  <div class="card-front">
-                                     <img src="https://picsum.photos/seed/auradetail/640/420" alt="AuraStream Detail View" class="card-image" loading="lazy">
+                                     <img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/details.png?raw=true" alt="AuraStream Detail View" class="card-image" loading="lazy">
                                      <div class="card-overlay"></div>
                                      <div class="card-content">
                                          <span class="card-tag">Info</span>
@@ -314,7 +314,7 @@
                              <!-- Card 5: Community (Concept) -->
                              <div class="gallery-card" data-index="4" data-name="Community Hub">
                                  <div class="card-front">
-                                     <img src="https://picsum.photos/seed/auracomm/640/420" alt="AuraStream Community Hub" class="card-image" loading="lazy">
+                                     <img src="https://raw.githubusercontent.com/MEDELBOU3/SM4movies.v2.0.0/bfa85dcc23eb2e81f159934bfe7ee1f993d05889/images/community.svg" alt="AuraStream Community Hub" class="card-image" loading="lazy">
                                      <div class="card-overlay"></div>
                                      <div class="card-content">
                                          <span class="card-tag">Connect</span>
@@ -589,7 +589,7 @@
               <div class="footer-column">
                   <h4>Connect</h4>
                   <div class="footer-social">
-                      <a href="https://github.com/MEDELBOU3/AuraStream-Concept" class="social-icon" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="bi bi-github"></i></a>
+                      <a href="https://github.com/MEDELBOU3/SM4movies.v2.0.0/tree/main" class="social-icon" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="bi bi-github"></i></a>
                       <a href="#" class="social-icon conceptual-link" target="_blank" rel="noopener noreferrer" title="Twitter / X"><i class="bi bi-twitter-x"></i></a>
                       <a href="#" class="social-icon conceptual-link" target="_blank" rel="noopener noreferrer" title="Discord"><i class="bi bi-discord"></i></a>
                   </div>
@@ -698,7 +698,7 @@
     </div>
   
      <!-- Trailer Modal -->
-     <div class="modal fade" id="trailer-modal" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
+     <div class="modal fade" id="trailer-modal" style="z-index: 9999;" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-xl">
           <div class="modal-content">
               <button type="button" class="modal-close-video" data-bs-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
@@ -711,6 +711,83 @@
           </div>
       </div>
     </div>
+
+        <!-- Movie/TV Detail Modal -->
+        <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailModalLabel">
+                            <span id="detail-title-placeholder">Loading Details...</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="detail-modal-body">
+                        <div id="detail-loading-spinner" class="text-center py-5">
+                            <div class="loading-spinner large-spinner mx-auto" style="width: 40px; height: 40px;"></div>
+                            <p class="mt-2 text-muted">Fetching details...</p>
+                        </div>
+
+                        <div id="detail-content-area" class="d-none">
+                            <div class="row g-4">
+                                <div class="col-lg-4 text-center">
+                                    <img id="detail-poster" src="" alt="Poster" class="img-fluid rounded mb-3" style="max-height: 500px; background-color: var(--bg-tertiary);">
+                                    <button id="detail-trailer-button" class="btn btn-primary-gradient btn-sm mb-2 w-100" disabled>
+                                        <i class="bi bi-play-circle-fill me-1"></i> Watch Trailer
+                                    </button>
+                                    <div id="detail-providers-container" class="mt-3 text-start small">
+                                    </div>
+                                </div>
+    
+                                <div class="col-lg-8">
+                                    <h3 id="detail-title" class="mb-1"></h3>
+                                    <p id="detail-tagline" class="text-muted fst-italic mb-3"></p>
+    
+                                    <div class="detail-meta-info">
+                                        <span id="detail-rating"><i class="bi bi-star-fill text-warning me-1"></i> N/A</span>
+                                        <span id="detail-release-date"><i class="bi bi-calendar3 me-1"></i> N/A</span>
+                                        <span id="detail-runtime-seasons"><i class="bi bi-clock-history me-1"></i> N/A</span>
+                                    </div>
+                                   
+    
+                                    <div id="detail-genres" class="mb-3">
+                                    </div>
+    
+                                    <h4>Overview</h4>
+                                    <p id="detail-overview" style="line-height: 1.8;"></p>
+    
+                                    <div id="detail-cast-section" class="mt-4">
+                                        <h4>Top Cast</h4>
+                                        <div id="detail-cast-container" class="d-flex flex-wrap gap-3">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <div id="detail-recommendations-section" class="mt-5">
+                                <h4 class="mb-3">You Might Also Like</h4>
+                                <div class="horizontal-scroll-wrapper simplified-shelf">
+                                    <button class="btn detail-scroll-btn prev disabled" aria-label="Scroll Previous Recommendations" aria-controls="detail-recommendations-container" disabled>
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <div id="detail-recommendations-container" class="horizontal-scroll-container">
+
+                                        <div class="loading-shelf-text"><div class="loading-spinner"></div> Loading recommendations...</div>
+                                    </div>
+                                    <button class="btn detail-scroll-btn next" aria-label="Scroll Next Recommendations" aria-controls="detail-recommendations-container">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+              
+                     <div class="modal-footer">
+                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                     </div>
+                </div>
+            </div>
+        </div>
 
      <!-- === VENDOR LIBRARIES (Ensure these load) === -->
      <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
