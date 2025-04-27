@@ -1,4 +1,4 @@
-      /* --- Root Variables --- */
+  /* --- Root Variables --- */
         :root {
             --bg-primary: #050609;
             --bg-secondary: #0C0E14;
@@ -235,7 +235,8 @@
         .card-meta { font-size: 0.7rem; color: var(--text-medium); opacity: 0.9; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
         .card-meta span { display: inline-flex; align-items: center; gap: 0.2rem; }
         .card-meta i { font-size: 0.9em; opacity: 0.8; }
-        .h-scroll-btn { position: absolute; top: calc(50% - 1rem); transform: translateY(-50%); z-index: 20; width: 45px; height: 45px; border-radius: 50%; background-color: rgba(var(--surface-rgb), 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; display: flex; align-items: center; justify-content: center; opacity: 0; transition: all var(--transition-medium); pointer-events: none; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; }
+        .h-scroll-btn { position: absolute; top: calc(50% - 1rem); transform: translateY(-50%);  z-index: 20; width: 45px; height: 100px;  background-color: rgba(var(--surface-rgb), 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; display: flex; align-items: center; justify-content: center; opacity: 0; transition: all var(--transition-medium); pointer-events: none; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; }
+        .h-scroll-btn i { font-size: 1.2em; color: var(--text-light);  margin: 0 auto;}
         .horizontal-scroll-wrapper:hover .h-scroll-btn:not(.disabled), .h-scroll-btn:focus-visible:not(.disabled) { opacity: 1; pointer-events: auto; }
         .h-scroll-btn:not(.disabled):hover { background-color: rgba(var(--primary-accent-rgb), 0.4); border-color: rgba(var(--primary-accent-rgb), 0.6); transform: translateY(-50%) scale(1.1); box-shadow: 0 8px 25px rgba(var(--primary-accent-rgb), 0.3); }
         .h-scroll-btn.prev { left: 0.5rem; }
@@ -561,7 +562,7 @@
         }
 
         /* Trailer Modal Specific */
-        #trailer-modal .modal-dialog { max-width: 900px; margin: 1.5rem auto; } /* Adjusted max-width */
+        #trailer-modal .modal-dialog { max-width: 900px; margin: 1.5rem auto; display: block;} /* Adjusted max-width */
         #trailer-modal .modal-content { background-color: #000; border: none; }
         #trailer-modal .modal-body { padding: 0; position: relative;}
         #trailer-modal .modal-close-video { position: absolute; top: -12px; right: -12px; width: 32px; height: 32px; background-color: rgba(var(--bg-primary-rgb), 0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-light); border: 1px solid var(--border-color); cursor: pointer; z-index: 1060; transition: var(--transition-medium); font-size: 1rem; }
@@ -795,4 +796,409 @@
 /* Style to apply when video is playing (JS adds this class) */
 .contained-video-player.playing {
     cursor: default; /* Change cursor when playing */
+}
+
+/* ================================= */
+/* ===== Enhanced Detail Modal ===== */
+/* ================================= */
+
+#detailModal .modal-dialog {
+    /* Allow more height on larger screens if needed */
+    max-height: 95vh;
+}
+
+#detailModal .modal-content {
+    background-color: var(--surface-color); /* Use a distinct surface color */
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl); /* Larger radius for modal */
+    box-shadow: var(--shadow-lg), 0 0 40px rgba(var(--primary-accent-rgb), 0.1); /* Add subtle glow */
+    overflow: hidden; /* Contain children */
+}
+
+#detailModal .modal-header {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.5); /* Slightly different header bg */
+    border-bottom: 1px solid rgba(var(--border-color), 0.7);
+    padding: 1rem 1.8rem; /* Adjusted padding */
+    align-items: center;
+}
+
+#detailModal .modal-title { /* Placeholder styling */
+    color: var(--text-medium);
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+#detailModal .modal-header .btn-close {
+    filter: invert(0.8) grayscale(100%) brightness(150%); /* Softer close button */
+    opacity: 0.7;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    font-size: 0.8rem;
+}
+#detailModal .modal-header .btn-close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+#detailModal .modal-body {
+    padding: 1.5rem 2rem; /* More horizontal padding */
+}
+
+/* Loading Spinner Styling */
+#detail-loading-spinner {
+    min-height: 300px; /* Ensure space for spinner */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#detail-loading-spinner .large-spinner {
+    width: 45px;
+    height: 45px;
+    border: 5px solid rgba(var(--text-medium-rgb), 0.25);
+    border-left-color: var(--primary-accent);
+    border-top-color: var(--secondary-accent); /* Add second color */
+    border-radius: 50%;
+    animation: spin 1.1s linear infinite;
+}
+#detail-loading-spinner p {
+    font-size: 0.95rem;
+    margin-top: 1.2rem;
+    color: var(--text-medium);
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+/* Content Area Styling */
+#detail-content-area .row {
+    align-items: flex-start; /* Align columns top */
+}
+
+/* Poster Styles */
+#detail-poster {
+    display: block; /* Ensure it behaves like a block */
+    width: 100%; /* Take up column width */
+    max-width: 350px; /* Limit max size */
+    height: auto; /* Maintain aspect ratio */
+    margin-left: auto; /* Center if column wider */
+    margin-right: auto;
+    border-radius: var(--radius-lg); /* Consistent radius */
+    box-shadow: var(--shadow-lg);
+    border: 2px solid rgba(var(--border-color), 0.6);
+    background-color: var(--bg-tertiary); /* Placeholder bg */
+    margin-bottom: 1.5rem !important; /* Ensure space below */
+}
+
+/* Action Button (Trailer) */
+#detail-trailer-button {
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--radius-pill);
+    background: var(--gradient-primary); /* Consistent gradient */
+    color: #fff;
+    box-shadow: var(--shadow-glow-primary), var(--shadow-md);
+    transition: all var(--transition-medium);
+}
+#detail-trailer-button:hover:not(:disabled) {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 14px 28px rgba(var(--primary-accent-rgb), 0.3), 0 10px 10px rgba(0,0,0,0.25);
+    filter: brightness(1.1);
+    color: #fff;
+}
+#detail-trailer-button:disabled {
+    filter: grayscale(70%);
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--border-color); /* Use border color for disabled bg */
+    box-shadow: none;
+    transform: none !important;
+}
+
+/* Right Column - Info */
+#detail-title { /* Title inside the main body */
+    font-family: var(--font-family-headings);
+    font-size: clamp(1.8rem, 4vw, 2.4rem); /* Responsive title size */
+    font-weight: 700;
+    color: var(--text-light);
+    margin-bottom: 0.4rem;
+    line-height: 1.25;
+}
+#detail-tagline {
+    font-size: 1.05rem; /* Slightly larger */
+    color: var(--text-medium);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    opacity: 0.9;
+}
+
+/* Meta Info (Rating, Date, Runtime) */
+/* *** IMPORTANT: Ensure you wrap these spans in a div with class="detail-meta-info" in the HTML *** */
+.detail-meta-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem 1.8rem; /* Row and column gap */
+    margin-bottom: 1.8rem;
+    padding-bottom: 1.2rem; /* Increased padding */
+    border-bottom: 1px solid rgba(var(--border-color), 0.4); /* Solid, slightly darker border */
+    font-size: 0.9rem;
+    color: var(--text-medium);
+}
+.detail-meta-info span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.detail-meta-info i {
+    font-size: 1.1em;
+    color: var(--secondary-accent); /* Use secondary accent */
+    opacity: 0.9;
+    vertical-align: middle; /* Better alignment */
+}
+/* Specific icon colors */
+#detail-rating i { color: #ffc107; } /* Keep star yellow */
+#detail-release-date i { color: var(--tertiary-accent); } /* Pink for date */
+#detail-runtime-seasons i { color: var(--primary-accent); } /* Purple for time/seasons */
+
+/* Genres */
+#detail-genres {
+    margin-bottom: 2rem;
+    line-height: 1.5; /* Allow badges to wrap better */
+}
+#detail-genres .badge {
+    background-color: rgba(var(--primary-accent-rgb), 0.15); /* Slightly less intensity */
+    color: var(--primary-accent);
+    border: 1px solid rgba(var(--primary-accent-rgb), 0.25);
+    padding: 0.4em 0.8em; /* More padding */
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-right: 0.6rem;
+    margin-bottom: 0.6rem;
+    border-radius: var(--radius-sm); /* Smaller radius for badges */
+    transition: all var(--transition-fast);
+    cursor: default;
+    display: inline-block; /* Ensure proper spacing/wrapping */
+}
+#detail-genres .badge:hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.3);
+    transform: translateY(-2px);
+    border-color: rgba(var(--primary-accent-rgb), 0.4);
+    color: #fff; /* Brighter text on hover */
+    box-shadow: 0 4px 10px rgba(var(--primary-accent-rgb), 0.15);
+}
+
+/* Section Titles (Overview, Cast, Recommendations) */
+#detailModal h4 {
+    margin-top: 2.5rem;
+    margin-bottom: 1.2rem;
+    font-size: 1.3rem; /* Slightly larger section titles */
+    font-weight: 600;
+    color: var(--text-light);
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(var(--border-color), 0.5); /* Stronger border */
+    position: relative;
+}
+/* Accent Line */
+#detailModal h4::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -1px; /* Position over the border */
+    width: 55px; /* Slightly longer */
+    height: 3px; /* Thicker */
+    background: var(--gradient-primary);
+    border-radius: 2px;
+    box-shadow: var(--shadow-glow-primary); /* Add glow to line */
+}
+
+/* Overview Text */
+#detail-overview {
+    line-height: 1.9; /* Increased line height */
+    color: var(--text-medium);
+    font-size: 0.95rem;
+}
+
+/* Cast Section */
+#detail-cast-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem; /* Adjust gap */
+}
+#detail-cast-container .cast-member {
+    flex: 0 0 90px; /* Allow slightly more space */
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-medium);
+    padding: 0.6rem; /* Padding around content */
+    border-radius: var(--radius-md);
+    background-color: transparent;
+    border: 1px solid transparent; /* Placeholder for hover */
+    transition: all var(--transition-fast);
+    cursor: pointer; /* Indicate clickable (if you add functionality later) */
+}
+#detail-cast-container .cast-member:hover {
+    transform: translateY(-5px);
+    background-color: rgba(var(--surface-rgb), 0.6);
+    border-color: rgba(var(--border-color), 0.8);
+    box-shadow: var(--shadow-md);
+}
+#detail-cast-container .cast-member img {
+    width: 65px; /* Consistent size */
+    height: 65px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 0.5rem;
+    background-color: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    transition: border-color var(--transition-fast), transform 0.3s ease;
+}
+#detail-cast-container .cast-member:hover img {
+    border-color: var(--primary-accent);
+    transform: scale(1.05);
+}
+#detail-cast-container .cast-member .cast-name {
+    display: block;
+    color: var(--text-light);
+    font-weight: 500;
+    line-height: 1.25;
+    margin-bottom: 0.15rem;
+    /* Prevent overflow for long names */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+#detail-cast-container .cast-member .cast-character {
+    display: -webkit-box; /* Use line-clamp for multi-line */
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    height: calc(1.3em * 2); /* Approximate height */
+    color: var(--text-medium);
+    opacity: 0.8;
+}
+
+
+/* Recommendations Section */
+#detail-recommendations-section {
+    margin-top: 3rem; /* More space above recommendations */
+    padding-top: 1.5rem; /* Add padding */
+    border-top: 1px solid rgba(var(--border-color), 0.5); /* Separator line */
+}
+.simplified-shelf {
+     margin: 0 -2rem; /* Extend slightly into padding for edge-to-edge feel */
+     padding: 0 2rem;
+}
+.simplified-shelf .horizontal-scroll-container {
+    padding-bottom: 1rem;
+    transform: none;
+}
+.simplified-shelf .movie-card {
+    flex: 0 0 clamp(145px, 18vw, 170px); /* Adjusted size */
+    box-shadow: var(--shadow-md); /* Slightly more shadow */
+    border: 1px solid rgba(var(--border-color), 0.6);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.simplified-shelf .movie-card:hover {
+    transform: scale(1.05) translateY(-6px); /* More pronounced hover */
+    box-shadow: var(--shadow-lg), 0 0 15px rgba(var(--primary-accent-rgb), 0.1);
+    border-color: var(--border-color-light);
+}
+
+/* Watch Providers Styling (Refined) */
+#detail-providers-container {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed rgba(var(--border-color), 0.4);
+}
+#detail-providers-container h6 {
+    font-size: 0.9rem;
+    margin-bottom: 0.7rem; /* More space */
+    color: var(--text-medium); /* Muted title */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+    /* Remove border from h6 */
+}
+#detail-providers-container .provider-logo {
+    width: 32px; /* Slightly larger */
+    height: 32px;
+    border-radius: var(--radius-sm);
+    margin-right: 6px;
+    margin-bottom: 6px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0.85; /* Slightly transparent */
+}
+#detail-providers-container .provider-logo:hover {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+/* Scrollbar Styling for Modal Body */
+#detailModal .modal-body::-webkit-scrollbar { width: 6px;}
+#detailModal .modal-body::-webkit-scrollbar-track { background: rgba(var(--surface-rgb), 0.3); border-radius: 5px;}
+#detailModal .modal-body::-webkit-scrollbar-thumb { background-color: var(--primary-accent); border-radius: 5px; border: 2px solid rgba(var(--surface-rgb), 0.3); } /* Add border to thumb */
+#detailModal .modal-body::-webkit-scrollbar-thumb:hover { background-color: var(--secondary-accent); border-color: rgba(var(--surface-rgb), 0.5); }
+/* Firefox */
+#detailModal .modal-body { scrollbar-width: thin; scrollbar-color: var(--primary-accent) rgba(var(--surface-rgb), 0.3); }
+
+
+/* --- Detail Modal Scroll Buttons --- */
+.detail-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 99; /* Above cards */
+    width: 38px; /* Slightly smaller */
+    height: 38px;
+    border-radius: 50%;
+    background-color: rgba(var(--surface-rgb), 0.9); /* Use surface color */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(var(--border-color), 0.6);
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8; /* Slightly transparent */
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    padding: 0;
+    font-size: 1.1rem;
+}
+.detail-scroll-btn i {
+    line-height: 1;
+    margin: 0 auto;
+}
+/* Only show buttons fully when hovering the shelf area */
+.simplified-shelf:not(:hover) .detail-scroll-btn {
+   opacity: 0.3;
+}
+
+.detail-scroll-btn:not(.disabled):hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.5); /* Use accent color */
+    border-color: rgba(var(--primary-accent-rgb), 0.7);
+    transform: translateY(-50%) scale(1.1); /* Keep vertical centering */
+    box-shadow: var(--shadow-glow-primary);
+    opacity: 1;
+    color: #fff;
+}
+
+.detail-scroll-btn.prev {
+    left: 5px; /* Adjust position */
+}
+
+.detail-scroll-btn.next {
+    right: 5px; /* Adjust position */
+}
+
+.detail-scroll-btn.disabled {
+    opacity: 0 !important; /* Hide disabled buttons completely */
+    pointer-events: none;
+    cursor: default;
+    transform: translateY(-50%) scale(0.8); /* Optional shrink effect */
 }
