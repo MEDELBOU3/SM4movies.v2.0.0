@@ -2955,167 +2955,107 @@
             // --- NEW Rendering Function for Horizontal Cards ---
                  // Inside App object
 
-/**
- * Renders items as horizontal cards (backdrop focus) in a container.
- * @param {Array} items - Array of movie/TV show objects from TMDb.
- * @param {HTMLElement} containerElement - The DOM element to render cards into.
- * @param {string|null} [defaultType=null] - Default media type ('movie' or 'tv') if not present on item.
- * @param {boolean} [showTrailerButton=false] - Whether to include a play trailer button.
- * @param {boolean} [showViewCount=false] - Whether to display the view count.
- */
-renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false, showViewCount = false) => {
-    const utils = App.utils; // Assuming App.utils is accessible
-    const config = App.config; // Assuming App.config is accessible
+   renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false) => {
+                 if (!containerElement) return;
+                 containerElement.innerHTML = ''; // Clear spinner/previous
 
-    if (!utils || !config) {
-        console.error("renderHorizontalCards: Missing App.utils or App.config!");
-        if (containerElement) containerElement.innerHTML = '<p class="text-danger">Error: App utilities missing.</p>';
-        return;
-    }
-    if (!containerElement) {
-        utils.error("renderHorizontalCards: Target container element is missing!");
-        return;
-    }
+                 if (!items || items.length === 0) {
+                     containerElement.innerHTML = `<p class="text-muted px-3" style="width: 100%;">No items found.</p>`;
+                     return;
+                 }
 
-    containerElement.innerHTML = ''; // Clear previous content/skeletons
+                 items.forEach(item => {
+                    // Determine type (movie/tv)
+                    let itemType = item.media_type || defaultType;
+                    if (!itemType) {
+                        if (item.title) itemType = 'movie';
+                        else if (item.name) itemType = 'tv';
+                        else return; // Skip if unknown
+                    }
+                    if (itemType === 'person' || !item.id) return; // Skip people or items without ID
 
-    if (!items || items.length === 0) {
-        containerElement.innerHTML = `<p class="text-muted px-3" style="width: 100%; text-align: center;">No items found for this section.</p>`;
-        // Ensure scroll buttons are updated for empty state
-        App.updateHScrollButtons(containerElement,
-                                 containerElement.previousElementSibling, // Assuming prev button is sibling
-                                 containerElement.nextElementSibling);    // Assuming next button is sibling
-        return;
-    }
+                    const title = Utils.escapeHtml(item.title || item.name || 'N/A');
+                    // Use backdrop for horizontal cards, fallback to poster if needed
+                    const imagePath = item.backdrop_path || item.poster_path;
+                    // Use a larger backdrop size (w780)
+                    const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+                    const year = (item.release_date || item.first_air_date || '').substring(0, 4);
+                    const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
 
-    const fragment = document.createDocumentFragment(); // More efficient rendering
+                    const cardLink = document.createElement('a');
+                    cardLink.href = `#details=${itemType}/${item.id}`;
+                    cardLink.className = 'h-card';
+                    cardLink.title = title;
 
-    items.forEach(item => {
-        // Determine type (movie/tv)
-        let itemType = item.media_type || defaultType;
-        if (!itemType) {
-            if (item.title) itemType = 'movie';
-            else if (item.name) itemType = 'tv';
-            else { utils.warn("Skipping item with unknown type:", item); return; }
-        }
-        if (itemType === 'person' || !item.id) return; // Skip people or items without ID
+                    // Image or Placeholder
+                    const imageHtml = imageUrl
+                        ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+                        : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`; // Placeholder icon
 
-        // Extract data
-        const title = utils.escapeHtml(item.title || item.name || 'N/A');
-        const imagePath = item.backdrop_path || item.poster_path; // Prefer backdrop
-        const imageUrl = imagePath ? `${config.IMAGE_BASE_URL}w780${imagePath}` : null; // w780 backdrop size
-        const year = utils.getYear(item.release_date || item.first_air_date);
-        const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
-        const viewCount = item.viewCount; // Expect viewCount property if showViewCount is true
-        const genreIds = item.genre_ids || []; // Needed for favorite button data
+                     // Overlay Content
+                    const overlayHtml = `
+                        <div class="h-card-overlay">
+                            <h3 class="h-card-title">${title}</h3>
+                             <p class="h-card-meta small opacity-80">
+                                ${year ? `<span>${year}</span>` : ''}
+                                ${rating && parseFloat(rating) > 0 ? `<span class="ms-2"><i class="bi bi-star-fill text-warning"></i> ${rating}</span>` : ''}
+                             </p>
+                        </div>
+                    `;
 
-        // Create card link element
-        const cardLink = document.createElement('a');
-        cardLink.href = `#details=${itemType}/${item.id}`;
-        cardLink.className = 'h-card'; // Horizontal card class
-        cardLink.title = `${title}${year ? ` (${year})` : ''}`;
-        cardLink.style.position = 'relative'; // Needed for absolute buttons
+                    // Trailer Button (only added if showTrailerButton is true)
+                    const trailerButtonHtml = showTrailerButton
+                        ? `<button class="h-card-play-trailer-btn"
+                                   aria-label="Play Trailer for ${title}"
+                                   data-item-id="${item.id}"
+                                   data-item-type="${itemType}">
+                              <i class="bi bi-play-fill"></i>
+                          </button>`
+                        : '';
+                    
+                    const isInList = Watchlist.isInWatchlist(item.id, itemType);
+                    const watchlistBtnHtml = `
+                         <button class="btn watchlist-btn ${isInList ? 'in-watchlist' : ''}"
+                                 title="${isInList ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
+                                 aria-label="${isInList ? 'Remove from Watchlist' : 'Add to Watchlist'}"
+                                 data-item-id="${item.id}"
+                                 data-item-type="${itemType}"
+                                 data-item-title="${Utils.escapeHtml(item.title || item.name || '')}"
+                                 data-item-poster="${item.poster_path || null}"
+                                 data-item-backdrop="${item.backdrop_path || null}"
+                                 data-item-rating="${item.vote_average || null}"
+                                 style="/* Adjust positioning if needed for h-card */ top: 0.6rem; right: 0.6rem;"
+                                 >
+                             <i class="bi ${isInList ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
+                         </button>
+                    `;
 
-        // Image or Placeholder
-        const imageHtml = imageUrl
-            ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
-            : `<div class="h-card-backdrop d-flex align-items-center justify-content-center bg-secondary"><i class="bi bi-film fs-1 text-muted"></i></div>`; // Placeholder
+                    cardLink.innerHTML = imageHtml + overlayHtml + trailerButtonHtml + watchlistBtnHtml;
 
-        // Meta Info String
-        let metaHtml = '';
-        if(year) metaHtml += `<span>${year}</span>`;
-        if (rating && parseFloat(rating) > 0) metaHtml += `<span class="ms-2"><i class="bi bi-star-fill text-warning"></i> ${rating}</span>`;
-        if (showViewCount && viewCount !== undefined && viewCount !== '?') {
-            metaHtml += `<span class="ms-2 view-count-meta"><i class="bi bi-eye-fill"></i> ${viewCount.toLocaleString()}</span>`;
-        }
 
-        // Overlay Content
-        const overlayHtml = `
-            <div class="h-card-overlay">
-                <h3 class="h-card-title">${title}</h3>
-                <p class="h-card-meta small opacity-80">${metaHtml}</p>
-            </div>
-        `;
+                    // Add click listener for trailer button IF it exists
+                    const trailerButton = cardLink.querySelector('.h-card-play-trailer-btn');
+                    if (trailerButton) {
+                        trailerButton.addEventListener('click', (e) => {
+                            e.preventDefault(); // Prevent navigation from the link
+                            e.stopPropagation(); // Stop event bubbling
+                            App.handlePlayTrailerClick(e.currentTarget);
+                        });
+                    }
 
-        // Trailer Button (Conditional)
-        const trailerButtonHtml = showTrailerButton
-            ? `<button class="btn btn-sm h-card-play-trailer-btn"
-                       aria-label="Play Trailer for ${title}"
-                       data-item-id="${item.id}"
-                       data-item-type="${itemType}">
-                  <i class="bi bi-play-fill"></i>
-              </button>`
-            : '';
+                    const addedWatchlistButton = cardLink.querySelector('.watchlist-btn');
+                    if (addedWatchlistButton) {
+                        addedWatchlistButton.addEventListener('click', (e) => {
+                            e.preventDefault(); // Prevent link navigation
+                            e.stopPropagation();
+                            App.handleAddOrRemoveWatchlist(e.currentTarget);
+                        });
+                    }
 
-        // Watchlist Button
-        const isInWatchlist = Watchlist.isFavorite(item.id, itemType); // Assuming Watchlist is global
-        const watchlistBtnHtml = `
-            <button class="btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}"
-                    title="${isInWatchlist ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
-                    aria-label="${isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}"
-                    data-item-id="${item.id}" data-item-type="${itemType}"
-                    data-item-title="${title}" data-item-poster="${item.poster_path || ''}"
-                    data-item-backdrop="${item.backdrop_path || ''}" data-item-rating="${item.vote_average || ''}"
-                    >
-                <i class="bi ${isInWatchlist ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
-            </button>`;
 
-        // Favorite Button
-        const isFavorite = Favorites.isFavorite(item.id, itemType); // Assuming Favorites is global
-        const likeBtnHtml = `
-            <button class="btn action-btn like-btn ${isFavorite ? 'is-favorite' : ''}"
-                    title="${isFavorite ? 'Favorited (Click to unfavorite)' : 'Add to Favorites'}"
-                    aria-label="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}"
-                    data-item-id="${item.id}" data-item-type="${itemType}"
-                    data-item-title="${title}" data-item-poster="${item.poster_path || ''}"
-                    data-item-rating="${item.vote_average || ''}"
-                    data-item-genres="${JSON.stringify(genreIds)}">
-                <i class="bi ${isFavorite ? 'bi-heart-fill' : 'bi-heart'}"></i>
-            </button>`;
-
-        // Assemble the card's inner HTML
-        cardLink.innerHTML = imageHtml + overlayHtml + trailerButtonHtml + watchlistBtnHtml + likeBtnHtml;
-
-        // Add event listeners AFTER setting innerHTML
-        const trailerButton = cardLink.querySelector('.h-card-play-trailer-btn');
-        if (trailerButton) {
-            trailerButton.addEventListener('click', (e) => {
-                e.preventDefault(); e.stopPropagation();
-                if(App.handlePlayTrailerClick) App.handlePlayTrailerClick(e.currentTarget);
-                else utils.error("App.handlePlayTrailerClick not found!");
-            });
-        }
-
-        const watchlistButton = cardLink.querySelector('.watchlist-btn');
-        if (watchlistButton) {
-            watchlistButton.addEventListener('click', (e) => {
-                e.preventDefault(); e.stopPropagation();
-                 if(App.handleAddOrRemoveWatchlist) App.handleAddOrRemoveWatchlist(e.currentTarget);
-                 else utils.error("App.handleAddOrRemoveWatchlist not found!");
-            });
-        }
-
-        const likeButton = cardLink.querySelector('.like-btn');
-        if (likeButton) {
-            likeButton.addEventListener('click', (e) => {
-                e.preventDefault(); e.stopPropagation();
-                 if(App.handleAddOrRemoveFavorite) App.handleAddOrRemoveFavorite(e.currentTarget);
-                 else utils.error("App.handleAddOrRemoveFavorite not found!");
-            });
-        }
-
-        fragment.appendChild(cardLink); // Append card to fragment
-    });
-
-    containerElement.appendChild(fragment); // Append all cards at once
-    // Initialize tooltips if necessary (assuming App.initializeTooltips exists)
-    if (App.initializeTooltips) App.initializeTooltips(containerElement);
-    // Update scroll buttons AFTER content is added
-    App.updateHScrollButtons(containerElement,
-                             containerElement.previousElementSibling,
-                             containerElement.nextElementSibling);
-
-}, // End renderHorizontalCards
+                    containerElement.appendChild(cardLink);
+                });
+            },
            
              // --- NEW: Handler for Trailer Button Click ---
              handlePlayTrailerClick: async (button) => {
