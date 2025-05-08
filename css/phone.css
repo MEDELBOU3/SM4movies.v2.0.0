@@ -1,176 +1,160 @@
-      #phoneContainer {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+#phoneContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 0;
+}
 
-       .phone-container {
-            position: relative;
-            width: 800px;
-            height: 380px;
-            perspective: 1000px;
-        }
+#phoneContainer .phone-container {
+    position: relative;
+    width: 800px;
+    height: 380px;
+    perspective: 1000px;
+}
 
-        .phone {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(145deg, #1c2526, #2e3839);
-            border-radius: 40px;
-            padding: 15px;
-            box-shadow: 
-                0 25px 50px -12px rgba(0, 0, 0, 0.7),
-                inset 0 2px 12px rgba(255, 255, 255, 0.15),
-                0 0 0 2px #2a2a2a;
-            overflow: hidden;
-            filter: saturate(1.2);
-        }
+#phoneContainer .phone {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #1c2526, #2e3839);
+    border-radius: 40px;
+    padding: 15px;
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.7),
+        inset 0 2px 12px rgba(255, 255, 255, 0.15),
+        0 0 0 2px #2a2a2a;
+    overflow: hidden;
+    filter: saturate(1.2);
+}
 
-        .screen {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            border-radius: 25px;
-            overflow: hidden;
-        }
+#phoneContainer .screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-radius: 25px;
+    overflow: hidden;
+}
 
-        .video-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+#phoneContainer .video-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-        #videoPlayer {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+#phoneContainer #youtubePlayer {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 25px;
+}
 
-        .play-button {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.25);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(6px);
-            transition: transform 0.3s ease, background 0.3s ease;
-        }
+#phoneContainer .play-button {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(6px);
+    transition: transform 0.3s ease, background 0.3s ease;
+    z-index: 10;
+}
 
-        .play-button:hover {
-            transform: scale(1.1);
-            background: rgba(255, 255, 255, 0.35);
-        }
+#phoneContainer .play-button:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.35);
+}
 
-        .play-button::before {
-            content: '';
-            width: 0;
-            height: 0;
-            border-style: solid;
-            border-width: 15px 0 15px 25px;
-            border-color: transparent transparent transparent #ffffff;
-            margin-left: 5px;
-        }
+#phoneContainer .play-button::before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 15px 0 15px 25px;
+    border-color: transparent transparent transparent #ffffff;
+    margin-left: 5px;
+}
 
-        .notch {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 25px;
-            background: #000;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            z-index: 10;
-        }
+#phoneContainer .notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 25px;
+    background: #000;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+}
 
-        .camera {
-            width: 8px;
-            height: 8px;
-            background: #333;
-            border-radius: 50%;
-            box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.5);
-        }
+#phoneContainer .camera {
+    width: 8px;
+    height: 8px;
+    background: #333;
+    border-radius: 50%;
+    box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.5);
+}
 
-        .sensor {
-            width: 50px;
-            height: 4px;
-            background: #333;
-            border-radius: 2px;
-            box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.5);
-        }
+#phoneContainer .sensor {
+    width: 50px;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.5);
+}
 
-        .power-button {
-            position: absolute;
-            right: -2px;
-            top: 90px;
-            width: 4px;
-            height: 60px;
-            background: #2a2a2a;
-            border-radius: 2px;
-            box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.2);
-        }
+#phoneContainer .power-button {
+    position: absolute;
+    right: -2px;
+    top: 90px;
+    width: 4px;
+    height: 60px;
+    background: #2a2a2a;
+    border-radius: 2px;
+    box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.2);
+}
 
-        .volume-buttons {
-            position: absolute;
-            left: -2px;
-            top: 90px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+#phoneContainer .volume-buttons {
+    position: absolute;
+    left: -2px;
+    top: 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
 
-        .volume-button {
-            width: 4px;
-            height: 40px;
-            background: #2a2a2a;
-            border-radius: 2px;
-            box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.2);
-        }
+#phoneContainer .volume-button {
+    width: 4px;
+    height: 40px;
+    background: #2a2a2a;
+    border-radius: 2px;
+    box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.2);
+}
 
-        .reflection {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.15) 0%,
-                rgba(255, 255, 255, 0.05) 40%,
-                rgba(255, 255, 255, 0) 60%
-            );
-            pointer-events: none;
-            border-radius: 40px;
-            mix-blend-mode: overlay;
-        }
+@media (max-width: 850px) {
+    #phoneContainer .phone-container {
+        width: 90%;
+        height: 220px;
+    }
 
-        @media (max-width: 850px) {
-            .phone-container {
-                width: 90%;
-                height: 200px;
-            }
-            
-            .play-button {
-                width: 60px;
-                height: 60px;
-            }
-            
-            .play-button::before {
-                border-width: 12px 0 12px 20px;
-            }
-        }
+    #phoneContainer .play-button {
+        width: 60px;
+        height: 60px;
+    }
+
+    #phoneContainer .play-button::before {
+        border-width: 12px 0 12px 20px;
+    }
+}
