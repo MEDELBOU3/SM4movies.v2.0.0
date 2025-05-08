@@ -1,4 +1,5 @@
-   .phone-container {
+      .phone-container {
+            margin: 0 auto;
             position: relative;
             width: 800px;
             height: 380px;
