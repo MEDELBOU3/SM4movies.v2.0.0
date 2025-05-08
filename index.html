@@ -22,6 +22,7 @@
     <!-- AOS Animate On Scroll Library CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/phone.css">
 </head>
 <body>
     <!-- Loading Screen -->
@@ -141,6 +142,34 @@
                  </div>
             </section>
 
+              <div class="phone-container">
+        <div class="phone">
+            <div class="notch">
+                <div class="camera"></div>
+                <div class="sensor"></div>
+                <div class="camera"></div>
+            </div>
+            <div class="power-button"></div>
+            <div class="volume-buttons">
+                <div class="volume-button"></div>
+                <div class="volume-button"></div>
+            </div>
+           <div class="screen">
+                <div class="video-container">
+                    <iframe
+                        id="youtubePlayer"
+                        width="100%"
+                        height="100%"
+                        src="https://www.youtube.com/embed/zEpdM_zW6yY"
+                        frameborder="0"
+                        allow="autoplay; encrypted-media"
+                        allowfullscreen
+                        style="border-radius: 25px;"
+                    ></iframe>
+                    <div class="play-button" onclick="playYouTubeVideo()"></div>
+                </div>
+            </div>
+    </div>
 
             <!-- Content Showcase Section -->
             <section id="content-showcase" class="section section-angled-top section-angled-bottom">
@@ -817,6 +846,6 @@
 
     <!-- Enhanced Landing Page Application JS -->
     <script src="app.js"></script>
-
+    <script src="js/phone.js"></script>
 </body>
 </html>
