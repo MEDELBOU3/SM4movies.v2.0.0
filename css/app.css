@@ -3289,3 +3289,43 @@ body.theme-light .skeleton-h-card-overlay {
 #spotify-soundtrack-content .text-warning.small i {
     color: var(--warning-color); /* Use warning color for icon */
 }
+
+
+
+/* Add this to your main CSS file */
+.rating-stars-details .rating-star-details {
+    font-size: 1.9rem; /* Slightly larger for details page */
+    color: #6c757d; /* Muted empty star color */
+    cursor: pointer;
+    margin-right: 6px;
+    transition: color 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.rating-stars-details .rating-star-details:hover,
+.rating-stars-details .rating-star-details.hover { /* 'hover' class for JS control */
+    color: #ffc107; /* Bootstrap warning yellow */
+    transform: scale(1.1);
+}
+
+.rating-stars-details .rating-star-details.bi-star-fill {
+    color: #ffc107;
+}
+
+/* Optional: class for already rated stars */
+.rating-stars-details .rating-star-details.rated.bi-star-fill {
+    color: #ffc107; /* Or a slightly different gold if you prefer */
+}
+
+#user-rating-section-details,
+#community-rating-section-details {
+    padding-top: 15px;
+    margin-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Light border */
+}
+
+#user-rating-text-details {
+    display: block; /* Ensure it takes its own line if needed */
+    min-height: 1.2em; /* Prevent layout jump when text changes */
+}
+
+
