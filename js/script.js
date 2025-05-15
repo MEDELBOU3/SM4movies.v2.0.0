@@ -4368,8 +4368,8 @@ if (State.visNetworkInstance) {
          `;
      },
 
-     // Renders the details page content
-  // Renders the details page content
+       
+             // Renders the details page content
              renderDetailsPage: (itemData) => {
                  if (!DOM.detailsWrapper) return;
                  DOM.detailsWrapper.innerHTML = ''; // Clear previous
@@ -4453,6 +4453,24 @@ if (State.visNetworkInstance) {
                              </div>
                     </div>
                  `;
+
+                    let ratingSystemHtml = `
+                    <div id="user-rating-section-details" class="details-section mt-4" style="display: none;"> <!-- Hidden by default -->
+                        <h4 class="text-white fw-semibold custom-color">Your Rating</h4>
+                        <div id="user-stars-details" class="rating-stars-details mb-1">
+                           <i class="bi bi-star rating-star-details" data-value="1" title="Rate 1 star"></i>
+                           <i class="bi bi-star rating-star-details" data-value="2" title="Rate 2 stars"></i>
+                           <i class="bi bi-star rating-star-details" data-value="3" title="Rate 3 stars"></i>
+                           <i class="bi bi-star rating-star-details" data-value="4" title="Rate 4 stars"></i>
+                           <i class="bi bi-star rating-star-details" data-value="5" title="Rate 5 stars"></i>
+                        </div>
+                        <small id="user-rating-text-details" class="text-muted"></small>
+                    </div>
+                    <div id="community-rating-section-details" class="details-section mt-2">
+                       <p class="mb-0"><strong class="text-white-50">Community Rating:</strong> <span id="community-rating-text-details">Loading...</span></p>
+                    </div>
+                `;
+                detailsHtml += ratingSystemHtml; 
 
                  // Seasons & Episodes Section (for TV only)
                  if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
@@ -4598,13 +4616,232 @@ if (State.visNetworkInstance) {
                         );
                     });
                 }
-                console.log(`[renderDetailsPage] Calling loadAndRenderSoundtrack for ${displayTitle} (${year})`); 
+
                 App.loadAndRenderSoundtrack(type, displayTitle, year);
+
+                  
+                // --- NEW: Initialize Rating System After Rendering Details ---
+                // These functions will select their own DOM elements as they are now part of detailsWrapper
+                const itemIdForRating = itemData.id;
+                const itemTypeForRating = type; // 'movie' or 'tv'
+                App._fetchAndDisplayUserRating(itemIdForRating, itemTypeForRating); // Handles login check internally
+                const ratingDocIdForCommunity = `${itemTypeForRating}_${itemIdForRating}`;
+                App._fetchAndDisplayCommunityRating(ratingDocIdForCommunity);
+                console.log(`[renderDetailsPage] Calling loadAndRenderSoundtrack for ${displayTitle} (${year})`);
 
                  App.initializeTooltips(DOM.detailsWrapper); // Activate tooltips within details view
              },
 
 
+
+             // Add these new functions inside the App object in script.js
+
+// --- Rating System Helper Functions ---
+_renderStars: (ratingValue = 0, starContainerElement, isRated = false) => {
+    if (!starContainerElement) return;
+    const stars = starContainerElement.querySelectorAll('.rating-star-details');
+    stars.forEach(star => {
+        const starVal = parseInt(star.dataset.value);
+        star.classList.toggle('bi-star-fill', starVal <= ratingValue);
+        star.classList.toggle('bi-star', starVal > ratingValue);
+        star.classList.toggle('rated', isRated && starVal <= ratingValue); // Add 'rated' class if a firm rating exists
+    });
+},
+
+_handleStarHover: (event, starContainerElement) => {
+    if (!starContainerElement) return;
+    const hoverValue = parseInt(event.target.dataset.value);
+    const stars = starContainerElement.querySelectorAll('.rating-star-details');
+    stars.forEach(star => {
+        const starVal = parseInt(star.dataset.value);
+        // Add a temporary 'hover' class instead of directly changing bi-star-fill
+        // to avoid conflict with the actual 'rated' state.
+        star.classList.toggle('hover', starVal <= hoverValue);
+        // Visually fill based on hover
+        if (starVal <= hoverValue) {
+            star.classList.add('bi-star-fill');
+            star.classList.remove('bi-star');
+        } else {
+            star.classList.remove('bi-star-fill');
+            star.classList.add('bi-star');
+        }
+    });
+},
+
+_handleStarMouseLeave: (starContainerElement) => {
+    if (!starContainerElement) return;
+    // Re-render stars based on the actual current rating (stored on the container's dataset)
+    const currentRating = parseInt(starContainerElement.dataset.currentRating || '0');
+    const isRated = starContainerElement.dataset.isRated === 'true';
+    App._renderStars(currentRating, starContainerElement, isRated);
+    // Remove temporary hover class
+    starContainerElement.querySelectorAll('.rating-star-details').forEach(s => s.classList.remove('hover'));
+},
+
+_handleStarClick: async (event, itemId, itemType) => {
+    // Uses global appAuth and appDb from firebase.js
+    if (typeof appAuth === 'undefined' || !appAuth.currentUser || typeof appDb === 'undefined' || !appDb) {
+        Utils.showToast("You must be logged in to rate items.", "warning");
+        // Optionally, redirect to login or open a login modal
+        return;
+    }
+
+    const newRating = parseInt(event.target.dataset.value);
+    const userId = appAuth.currentUser.uid;
+    const ratingDocId = `${itemType}_${itemId}`;
+    const ratingDocRef = appDb.collection('item_ratings').doc(ratingDocId);
+
+    const userRatingTextEl = document.getElementById('user-rating-text-details'); // Select dynamically
+    const starContainer = document.getElementById('user-stars-details'); // Select dynamically
+
+    if (userRatingTextEl) userRatingTextEl.textContent = "Saving your rating...";
+    if (starContainer) starContainer.style.pointerEvents = 'none'; // Disable stars during save
+
+    try {
+        await appDb.runTransaction(async (transaction) => {
+            const doc = await transaction.get(ratingDocRef);
+            let currentTotalScore = 0;
+            let currentRatingCount = 0;
+            let userRatingsMap = {};
+            let oldUserRating = 0;
+
+            if (doc.exists) {
+                currentTotalScore = doc.data().totalScore || 0;
+                currentRatingCount = doc.data().ratingCount || 0;
+                userRatingsMap = doc.data().userRatings || {};
+                oldUserRating = userRatingsMap[userId] || 0;
+            }
+
+            if (oldUserRating > 0) { // User is updating rating
+                currentTotalScore = currentTotalScore - oldUserRating + newRating;
+            } else { // New rating from this user
+                currentTotalScore = currentTotalScore + newRating;
+                currentRatingCount += 1;
+            }
+            userRatingsMap[userId] = newRating;
+            const newAverageRating = currentRatingCount > 0 ? (currentTotalScore / currentRatingCount) : 0;
+
+            transaction.set(ratingDocRef, {
+                totalScore: currentTotalScore,
+                ratingCount: currentRatingCount,
+                averageRating: parseFloat(newAverageRating.toFixed(2)), // Store as number, round to 2 decimal
+                userRatings: userRatingsMap,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        });
+
+        Utils.showToast(`Your rating of ${newRating}/5 has been saved!`, "success");
+        if (userRatingTextEl) userRatingTextEl.textContent = `Your rating: ${newRating}/5`;
+        if (starContainer) {
+            starContainer.dataset.currentRating = newRating;
+            starContainer.dataset.isRated = 'true';
+            App._renderStars(newRating, starContainer, true);
+        }
+        // After successful save, refresh the community rating display
+        App._fetchAndDisplayCommunityRating(ratingDocId);
+
+    } catch (error) {
+        console.error("Error saving rating:", error);
+        if (userRatingTextEl) userRatingTextEl.textContent = "Error saving rating. Try again.";
+        Utils.showToast("Could not save your rating. Please try again.", "danger");
+        if (starContainer) { // Re-render stars to previous state on error
+            const previousRating = parseInt(starContainer.dataset.currentRating || '0');
+            const previousIsRated = starContainer.dataset.isRated === 'true';
+            App._renderStars(previousRating, starContainer, previousIsRated);
+        }
+    } finally {
+        if (starContainer) starContainer.style.pointerEvents = 'auto'; // Re-enable stars
+    }
+},
+
+_fetchAndDisplayUserRating: async (itemId, itemType) => {
+    const userRatingSection = document.getElementById('user-rating-section-details');
+    const starContainer = document.getElementById('user-stars-details');
+    const userRatingTextEl = document.getElementById('user-rating-text-details');
+
+    if (!userRatingSection || !starContainer || !userRatingTextEl) {
+        console.warn("User rating DOM elements not found for _fetchAndDisplayUserRating.");
+        return;
+    }
+
+    // Uses global appAuth and appDb from firebase.js
+    if (typeof appAuth === 'undefined' || !appAuth.currentUser || typeof appDb === 'undefined' || !appDb) {
+        Utils.setElementVisibility(userRatingSection, false); // Hide if not logged in
+        return;
+    }
+
+    Utils.setElementVisibility(userRatingSection, true);
+    userRatingTextEl.textContent = 'Loading your rating...';
+    App._renderStars(0, starContainer, false); // Reset stars
+    starContainer.dataset.currentRating = '0';
+    starContainer.dataset.isRated = 'false';
+
+
+    const userId = appAuth.currentUser.uid;
+    const ratingDocId = `${itemType}_${itemId}`;
+    const ratingDocRef = appDb.collection('item_ratings').doc(ratingDocId);
+
+    try {
+        const doc = await ratingDocRef.get();
+        let userRating = 0;
+        let isRated = false;
+        if (doc.exists && doc.data().userRatings && doc.data().userRatings[userId]) {
+            userRating = doc.data().userRatings[userId];
+            isRated = true;
+            userRatingTextEl.textContent = `Your rating: ${userRating}/5`;
+        } else {
+            userRatingTextEl.textContent = 'Rate this title!';
+        }
+        starContainer.dataset.currentRating = userRating;
+        starContainer.dataset.isRated = String(isRated);
+        App._renderStars(userRating, starContainer, isRated);
+
+        // Attach listeners to stars
+        const stars = starContainer.querySelectorAll('.rating-star-details');
+        stars.forEach(star => {
+            star.onclick = (e) => App._handleStarClick(e, itemId, itemType);
+            star.onmouseenter = (e) => App._handleStarHover(e, starContainer);
+            star.onmouseleave = () => App._handleStarMouseLeave(starContainer);
+        });
+
+    } catch (error) {
+        console.error("Error fetching user rating:", error);
+        userRatingTextEl.textContent = 'Could not load your rating.';
+        Utils.showToast("Failed to load your rating.", "warning");
+    }
+},
+
+_fetchAndDisplayCommunityRating: async (ratingDocId) => {
+    const communityRatingTextEl = document.getElementById('community-rating-text-details');
+    if (!communityRatingTextEl) {
+        console.warn("Community rating DOM element not found.");
+        return;
+    }
+    // Uses global appDb from firebase.js
+    if (typeof appDb === 'undefined' || !appDb) {
+        communityRatingTextEl.textContent = 'Service unavailable.';
+        return;
+    }
+
+    communityRatingTextEl.textContent = 'Loading...';
+    const ratingDocRef = appDb.collection('item_ratings').doc(ratingDocId);
+
+    try {
+        const doc = await ratingDocRef.get();
+        if (doc.exists && doc.data().averageRating !== undefined) {
+            const avg = parseFloat(doc.data().averageRating).toFixed(1);
+            const count = doc.data().ratingCount || 0;
+            communityRatingTextEl.innerHTML = `<i class="bi bi-star-fill text-warning me-1"></i> ${avg}/5 <span class="text-muted small">(${count} vote${count === 1 ? '' : 's'})</span>`;
+        } else {
+            communityRatingTextEl.textContent = 'Not yet rated by the community.';
+        }
+    } catch (error) {
+        console.error("Error fetching community rating:", error);
+        communityRatingTextEl.textContent = 'Error loading rating.';
+        Utils.showToast("Failed to load community rating.", "warning");
+    }
+},
+// End Rating System Helper Functions
 /**
  * Fetches the Spotify soundtrack for a given movie/TV item and renders it.
  * Selects DOM elements dynamically within the function.
