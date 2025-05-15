@@ -4370,271 +4370,234 @@ if (State.visNetworkInstance) {
 
        
              // Renders the details page content
-             renderDetailsPage: (itemData) => {
-                 if (!DOM.detailsWrapper) return;
-                 DOM.detailsWrapper.innerHTML = ''; // Clear previous
+           renderDetailsPage: (itemData) => {
+    if (!DOM.detailsWrapper) return;
+    DOM.detailsWrapper.innerHTML = ''; // Clear previous
 
-                 const type = itemData.title ? 'movie' : 'tv';
-                 const displayTitle = Utils.escapeHtml(itemData.title || itemData.name || 'N/A');
-                 const backdropUrl = itemData.backdrop_path ? `${config.BACKDROP_BASE_URL}${itemData.backdrop_path}` : '';
-                 const posterUrl = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : '';
-                 const rating = itemData.vote_average ? itemData.vote_average.toFixed(1) : null;
-                 const year = (itemData.release_date || itemData.first_air_date || '').substring(0, 4);
-                 const formattedRuntime = type === 'movie' && itemData.runtime ? Utils.formatRuntime(itemData.runtime) : null;
-                 const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
-                 const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
+    const type = itemData.title ? 'movie' : 'tv';
+    const displayTitle = Utils.escapeHtml(itemData.title || itemData.name || 'N/A');
+    const backdropUrl = itemData.backdrop_path ? `${config.BACKDROP_BASE_URL}${itemData.backdrop_path}` : '';
+    const posterUrl = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : '';
+    const rating = itemData.vote_average ? itemData.vote_average.toFixed(1) : null;
+    const year = (itemData.release_date || itemData.first_air_date || '').substring(0, 4);
+    const formattedRuntime = type === 'movie' && itemData.runtime ? Utils.formatRuntime(itemData.runtime) : null;
+    const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
+    const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
 
-                // --- Add Connection Explorer Button near Actions ---
-                const connectionButtonHtml = `
-                    <button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2"
-                       data-item-id="${itemData.id}"
-                       data-item-type="${type}"
-                       data-item-title="${Utils.escapeHtml(itemData.title || itemData.name || '')}">
-                       <i class="bi bi-diagram-3-fill me-1"></i> Show Connections
-                    </button>
-                 `;
+    const connectionButtonHtml = `
+        <button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2"
+           data-item-id="${itemData.id}"
+           data-item-type="${type}"
+           data-item-title="${Utils.escapeHtml(itemData.title || itemData.name || '')}">
+           <i class="bi bi-diagram-3-fill me-1"></i> Show Connections
+        </button>
+     `;
 
-                 // Extract credits
-                 const credits = itemData.credits;
-                 const director = credits?.crew?.find(p => p.job === 'Director')?.name;
-                 const creators = type === 'tv' ? credits?.crew?.filter(p => p.department === 'Writing' && (p.job === 'Creator' || p.job === 'Writer')).map(c => Utils.escapeHtml(c.name)).slice(0, 3).join(', ') : ''; // Get up to 3 creators/writers
-                 const castList = credits?.cast?.slice(0, 12) || []; // Top 12 cast members
+    const credits = itemData.credits;
+    const director = credits?.crew?.find(p => p.job === 'Director')?.name;
+    const creators = type === 'tv' ? credits?.crew?.filter(p => p.department === 'Writing' && (p.job === 'Creator' || p.job === 'Writer')).map(c => Utils.escapeHtml(c.name)).slice(0, 3).join(', ') : '';
+    const castList = credits?.cast?.slice(0, 12) || [];
+    const similarList = itemData.similar?.results?.slice(0, 12) || [];
+    const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
+    const actionsContainerSelector = '.details-actions'; // Selector for where to append connection button
 
-                 // Similar items
-                 const similarList = itemData.similar?.results?.slice(0, 12) || [];
-              
-                // Watch Providers (US Flatrate only)
-                const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
-            
-                const actionsContainerSelector = '.details-actions';
-                 let detailsHtml = `
-                     <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
-                     <div class="container details-content-overlay">
-                         <button onclick="Utils.goBackOrHome();" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                         <div class="details-header row mb-5 align-items-center">
-                             <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
-                                 ${posterUrl ? `<img src="${posterUrl}" alt="${displayTitle} Poster" class="img-fluid shadow-lg" style="border-radius: var(--radius-lg); border: 3px solid rgba(255,255,255,0.1);" loading="lazy">` : `<div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center mx-auto" style="width:100%; aspect-ratio:2/3; max-width:280px;">No Poster</div>`}
-                             </div>
-                             <div class="details-info col-lg-9 col-md-8">
-                                 <h1 class="text-white mb-2 custom-color">${displayTitle}</h1>
-                                 <div class="details-meta mb-3 d-flex align-items-center flex-wrap">
-                                     ${rating && parseFloat(rating) > 0 ? `<span class="d-flex align-items-center me-3"><i class="bi bi-star-fill text-warning me-1"></i> ${rating}/10</span>` : ''}
-                                     ${year ? `<span class="d-flex align-items-center me-3"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
-                                     ${formattedRuntime ? `<span class="d-flex align-items-center me-3"><i class="bi bi-clock me-1"></i> ${formattedRuntime}</span>` : ''}
-                                     ${numberOfSeasons ? `<span class="d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${numberOfSeasons} Season${numberOfSeasons > 1 ? 's' : ''}</span>` : ''}
-                                 </div>
-                                 <div class="genres mb-3">
-                                     ${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}
-                                 </div>
-                                 ${displayOverview !== 'No overview available.' ? `<h4 id="text-white" class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
-                                 ${director ? `<p class="small mb-1"><strong class="text-white-50"">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
-                                 ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
-                                <div class="details-section mt-4">
-                                    <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
-                                    <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;">
-                                        <p class="text-muted small mb-0">Click the button to generate AI-powered insights.</p>
-                                    </div>
-                                    <button id="get-ai-insight-btn" class="btn btn-sm btn-outline-info"
-                                        data-item-id="${itemData.id}"
-                                        data-item-type="${type}"
-                                        data-item-title="${displayTitle}"
-                                        data-item-year="${year}">
-                                        <i class="bi bi-magic me-1"></i> Get AI Insight
-                                    </button>
-                                    <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
-                                </div>
-                                 <div class="details-actions mt-4">
-                                     <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
-                                      <!-- Add Trailer Button if videos exist -->
-                                      ${itemData.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ?
-                                          `<button class="btn btn-outline-secondary btn-lg" onclick="App.playTrailer('${itemData.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}')"><i class="bi bi-film me-2"></i> Play Trailer</button>` : ''
-                                      }
-                                 </div>
-                             </div>
-                    </div>
-                 `;
-
-                    let ratingSystemHtml = `
-                    <div id="user-rating-section-details" class="details-section mt-4" style="display: none;"> <!-- Hidden by default -->
-                        <h4 class="text-white fw-semibold custom-color">Your Rating</h4>
-                        <div id="user-stars-details" class="rating-stars-details mb-1">
-                           <i class="bi bi-star rating-star-details" data-value="1" title="Rate 1 star"></i>
-                           <i class="bi bi-star rating-star-details" data-value="2" title="Rate 2 stars"></i>
-                           <i class="bi bi-star rating-star-details" data-value="3" title="Rate 3 stars"></i>
-                           <i class="bi bi-star rating-star-details" data-value="4" title="Rate 4 stars"></i>
-                           <i class="bi bi-star rating-star-details" data-value="5" title="Rate 5 stars"></i>
+    let detailsHtml = `
+         <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
+         <div class="container details-content-overlay"> {/* Main content container starts here */}
+             <button onclick="Utils.goBackOrHome();" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+             <div class="details-header row mb-5 align-items-center">
+                 <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
+                     ${posterUrl ? `<img src="${posterUrl}" alt="${displayTitle} Poster" class="img-fluid shadow-lg" style="border-radius: var(--radius-lg); border: 3px solid rgba(255,255,255,0.1);" loading="lazy">` : `<div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center mx-auto" style="width:100%; aspect-ratio:2/3; max-width:280px;">No Poster</div>`}
+                 </div>
+                 <div class="details-info col-lg-9 col-md-8">
+                     <h1 class="text-white mb-2 custom-color">${displayTitle}</h1>
+                     <div class="details-meta mb-3 d-flex align-items-center flex-wrap">
+                         ${rating && parseFloat(rating) > 0 ? `<span class="d-flex align-items-center me-3"><i class="bi bi-star-fill text-warning me-1"></i> ${rating}/10</span>` : ''}
+                         ${year ? `<span class="d-flex align-items-center me-3"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
+                         ${formattedRuntime ? `<span class="d-flex align-items-center me-3"><i class="bi bi-clock me-1"></i> ${formattedRuntime}</span>` : ''}
+                         ${numberOfSeasons ? `<span class="d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${numberOfSeasons} Season${numberOfSeasons > 1 ? 's' : ''}</span>` : ''}
+                     </div>
+                     <div class="genres mb-3">
+                         ${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}
+                     </div>
+                     ${displayOverview !== 'No overview available.' ? `<h4 id="text-white" class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
+                     ${director ? `<p class="small mb-1"><strong class="text-white-50">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
+                     ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
+                    <div class="details-section mt-4">
+                        <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
+                        <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;">
+                            <p class="text-muted small mb-0">Click the button to generate AI-powered insights.</p>
                         </div>
-                        <small id="user-rating-text-details" class="text-muted"></small>
+                        <button id="get-ai-insight-btn" class="btn btn-sm btn-outline-info"
+                            data-item-id="${itemData.id}"
+                            data-item-type="${type}"
+                            data-item-title="${displayTitle}"
+                            data-item-year="${year}">
+                            <i class="bi bi-magic me-1"></i> Get AI Insight
+                        </button>
+                        <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
                     </div>
-                    <div id="community-rating-section-details" class="details-section mt-2">
-                       <p class="mb-0"><strong class="text-white-50">Community Rating:</strong> <span id="community-rating-text-details">Loading...</span></p>
-                    </div>
-                `;
-                detailsHtml += ratingSystemHtml; 
+                     <div class="details-actions mt-4">
+                         <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
+                          ${itemData.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ?
+                              `<button class="btn btn-outline-secondary btn-lg" onclick="App.playTrailer('${itemData.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}')"><i class="bi bi-film me-2"></i> Play Trailer</button>` : ''
+                          }
+                     </div>
+                 </div>
+        </div> 
 
-                 // Seasons & Episodes Section (for TV only)
-                 if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
-                     // Filter out "Specials" (season 0) unless it's the only season
-                     const validSeasons = itemData.seasons.filter(s => s.season_number > 0 || itemData.seasons.length === 1);
-                     if (validSeasons.length > 0) {
-                         detailsHtml += App.renderTVSeasonsSection(itemData.id, validSeasons);
-                     }
-                 }
-
-                // Cast Section - UPDATED to use links to #person view
-                if (castList.length > 0) {
-                    detailsHtml += `
-                        
-                        <div class="details-section mt-5">
-                            <h2 class="details-section-title">Cast</h2>
-                            <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
-                                ${castList.map(member => {
-                                    const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A'; // Use smaller image for cast grid
-                                    // Wrap in an anchor tag linking to the person view
-                                return `
-
-                            <div class="col mb-3">
-                                <a href="#person=${member.id}" class="cast-member-link">
-                                    <i class="bi bi-person-circle img-fallback-icon-init d-none"></i>
-                                   <img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy" onerror="this.previousElementSibling.classList.remove('d-none'); this.classList.add('d-none');">
-                                   <div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div>
-                                   <div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div>
-                                </a>
-                                <style>
-                                    .d-none {
-                                        display: none;
-                                    }
-
-                                    .img-fallback-icon-init {
-                                        font-size: 8rem;  /* Adjust size of the fallback icon */
-                                        color: #ccc;  /* You can adjust the color to match your design */
-                                        display: inline-block;
-                                        width: 120px;  /* Match the size of your images */
-                                        height: 180px; /* Match the size of your images */
-                                        text-align: center;
-                                        line-height: 180px;  /* Center the icon vertically */
-                                    }
-
-                                </style>
-                           </div>
-                        `;
-                           }).join('')}
-                         </div>
-                      </div>
-                    `;
-                }
-                // --- <<<SPOTIFY SECTION INSERTION >>> ---
-                detailsHtml += `
-                    <div class="details-section mt-5" id="spotify-soundtrack-section" > <!-- Start hidden -->
-                        <h2 class="details-section-title d-flex align-items-center">
-                            <i class="bi bi-spotify me-2" style="color: #1DB954;"></i> Soundtrack on Spotify
-                        </h2>
-                        <div id="spotify-soundtrack-content" class="d-flex flex-column flex-md-row align-items-start gap-4">
-                            <!-- Content loaded by JS -->
-                            <div class="spinner-border text-light spinner-border-sm" role="status">
-                                <span class="visually-hidden">Loading soundtrack...</span>
-                            </div>
-                            <span class="text-muted small">Searching Spotify...</span>
-                        </div>
-                    </div>
-                `;
-                // --- <<< END SPOTIFY SECTION INSERTION >>> ---
-
-                 // Similar Section
-                 if (similarList.length > 0) {
-                     detailsHtml += `
-                         <div class="details-section mt-5">
-                             <h2 class="details-section-title">You Might Also Like</h2>
-                             <div id="similar-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
-                                 <!-- Similar items rendered after main HTML insertion -->
-                                 ${Utils.getSpinnerHTML("Loading recommendations...")}
-                             </div>
-                         </div>
-                     `;
-                 }
-
-                 // Streaming Providers Section
-                 if (usSubProviders.length > 0) {
-                     detailsHtml += `
-                          <div class="details-section mt-5">
-                              <h2 class="details-section-title">Stream on (US Subscriptions)</h2>
-                              <div class="d-flex flex-wrap gap-3 align-items-center">
-                                  ${usSubProviders.map(p => `
-                                      <a href="#network=${p.provider_id}" title="Browse ${Utils.escapeHtml(p.provider_name)}">
-                                          <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;" loading="lazy">
-                                      </a>`).join('')}
-                              </div>
-                              <small class="d-block mt-2 text-muted">Streaming availability via JustWatch/TMDb.</small>
-                          </div>
-                      `;
-                  }
-
-
-                 detailsHtml += `</div>`; // Close main container
-                 DOM.detailsWrapper.innerHTML = detailsHtml;
     
-                 // --- Post-Render Actions ---
-                 // Render similar cards
-                 if (similarList.length > 0) {
-                     const similarGrid = document.getElementById('similar-grid');
-                     if (similarGrid) {
-                         App.renderTmdbCards(similarList, similarGrid, type, false); // Pass type hint
-                     }
-                 }
+        <div id="user-rating-section-details" class="details-section mt-4" > 
+            <h4 class="text-white fw-semibold custom-color">Your Rating</h4>
+            <div id="user-stars-details" class="rating-stars-details mb-1">
+               <i class="bi bi-star rating-star-details" data-value="1" title="Rate 1 star"></i>
+               <i class="bi bi-star rating-star-details" data-value="2" title="Rate 2 stars"></i>
+               <i class="bi bi-star rating-star-details" data-value="3" title="Rate 3 stars"></i>
+               <i class="bi bi-star rating-star-details" data-value="4" title="Rate 4 stars"></i>
+               <i class="bi bi-star rating-star-details" data-value="5" title="Rate 5 stars"></i>
+            </div>
+            <small id="user-rating-text-details" class="text-muted"></small>
+        </div>
+        <div id="community-rating-section-details" class="details-section mt-2 mb-4">
+           <p class="mb-0"><strong class="text-white-50">Community Rating:</strong> <span id="community-rating-text-details">Loading...</span></p>
+        </div>
 
-                 // Initialize season tabs and load first season if TV
-                 if (type === 'tv' && itemData.seasons?.filter(s => s.season_number > 0 || itemData.seasons.length === 1).length > 0) {
-                     App.addSeasonTabListeners(itemData.id);
-                     // Trigger click on the first non-disabled tab to load its content
-                     const firstTab = DOM.detailsWrapper.querySelector('.nav-pills .nav-link:not(.disabled)');
-                     firstTab?.click();
-                 }
+    `; {/* Intentionally leaving detailsHtml open to append more sections */}
 
-                // Add listener for the connection button *after* rendering
-                const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
-                if (actionsContainer) {
-                   // Create button element and add listener
-                   const btnDiv = document.createElement('div'); // Temporary div
-                   btnDiv.innerHTML = connectionButtonHtml.trim();
-                   const connectionButton = btnDiv.firstChild;
-                   connectionButton.addEventListener('click', App.handleShowConnectionsClick);
-                   actionsContainer.appendChild(connectionButton); // Append the button
-                }
+    // Seasons & Episodes Section (for TV only)
+    if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
+        const validSeasons = itemData.seasons.filter(s => s.season_number > 0 || itemData.seasons.length === 1);
+        if (validSeasons.length > 0) {
+            detailsHtml += App.renderTVSeasonsSection(itemData.id, validSeasons);
+        }
+    }
 
+    // Cast Section
+    if (castList.length > 0) {
+        detailsHtml += `
+            <div class="details-section mt-5">
+                <h2 class="details-section-title">Cast</h2>
+                <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
+                    ${castList.map(member => {
+                        const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A';
+                        return `
+                        <div class="col mb-3">
+                            <a href="#person=${member.id}" class="cast-member-link">
+                                <i class="bi bi-person-circle img-fallback-icon-init d-none"></i>
+                               <img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy" onerror="this.previousElementSibling.classList.remove('d-none'); this.classList.add('d-none');">
+                               <div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div>
+                               <div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div>
+                            </a>
+                            {/* CSS for fallback icon is now assumed to be in your main CSS */}
+                       </div>
+                    `;
+                       }).join('')}
+                     </div>
+                  </div>
+                `;
+            }
 
-                // --- NEW: Add AI Button Listener ---
-                DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn');
-                DOM.detailsAiInsightContainer = DOM.detailsWrapper.querySelector('#ai-insight-container');
-                if (DOM.detailsAiInsightBtn) {
-                    DOM.detailsAiInsightBtn.addEventListener('click', (e) => {
-                        const btn = e.currentTarget;
-                        App.handleGetAiInsight(
-                            btn.dataset.itemType,
-                            btn.dataset.itemId,
-                            btn.dataset.itemTitle,
-                            btn.dataset.itemYear
-                        );
-                    });
-                }
+    // Spotify Soundtrack Section
+    detailsHtml += `
+        <div class="details-section mt-5" id="spotify-soundtrack-section" >
+            <h2 class="details-section-title d-flex align-items-center">
+                <i class="bi bi-spotify me-2" style="color: #1DB954;"></i> Soundtrack on Spotify
+            </h2>
+            <div id="spotify-soundtrack-content" class="d-flex flex-column flex-md-row align-items-start gap-4">
+                <div class="spinner-border text-light spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading soundtrack...</span>
+                </div>
+                <span class="text-muted small">Searching Spotify...</span>
+            </div>
+        </div>
+    `;
 
-                App.loadAndRenderSoundtrack(type, displayTitle, year);
+    // Similar Section
+    if (similarList.length > 0) {
+        detailsHtml += `
+             <div class="details-section mt-5">
+                 <h2 class="details-section-title">You Might Also Like</h2>
+                 <div id="similar-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                     ${Utils.getSpinnerHTML("Loading recommendations...")}
+                 </div>
+             </div>
+         `;
+     }
 
-                  
-                // --- NEW: Initialize Rating System After Rendering Details ---
-                // These functions will select their own DOM elements as they are now part of detailsWrapper
-                const itemIdForRating = itemData.id;
-                const itemTypeForRating = type; // 'movie' or 'tv'
-                App._fetchAndDisplayUserRating(itemIdForRating, itemTypeForRating); // Handles login check internally
-                const ratingDocIdForCommunity = `${itemTypeForRating}_${itemIdForRating}`;
-                App._fetchAndDisplayCommunityRating(ratingDocIdForCommunity);
-                console.log(`[renderDetailsPage] Calling loadAndRenderSoundtrack for ${displayTitle} (${year})`);
+    // Streaming Providers Section
+    if (usSubProviders.length > 0) {
+        detailsHtml += `
+              <div class="details-section mt-5">
+                  <h2 class="details-section-title">Stream on (US Subscriptions)</h2>
+                  <div class="d-flex flex-wrap gap-3 align-items-center">
+                      ${usSubProviders.map(p => `
+                          <a href="#network=${p.provider_id}" title="Browse ${Utils.escapeHtml(p.provider_name)}">
+                              <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;" loading="lazy">
+                          </a>`).join('')}
+                  </div>
+                  <small class="d-block mt-2 text-muted">Streaming availability via JustWatch/TMDb.</small>
+              </div>
+          `;
+      }
 
-                 App.initializeTooltips(DOM.detailsWrapper); // Activate tooltips within details view
-             },
+    detailsHtml += `</div>`; // Close main .container.details-content-overlay
+    DOM.detailsWrapper.innerHTML = detailsHtml; // Inject the complete HTML string
 
+    // --- Post-Render Actions ---
+    // Render similar cards
+    if (similarList.length > 0) {
+        const similarGrid = document.getElementById('similar-grid'); // Query after innerHTML is set
+        if (similarGrid) {
+            App.renderTmdbCards(similarList, similarGrid, type, false);
+        }
+    }
 
+    // Initialize season tabs and load first season if TV
+    if (type === 'tv' && itemData.seasons?.filter(s => s.season_number > 0 || itemData.seasons.length === 1).length > 0) {
+        App.addSeasonTabListeners(itemData.id);
+        const firstTab = DOM.detailsWrapper.querySelector('.nav-pills .nav-link:not(.disabled)');
+        firstTab?.click();
+    }
 
-             // Add these new functions inside the App object in script.js
+    // Add listener for the connection button
+    const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
+    if (actionsContainer) {
+       const btnDiv = document.createElement('div');
+       btnDiv.innerHTML = connectionButtonHtml.trim();
+       const connectionButton = btnDiv.firstChild;
+       connectionButton.addEventListener('click', App.handleShowConnectionsClick);
+       actionsContainer.appendChild(connectionButton);
+    }
+
+    // Add AI Insight Button Listener
+    DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn'); // Select after innerHTML
+    if (DOM.detailsAiInsightBtn) {
+        DOM.detailsAiInsightBtn.addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            App.handleGetAiInsight(
+                btn.dataset.itemType,
+                btn.dataset.itemId,
+                btn.dataset.itemTitle,
+                btn.dataset.itemYear
+            );
+        });
+    }
+
+    // Load Soundtrack
+    App.loadAndRenderSoundtrack(type, displayTitle, year);
+
+    // ---Initialize Rating System After Rendering Details ---
+    const itemIdForRating = itemData.id;
+    const itemTypeForRating = type;
+
+    // These functions now correctly find their DOM elements because the main HTML is set
+    App._fetchAndDisplayUserRating(itemIdForRating, itemTypeForRating);
+    const ratingDocIdForCommunity = `${itemTypeForRating}_${itemIdForRating}`;
+    App._fetchAndDisplayCommunityRating(ratingDocIdForCommunity);
+
+    App.initializeTooltips(DOM.detailsWrapper);
+},
+        
 
 // --- Rating System Helper Functions ---
 _renderStars: (ratingValue = 0, starContainerElement, isRated = false) => {
