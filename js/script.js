@@ -4278,7 +4278,7 @@ if (State.visNetworkInstance) {
              const bodyHtml = `<div class="card-body d-flex flex-column flex-grow-1 p-3"> <h3 class="card-title fs-6 fw-medium mb-2">${title}</h3> ${rating && parseFloat(rating) > 0 ? `<span class="card-rating mt-auto"><i class="bi bi-star-fill me-1"></i>${rating}</span>` : '<span class="card-rating text-muted small mt-auto">NR</span>'} </div>`;
 
 
-              // --- NEW: Add Watchlist Button ---
+              // ---  Add Watchlist Button ---
             const isInWatchlist = Watchlist.isInWatchlist(item.id, itemType);
             const watchlistBtnHtml = `
                 <button class="btn action-btn watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}"
@@ -4462,7 +4462,7 @@ if (State.visNetworkInstance) {
            <p class="mb-0"><strong class="text-white-50">Community Rating:</strong> <span id="community-rating-text-details">Loading...</span></p>
         </div>
 
-    `; {/* Intentionally leaving detailsHtml open to append more sections */}
+    `; 
 
     // Seasons & Episodes Section (for TV only)
     if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
@@ -4488,7 +4488,6 @@ if (State.visNetworkInstance) {
                                <div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div>
                                <div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div>
                             </a>
-                            {/* CSS for fallback icon is now assumed to be in your main CSS */}
                        </div>
                     `;
                        }).join('')}
