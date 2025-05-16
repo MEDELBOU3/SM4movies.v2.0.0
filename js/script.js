@@ -4403,7 +4403,7 @@ if (State.visNetworkInstance) {
 
     let detailsHtml = `
          <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
-         <div class="container details-content-overlay"> {/* Main content container starts here */}
+         <div class="container details-content-overlay">
              <button onclick="Utils.goBackOrHome();" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
              <div class="details-header row mb-5 align-items-center">
                  <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
