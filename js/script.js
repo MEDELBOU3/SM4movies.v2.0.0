@@ -3433,122 +3433,118 @@ App.updateNetworkScrollButtons();
 * @param {number} [page=1] - The page number to fetch.
 */
 loadNetworkResultsPage: async (page = 1) => {
-// --- 1. Initial Checks ---
-if (!State.currentNetwork || !DOM.networkResultsGrid || !DOM.networkResultsTitle || !DOM.loadMoreNetworkBtn || !DOM.networkLoadingSpinner) {
+  // --- 1. Initial Checks ---
+  if (!State.currentNetwork || !DOM.networkResultsGrid || !DOM.networkResultsTitle || !DOM.loadMoreNetworkBtn || !DOM.networkLoadingSpinner) {
     console.error("loadNetworkResultsPage: Missing state or required DOM elements.");
-    if (DOM.networkResultsGrid) { // Attempt to show error in grid if possible
-         DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML("Page setup error. Cannot load results.");
+    if (DOM.networkResultsGrid) {
+      DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML("Page setup error. Cannot load results.");
     }
-    // Optionally hide spinner/button if they exist
-    if (DOM.networkLoadingSpinner) Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
-    if (DOM.loadMoreNetworkBtn) Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+    Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
+    Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
     return;
-}
+  }
 
-// --- 2. State and Flags ---
-const { id, name, logo } = State.currentNetwork;
-const isInitialLoad = (page === 1);
-let startTime = null;
+  const { id, name, logo } = State.currentNetwork;
+  const isInitialLoad = (page === 1);
+  let startTime = null;
 
-// --- 3. Setup Loading State ---
-Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false); // Always hide 'Load More' at the start of any load
-Utils.setElementVisibility(DOM.networkLoadingSpinner, true); // Show spinner
+  // --- 2. Show Loading State ---
+  Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+  Utils.setElementVisibility(DOM.networkLoadingSpinner, true);
 
-if (isInitialLoad) {
-    // a. Set Title (only on initial load)
+  if (isInitialLoad) {
     let titleHtml = Utils.escapeHtml(name);
-    if (logo && DOM.networkResultsTitle) {
-         // Example: Logo first, then name
-         titleHtml = `<img src="${logo}" alt="${Utils.escapeHtml(name)}" style="height: 30px; width: auto; margin-right: 10px; vertical-align: middle; border-radius: 4px;"> ${titleHtml}`;
-         DOM.networkResultsTitle.innerHTML = `Content on ${titleHtml}`;
-    } else if (DOM.networkResultsTitle) {
-         DOM.networkResultsTitle.textContent = `Content on ${titleHtml}`;
+    if (logo) {
+      titleHtml = `<img src="${logo}" alt="${Utils.escapeHtml(name)}" style="height: 30px; width: auto; margin-right: 10px; vertical-align: middle; border-radius: 4px;"> ${titleHtml}`;
+      DOM.networkResultsTitle.innerHTML = `Content on ${titleHtml}`;
+    } else {
+      DOM.networkResultsTitle.textContent = `Content on ${titleHtml}`;
     }
 
-    // b. Show Skeletons
-    DOM.networkResultsGrid.innerHTML = Utils.getSkeletonCardHTML(24); // Use a sufficiently large number
-
-    // c. Start Timer
+    DOM.networkResultsGrid.innerHTML = Utils.getSkeletonCardHTML(24);
     startTime = performance.now();
-}
+  }
 
-// --- 4. Data Fetching ---
-let networkData = null;
-let fetchError = null;
-let discoveryType = 'movie'; // Default
+  // --- 3. Fetch Both Movie + TV Data ---
+  let movieData = null;
+  let tvData = null;
+  let fetchError = null;
 
-try {
-    // Determine content type (simple example, adjust as needed)
-    const tvFocusedProviders = [203]; // e.g., Crunchyroll ID
-    if (tvFocusedProviders.includes(id)) {
-         discoveryType = 'tv';
-    }
-    console.log(`Fetching page ${page} of /discover/${discoveryType} for provider ${id} (${name})`);
-
-    networkData = await API.fetchTMDB(`/discover/${discoveryType}`, {
-         with_watch_providers: id,
-         watch_region: config.TARGET_REGION,
-         page: page,
-         sort_by: 'popularity.desc' // Or other relevant sorting
-    });
-    // Store type for rendering phase if needed (optional, depends if renderContent needs it)
-     State.currentNetwork.lastDiscoveryType = discoveryType;
-
-} catch (error) {
+  try {
+    const [movieResponse, tvResponse] = await Promise.all([
+      API.fetchTMDB(`/discover/movie`, {
+        with_watch_providers: id,
+        watch_region: config.TARGET_REGION,
+        page,
+        sort_by: 'popularity.desc'
+      }),
+      API.fetchTMDB(`/discover/tv`, {
+        with_watch_providers: id,
+        watch_region: config.TARGET_REGION,
+        page,
+        sort_by: 'popularity.desc'
+      })
+    ]);
+    movieData = movieResponse;
+    tvData = tvResponse;
+  } catch (error) {
     fetchError = error;
-    console.error(`Failed to fetch network results (page ${page}):`, error);
-}
+    console.error("Failed to fetch movie or TV data:", error);
+  }
 
-// --- 5. Render Content Function ---
-const renderContent = () => {
-    // Hide spinner *before* potentially replacing grid content
+  // --- 4. Render Content ---
+  const renderContent = () => {
     Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
 
     if (fetchError) {
-         // Handle fetch error display
-         if (isInitialLoad) {
-             DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load results: ${fetchError.message}`);
-         } else {
-             // Show toast for "Load More" errors, don't clear existing results
-             Utils.showToast(`Failed to load more results: ${fetchError.message}`, 'warning');
-             // Optionally re-enable the button to allow retry?
-             // Utils.setElementVisibility(DOM.loadMoreNetworkBtn, true);
-         }
-    } else if (networkData && networkData.results && networkData.results.length > 0) {
-         // Render successful results
-         // Retrieve the type determined during fetch
-         const fetchedType = State.currentNetwork.lastDiscoveryType || 'movie';
-         App.renderNetworkResultsPage(
-             networkData.results,
-             networkData.page,
-             networkData.total_pages,
-             fetchedType, // Pass the correct type
-             !isInitialLoad // Pass append flag (true if not initial load)
-         );
+      if (isInitialLoad) {
+        DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load results: ${fetchError.message}`);
+      } else {
+        Utils.showToast(`Failed to load more results: ${fetchError.message}`, 'warning');
+      }
     } else {
-         // Handle case where fetch was successful but no results found
-         if (isInitialLoad) {
-             DOM.networkResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this network.</p>';
-         }
-         // If no results on page 1, or no more results on subsequent pages, keep 'Load More' hidden
-         Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
-    }
-};
+      const movieResults = (movieData?.results || []);
+      const tvResults = (tvData?.results || []);
 
-// --- 6. Delay Logic ---
-if (isInitialLoad && startTime) {
+      if (movieResults.length === 0 && tvResults.length === 0) {
+        if (isInitialLoad) {
+          DOM.networkResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this network.</p>';
+        }
+        Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+        return;
+      }
+
+      // Sort by popularity (optional)
+      const combinedResults = [...movieResults.map(r => ({ ...r, media_type: 'movie' })), ...tvResults.map(r => ({ ...r, media_type: 'tv' }))];
+      combinedResults.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+
+      // Render combined results
+      App.renderTmdbCards(combinedResults, DOM.networkResultsGrid, null, !isInitialLoad); // null = mixed types
+
+      // Update Load More
+      const moreMoviePages = movieData.page < movieData.total_pages;
+      const moreTvPages = tvData.page < tvData.total_pages;
+      const canLoadMore = moreMoviePages || moreTvPages;
+
+      if (canLoadMore) {
+        DOM.loadMoreNetworkBtn.dataset.page = page;
+        DOM.loadMoreNetworkBtn.dataset.itemType = 'mixed';
+        Utils.setElementVisibility(DOM.loadMoreNetworkBtn, true);
+      }
+    }
+  };
+
+  // --- 5. Respect Skeleton Delay ---
+  if (isInitialLoad && startTime) {
     const endTime = performance.now();
     const elapsedTime = endTime - startTime;
-    // Calculate remaining time, ensuring it's not negative
-    const remainingTime = Math.max(0, (config.MIN_SKELETON_DISPLAY_TIME || 3000) - elapsedTime); // Use config or default
-
-    console.log(`Data fetch took ${elapsedTime.toFixed(0)}ms. Waiting additional ${remainingTime.toFixed(0)}ms.`);
+    const remainingTime = Math.max(0, (config.MIN_SKELETON_DISPLAY_TIME || 3000) - elapsedTime);
     setTimeout(renderContent, remainingTime);
-} else {
-    // Render immediately for "Load More" (page > 1) or if timer logic failed
+  } else {
     renderContent();
+  }
 }
-},
+
 
 /**
 * Renders the fetched network results into the grid and updates the 'Load More' button.
