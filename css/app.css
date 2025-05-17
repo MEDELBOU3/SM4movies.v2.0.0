@@ -2919,7 +2919,6 @@ body.theme-light .skeleton-h-card-overlay {
     gap: 0.65rem; /* Slightly adjusted gap */
     margin-right: 0.5rem;
     padding: 0.25rem 0; /* Add some vertical padding if needed */
-    max-width: 180px; /* Limit width for smaller screens */
     overflow: hidden; /* Prevent overflow */
     text-overflow: ellipsis; /* Add ellipsis for overflowed text */
     white-space: nowrap; /* Prevent text wrapping */
