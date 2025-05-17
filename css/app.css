@@ -3324,4 +3324,40 @@ body.theme-light .skeleton-h-card-overlay {
     min-height: 1.2em; /* Prevent layout jump when text changes */
 }
 
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--bs-secondary); /* Or your theme's secondary color */
+    color: var(--bs-light); /* Or your theme's light text color */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 0.9rem;
+    overflow: hidden; /* To clip image */
+    cursor: pointer;
+    border: 1px solid rgba(var(--bs-light-rgb), 0.3); /* Subtle border */
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#app-user-dropdown-menu {
+    min-width: 240px; /* Ensure enough space for name/email */
+}
+
+#app-user-dropdown-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+}
+#app-user-dropdown-menu .dropdown-item i {
+    width: 20px; /* Align icons */
+}
+
+
+
 
