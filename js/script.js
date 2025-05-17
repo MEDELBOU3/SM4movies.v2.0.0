@@ -1557,54 +1557,68 @@ const App = {
        console.log("🚀 App Init Starting..."); // Use an emoji for fun!
 
         // --- 1. Essential Initializations (Must Happen First) ---
-         try {
-            console.log("  Initializing Bootstrap components...");
-            bsInstances.navbarCollapse = DOM.navbarMenu ? new bootstrap.Collapse(DOM.navbarMenu, { toggle: false }) : null;
+        // --- 1. Essential Initializations (Must Happen First) ---
+            try {
+                console.log("  Initializing Bootstrap components...");
+                bsInstances.navbarCollapse = DOM.navbarMenu ? new bootstrap.Collapse(DOM.navbarMenu, { toggle: false }) : null;
 
-            console.log("  Initializing global tooltips...");
-            App.initializeTooltips(document.body);
+                console.log("  Initializing global tooltips...");
+                App.initializeTooltips(document.body);
 
-            // Initialize Trailer Modal Instance
-            if (DOM.trailerModalElement) {
-               console.log("  Initializing Trailer Modal...");
-               bsInstances.trailerModal = new bootstrap.Modal(DOM.trailerModalElement);
-               DOM.trailerModalElement.addEventListener('hidden.bs.modal', () => {
-                   if (DOM.trailerModalIframe) DOM.trailerModalIframe.src = 'about:blank';
-               });
-            } else { console.warn("  Trailer Modal element not found."); }
+                // Initialize Trailer Modal Instance
+                if (DOM.trailerModalElement) {
+                   console.log("  Initializing Trailer Modal...");
+                   bsInstances.trailerModal = new bootstrap.Modal(DOM.trailerModalElement);
+                   DOM.trailerModalElement.addEventListener('hidden.bs.modal', () => {
+                       if (DOM.trailerModalIframe) DOM.trailerModalIframe.src = 'about:blank';
+                   });
+                } else { console.warn("  Trailer Modal element not found."); }
 
-     // Initialize Connection Explorer Modal
-     if (DOM.connectionExplorerModal) {
-          console.log("  Initializing Connection Modal & listeners...");
-          bsInstances.connectionModal = new bootstrap.Modal(DOM.connectionExplorerModal);
-          DOM.connectionExplorerModal.addEventListener('shown.bs.modal', () => {
-             if (State.currentExplorerItem && State.isGraphLoading) {
-                 console.log("[Modal Event] 'shown' triggered, loading graph for:", State.currentExplorerItem);
-                 App.loadAndDisplayConnections(State.currentExplorerItem);
-             } else {
-                 console.warn("[Modal Event] 'shown' triggered without active item/loading state.");
-                 if(!State.isGraphLoading && DOM.connectionGraphLoading) Utils.setElementVisibility(DOM.connectionGraphLoading, false);
-             }
-          });
-          DOM.connectionExplorerModal.addEventListener('hidden.bs.modal', () => {
-              console.log("[Modal Event] 'hidden' triggered, cleaning up graph.");
-              App.destroyVisNetwork();
-              State.currentExplorerItem = null;
-              State.isGraphLoading = false;
-              // Reset internal states safely
-               if (DOM.connectionGraphContainer) DOM.connectionGraphContainer.innerHTML = '';
-               Utils.setElementVisibility(DOM.connectionGraphContainer, false);
-               Utils.setElementVisibility(DOM.connectionGraphError, false);
-               Utils.setElementVisibility(DOM.connectionGraphLoading, false);
-          });
-      } else { console.warn("  Connection Explorer Modal element not found."); }
+                // Initialize Connection Explorer Modal
+                if (DOM.connectionExplorerModal) {
+                   console.log("  Initializing Connection Modal & listeners...");
+                   bsInstances.connectionModal = new bootstrap.Modal(DOM.connectionExplorerModal);
+                   DOM.connectionExplorerModal.addEventListener('shown.bs.modal', () => {
+                       if (State.currentExplorerItem && State.isGraphLoading) {
+                           console.log("[Modal Event] 'shown' triggered, loading graph for:", State.currentExplorerItem);
+                           App.loadAndDisplayConnections(State.currentExplorerItem);
+                       } else {
+                           console.warn("[Modal Event] 'shown' triggered without active item/loading state.");
+                           if(!State.isGraphLoading && DOM.connectionGraphLoading) Utils.setElementVisibility(DOM.connectionGraphLoading, false);
+                       }
+                   });
+                   DOM.connectionExplorerModal.addEventListener('hidden.bs.modal', () => {
+                       console.log("[Modal Event] 'hidden' triggered, cleaning up graph.");
+                       App.destroyVisNetwork();
+                       State.currentExplorerItem = null;
+                       State.isGraphLoading = false;
+                       if (DOM.connectionGraphContainer) DOM.connectionGraphContainer.innerHTML = '';
+                       Utils.setElementVisibility(DOM.connectionGraphContainer, false);
+                       Utils.setElementVisibility(DOM.connectionGraphError, false);
+                       Utils.setElementVisibility(DOM.connectionGraphLoading, false);
+                   });
+                } else { console.warn("  Connection Explorer Modal element not found."); }
 
-} catch (error) {
-     console.error("💥 ERROR during essential UI initialization:", error);
-     // Display a user-facing error if critical UI fails?
-     // e.g., document.body.innerHTML = "<h2>Application failed to initialize. Please refresh.</h2>";
-     return; // Stop initialization if basic UI components fail
-}
+                // --- Initialize User Profile Dropdown (Explicitly, though often auto-init works) ---
+                const userProfileDropdownEl = document.getElementById('userProfileDropdown');
+                if (userProfileDropdownEl) {
+                    if (!bootstrap.Dropdown.getInstance(userProfileDropdownEl)) { // Check if not already initialized
+                        new bootstrap.Dropdown(userProfileDropdownEl);
+                        console.log("  User profile dropdown explicitly initialized via JS.");
+                    } else {
+                        console.log("  User profile dropdown instance already exists (likely auto-initialized).");
+                    }
+                    // bsInstances.userProfileDropdown = bootstrap.Dropdown.getInstance(userProfileDropdownEl); // Optionally store instance
+                } else {
+                    console.warn("  User profile dropdown toggle element (#userProfileDropdown) not found during JS init. Relaying on data-bs attributes.");
+                }
+                // --- End User Profile Dropdown Init ---
+
+            } catch (error) {
+                console.error("💥 ERROR during essential UI initialization (Bootstrap components):", error);
+                // Consider if you want to return or show a more prominent UI error
+                // For now, it will log and continue, other parts of init might still work.
+            }
 
 
 // --- 2. Initialize Firebase (with Try/Catch) ---
