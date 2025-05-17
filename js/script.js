@@ -1680,7 +1680,8 @@ try {
  }
 
         // Inside App.init in script.js (usually not needed for Bootstrap 5 auto-init)
-// ... after other Bootstrap component initializations ...
+        // ... after other Bootstrap component initializations ...
+        /*
 try {
     const userProfileDropdownEl = document.getElementById('userProfileDropdown');
     if (userProfileDropdownEl) {
@@ -1697,7 +1698,7 @@ try {
     }
 } catch (e) {
     console.warn("  Could not initialize user profile dropdown programmatically (may auto-init):", e);
-}
+}*/
 
 // --- 5. Setup Routing and Event Listeners ---
 try {
