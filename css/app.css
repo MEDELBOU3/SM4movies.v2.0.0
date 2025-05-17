@@ -2925,24 +2925,6 @@ body.theme-light .skeleton-h-card-overlay {
     transition: var(--transition-base); /* Use global transition */
 }
 
-#app-user-info-area > a#userProfileDropdown.dropdown-toggle {
-    display: flex;
-    align-items: center;
-    padding: 0.25rem 0.1rem; /* Minimal padding, avatar will have its own */
-    text-decoration: none;
-    gap: 0.5rem; /* Gap between avatar and name */
-}
-
-#app-user-info-area > a#userProfileDropdown.dropdown-toggle::after {
-    margin-left: 0.3em;
-    vertical-align: 0.15em;
-    color: var(--bs-navbar-color, rgba(255,255,255,0.55)); /* Ensure it matches navbar text */
-    border-top-width: 0.35em; /* Slightly bolder arrow */
-    border-right-width: 0.35em;
-    border-left-width: 0.35em;
-}
-
-
 #app-login-prompt a.btn { /* Target the anchor specifically */
     display: inline-flex;
     align-items: center;
