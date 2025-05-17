@@ -93,7 +93,145 @@ async function trackView(dbInstance, userId, contentId) {
     }
 }
 
-// --- Main Initialization Logic for app2.html ---
+// --- Main Initialization Logic for app.html ---
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("[Firebase Script] DOMContentLoaded event fired. Initializing Firebase...");
+
+    try {
+        // 1. Initialize Firebase App (check if already initialized)
+        if (!firebase.apps.length) {
+            firebaseApp = firebase.initializeApp(firebaseConfigApp); // Use firebaseConfigApp
+            console.log("[Firebase Init] Firebase App initialized successfully.");
+        } else {
+            firebaseApp = firebase.app(); // Use existing app instance
+            console.log("[Firebase Init] Using existing Firebase App instance.");
+        }
+
+        // 2. Get Auth and Firestore Service Instances
+        appAuth = firebase.auth();
+        appDb = firebase.firestore();
+        console.log("[Firebase Init] Auth and Firestore services obtained.");
+
+        // 3. Get References to Navbar UI Elements
+        const appUserInfoArea = document.getElementById('app-user-info-area');
+        const appUserAvatar = document.getElementById('app-user-avatar'); // Main avatar in toggle
+        const appUserAvatarInitials = document.getElementById('app-user-avatar-initials');
+        const appUserAvatarImage = document.getElementById('app-user-avatar-image');
+        const appUserDisplayName = document.getElementById('app-user-display-name'); // Name next to avatar
+        const appLoginPrompt = document.getElementById('app-login-prompt');
+
+        // New Dropdown Elements
+        const dropdownUserName = document.getElementById('dropdown-user-name');
+        const dropdownUserEmail = document.getElementById('dropdown-user-email');
+        const appLogoutButtonDropdown = document.getElementById('app-logout-button-dropdown');
+
+        // Validate that critical UI elements exist
+        if (!appUserInfoArea || !appLoginPrompt || !appUserAvatar || !appUserDisplayName || !appUserAvatarImage || !appUserAvatarInitials ||
+            !dropdownUserName || !dropdownUserEmail || !appLogoutButtonDropdown) { // Added new elements to check
+            console.error("[Firebase Script] CRITICAL ERROR: One or more navbar UI elements for auth display (including dropdown) are missing in app2.html! Cannot proceed.");
+            if(appLoginPrompt) appLoginPrompt.innerHTML = `<span class="text-danger small">UI Error</span>`;
+            return;
+        }
+
+        // 4. Listen for Authentication State Changes
+        console.log("[Firebase Script] Setting up Auth State Change listener...");
+        appAuth.onAuthStateChanged(user => {
+            console.log(`[Auth State] Changed. User is ${user ? `LOGGED IN (UID: ${user.uid})` : 'LOGGED OUT'}.`);
+
+            if (typeof App !== 'undefined' && typeof App.handleAuthReady === 'function') {
+                console.log("[Auth State] Notifying App.handleAuthReady...");
+                App.handleAuthReady(user, appDb);
+            } else {
+                console.warn("[Auth State] App object or App.handleAuthReady function not found.");
+            }
+
+             if (user) {
+                 // --- USER IS LOGGED IN ---
+                 console.log("[Auth State] Updating UI for logged-in user (including dropdown)...");
+                 appUserInfoArea.classList.remove('d-none');
+                 appLoginPrompt.classList.add('d-none');
+                 // The main logout button is now inside the dropdown, so no separate visibility needed for it here.
+
+                 // Display Name (next to avatar)
+                 const displayName = user.displayName || user.email.split('@')[0]; // More robust fallback
+                 appUserDisplayName.textContent = escapeHtmlSimple(displayName);
+
+                 // Avatar (Image or Initials) - in the toggle
+                 const photoURL = user.photoURL;
+                 if (photoURL) {
+                     appUserAvatarImage.src = photoURL;
+                     appUserAvatarImage.alt = `${displayName}'s profile picture`;
+                     appUserAvatarImage.classList.remove('d-none');
+                     appUserAvatarInitials.classList.add('d-none');
+                     appUserAvatarInitials.textContent = '';
+                 } else {
+                     const initials = getAppInitials(user.displayName, user.email);
+                     appUserAvatarInitials.textContent = initials;
+                     appUserAvatarInitials.classList.remove('d-none');
+                     appUserAvatarImage.classList.add('d-none');
+                     appUserAvatarImage.src = '';
+                     appUserAvatarImage.alt = '';
+                 }
+
+                 // Populate Dropdown Content
+                 dropdownUserName.textContent = escapeHtmlSimple(user.displayName || 'User');
+                 dropdownUserEmail.textContent = escapeHtmlSimple(user.email);
+
+                 // Logout Button Listener (for the one in the dropdown)
+                 if (!appLogoutButtonDropdown.hasAttribute('data-listener-attached')) {
+                     console.log("[Auth State] Attaching logout listener to dropdown button.");
+                     appLogoutButtonDropdown.addEventListener('click', () => {
+                         console.log("[Logout] Dropdown logout button clicked. Signing out...");
+                         appAuth.signOut().catch(error => {
+                             console.error("[Logout] Error signing out:", error);
+                             alert("Logout failed. Please try again.");
+                         });
+                     });
+                     appLogoutButtonDropdown.setAttribute('data-listener-attached', 'true');
+                 }
+
+             } else {
+                 // --- USER IS LOGGED OUT ---
+                 console.log("[Auth State] Updating UI for logged-out user...");
+                 appUserInfoArea.classList.add('d-none');
+                 appLoginPrompt.classList.remove('d-none');
+
+                 // Reset dropdown content (optional, as it will be hidden)
+                 dropdownUserName.textContent = 'Guest';
+                 dropdownUserEmail.textContent = 'Not logged in';
+
+                 const isAppPage = window.location.pathname.includes('app');
+                 const isIndexPage = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('index.html');
+
+                 if (isAppPage && !isIndexPage) { // Redirect only if on an app page and not already index
+                     console.warn("[Auth State] User is logged out on app page. Redirecting to landing page (index.html)...");
+                     window.location.replace('index.html');
+                 } else {
+                     console.log("[Auth State] User is logged out, but already on landing page or redirection not needed.");
+                 }
+             }
+        });
+
+    } catch (e) {
+        console.error("[Firebase Script] CRITICAL ERROR during Firebase initialization:", e);
+        const body = document.querySelector('body');
+        if (body) {
+            const errorBanner = document.createElement('div');
+            errorBanner.style.cssText = 'background-color: red; border-radius: 8px; color: white; padding: 10px; text-align: center; position: fixed; top: 6rem; left: 0; width: 40%; font-size: 12px; z-index: 9999;';
+            errorBanner.textContent = 'Application Error: Essential services failed to load. Please refresh.';
+            body.prepend(errorBanner);
+        }
+        const userInfoArea = document.getElementById('app-user-info-area');
+        const loginPrompt = document.getElementById('app-login-prompt');
+        if(userInfoArea) userInfoArea.classList.add('d-none');
+        if(loginPrompt) loginPrompt.innerHTML = '<span class="text-danger">Error</span>';
+    }
+});
+
+
+
+
+/*
 document.addEventListener('DOMContentLoaded', () => {
     console.log("[Firebase Script] DOMContentLoaded event fired. Initializing Firebase...");
 
@@ -242,3 +380,4 @@ document.addEventListener('DOMContentLoaded', () => {
          // throw e;
     }
 }); // End DOMContentLoaded
+*/
