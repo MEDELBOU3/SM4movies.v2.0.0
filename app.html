@@ -68,7 +68,25 @@
                             </ul>
                        </li>
                    </ul>
+                    <!-- TMDB Search -->
+                    <form class="d-flex me-lg-3 my-2 my-lg-0" role="search" id="tmdb-search-form">
+                        <input class="form-control me-2" type="search" id="tmdb-search-input" placeholder="Search Movies & TV..." aria-label="Search TMDB">
+                        <button class="btn btn-outline-light btn-icon flex-shrink-0" type="submit" title="Search Movies/TV"><i class="bi bi-search"></i></button>
+                    </form>
+                    <!-- Separator -->
                     <div class="d-none d-lg-flex align-items-center mx-2" style="border-left: 1px solid var(--border-color); height: 30px;"></div>
+                    <!-- Spotify Status -->
+                    <div id="spotify-status-nav" class="d-flex align-items-center my-2 my-lg-0 text-muted small">
+                       <i class="bi bi-spotify me-2" style="color: var(--spotify-green); font-size: 1.2rem;"></i>
+                       <span id="spotify-auth-nav-message" style="font-size: small;">Checking Spotify...</span>
+                    </div>
+                    <div id="app-login-prompt" class="ms-2">
+                        <a href="index.html" class="btn btn-primary ">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                        </a>
+                    </div>
+
+                      <div class="d-none d-lg-flex align-items-center mx-2" style="border-left: 1px solid var(--border-color); height: 30px;"></div>
                       
                     <div class="nav-item dropdown d-none" id="app-user-info-area">
                         <a href="#" class="nav-link d-flex align-items-center text-white text-decoration-none dropdown-toggle p-0" id="userProfileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="User Menu"> 
@@ -100,25 +118,6 @@
                               </li>
                          </ul>
                      </div>
-                    <div class="d-none d-lg-flex align-items-center mx-2" style="border-left: 1px solid var(--border-color); height: 30px;"></div>
-                    <!-- TMDB Search -->
-                    <form class="d-flex me-lg-3 my-2 my-lg-0" role="search" id="tmdb-search-form">
-                        <input class="form-control me-2" type="search" id="tmdb-search-input" placeholder="Search Movies & TV..." aria-label="Search TMDB">
-                        <button class="btn btn-outline-light btn-icon flex-shrink-0" type="submit" title="Search Movies/TV"><i class="bi bi-search"></i></button>
-                    </form>
-                    <!-- Separator -->
-                    <div class="d-none d-lg-flex align-items-center mx-2" style="border-left: 1px solid var(--border-color); height: 30px;"></div>
-                    <!-- Spotify Status -->
-                    <div id="spotify-status-nav" class="d-flex align-items-center my-2 my-lg-0 text-muted small">
-                       <i class="bi bi-spotify me-2" style="color: var(--spotify-green); font-size: 1.2rem;"></i>
-                       <span id="spotify-auth-nav-message" style="font-size: small;">Checking Spotify...</span>
-                    </div>
-                    <div id="app-login-prompt" class="ms-2">
-                        <a href="index.html" class="btn btn-primary ">
-                            <i class="bi bi-box-arrow-in-right"></i>
-                        </a>
-                    </div>
-                
                     <!-- Logged IN View -->
                       <!--<div class="d-none align-items-center" id="app-user-info-area">
                         <div id="app-user-avatar" class="user-avatar me-2" title="User Profile">
