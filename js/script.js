@@ -3543,8 +3543,7 @@ loadNetworkResultsPage: async (page = 1) => {
   } else {
     renderContent();
   }
-}
-
+},
 
 /**
 * Renders the fetched network results into the grid and updates the 'Load More' button.
