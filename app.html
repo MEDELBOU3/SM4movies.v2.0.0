@@ -87,10 +87,8 @@
                     </div>
                 
                     <!-- Logged IN View -->
-                    <div class="d-none align-items-center" id="app-user-info-area">
-                        <!-- Avatar Placeholder -->
+                      <!--<div class="d-none align-items-center" id="app-user-info-area">
                         <div id="app-user-avatar" class="user-avatar me-2" title="User Profile">
-                             <!-- Use the same classes as landing page for consistency if desired -->
                              <span id="app-user-avatar-initials"></span>
                              <img id="app-user-avatar-image" src="" alt="Profile" class="d-none" />
                         </div>
@@ -98,7 +96,34 @@
                         <button type="button" class="btn btn-secondary-outline btn-sm" id="app-logout-button">
                           Logout
                         </button>
-                    </div>
+                    </div>-->
+
+                     <div class="nav-item dropdown d-none" id="app-user-info-area"> {/* Added .nav-item .dropdown */}
+                    <a href="#" class="nav-link d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="userProfileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div id="app-user-avatar" class="user-avatar me-2" title="User Profile">
+                             <span id="app-user-avatar-initials"></span>
+                             <img id="app-user-avatar-image" src="" alt="Profile" class="d-none" />
+                        </div>
+                        <span id="app-user-display-name" class="d-none d-lg-inline fw-medium"></span> {/* Hide name on small screens, avatar is enough */}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" aria-labelledby="userProfileDropdown" id="app-user-dropdown-menu">
+                        <li>
+                            <div class="px-3 py-2">
+                                <div id="dropdown-user-name" class="fw-bold text-light">User Name</div>
+                                <div id="dropdown-user-email" class="small text-muted">user@example.com</div>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#profile-settings"><i class="bi bi-gear-fill me-2"></i>Profile Settings</a></li>
+                            <li><a class="dropdown-item" href="#my-activity"><i class="bi bi-activity me-2"></i>My Activity</a></li> 
+                            <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <button type="button" class="dropdown-item text-danger fw-medium" id="app-logout-button-dropdown">
+                              <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </button>
+                        </li>
+                    </ul>
+                </div>
                 </div>
             </div>
         </nav>
