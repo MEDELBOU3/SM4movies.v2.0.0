@@ -1665,6 +1665,25 @@ try {
       console.error("💥 ERROR during initial API calls/UI setup:", error);
  }
 
+        // Inside App.init in script.js (usually not needed for Bootstrap 5 auto-init)
+// ... after other Bootstrap component initializations ...
+try {
+    const userProfileDropdownEl = document.getElementById('userProfileDropdown');
+    if (userProfileDropdownEl) {
+        // Check if an instance already exists before creating a new one
+        let dropdownInstance = bootstrap.Dropdown.getInstance(userProfileDropdownEl);
+        if (!dropdownInstance) {
+            dropdownInstance = new bootstrap.Dropdown(userProfileDropdownEl);
+            console.log("  User profile dropdown initialized programmatically.");
+        } else {
+            console.log("  User profile dropdown instance already exists.");
+        }
+        // You could store this instance in bsInstances.userProfileDropdown if needed for manual control
+        // bsInstances.userProfileDropdown = dropdownInstance;
+    }
+} catch (e) {
+    console.warn("  Could not initialize user profile dropdown programmatically (may auto-init):", e);
+}
 
 // --- 5. Setup Routing and Event Listeners ---
 try {
