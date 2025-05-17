@@ -2917,6 +2917,7 @@ body.theme-light .skeleton-h-card-overlay {
     display: flex; /* Ensure flex properties are explicitly set */
     align-items: center;
     gap: 0.65rem; /* Slightly adjusted gap */
+    margin-left: 0.5rem;
     padding: 0.25rem 0; /* Add some vertical padding if needed */
     max-width: 90px; /* Limit width for smaller screens */
     overflow: hidden; /* Prevent overflow */
@@ -2925,53 +2926,71 @@ body.theme-light .skeleton-h-card-overlay {
     transition: var(--transition-base); /* Use global transition */
 }
 
+#app-user-info-area > a#userProfileDropdown.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.1rem; /* Minimal padding, avatar will have its own */
+    text-decoration: none;
+    gap: 0.5rem; /* Gap between avatar and name */
+}
+
+#app-user-info-area > a#userProfileDropdown.dropdown-toggle::after {
+    margin-left: 0.3em;
+    vertical-align: 0.15em;
+    color: var(--bs-navbar-color, rgba(255,255,255,0.55)); /* Ensure it matches navbar text */
+    border-top-width: 0.35em; /* Slightly bolder arrow */
+    border-right-width: 0.35em;
+    border-left-width: 0.35em;
+}
+
+
 #app-login-prompt a.btn { /* Target the anchor specifically */
-    display: inline-flex; /* Align icon and potential text */
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.45rem 1.1rem; /* Slightly refined padding */
-    font-size: 0.9rem; /* Slightly smaller font */
-    font-weight: 600; /* Bolder */
-    /* Use theme gradient or primary accent */
-    background: var(--gradient-primary, var(--primary-accent));
-    color: #fff; /* Ensure contrast */
+    padding: 0.45rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: var(--gradient-primary, var(--primary-accent, #0d6efd)); /* Added fallback */
+    color: #fff;
     border: none;
-    border-radius: var(--radius-md); /* Consistent radius */
-    box-shadow: 0 3px 8px -2px rgba(var(--primary-accent-rgb, 0 0 0), 0.3);
-    transition: var(--transition-base); /* Use global transition */
+    border-radius: var(--radius-md, 0.375rem);
+    box-shadow: 0 3px 8px -2px rgba(var(--primary-accent-rgb, 13, 110, 253), 0.3);
+    transition: var(--transition-base, all 0.2s ease-in-out);
     white-space: nowrap;
-    text-decoration: none; /* Ensure no underline */
+    text-decoration: none;
 }
 
 #app-login-prompt a.btn i {
     font-size: 1.1em; /* Adjust icon size relative to button text */
-    /* Add margin if you include text next to the icon */
+    /* margin if we include text next to the icon */
     /* margin-right: 0.4rem; */
 }
 
 #app-login-prompt a.btn:hover {
-    transform: translateY(-2px) scale(1.03); /* Subtle lift */
-    filter: brightness(1.15); /* Brighter */
-    box-shadow: 0 5px 12px -3px rgba(var(--primary-accent-rgb, 0 0 0), 0.4);
-    color: #fff; /* Keep color */
+    transform: translateY(-2px) scale(1.03);
+    filter: brightness(1.15);
+    box-shadow: 0 5px 12px -3px rgba(var(--primary-accent-rgb, 13, 110, 253), 0.4);
+    color: #fff;
 }
-
 
 /* General Avatar Circle Styles (Same as Landing Page potentially) */
 .user-avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background-color: var(--bs-secondary); /* Or your theme's secondary color */
-    color: var(--bs-light); /* Or your theme's light text color */
-    display: flex;
+    background-color: var(--bs-secondary, #6c757d); /* Bootstrap secondary or theme variable */
+    color: var(--bs-light, #f8f9fa); /* Bootstrap light or theme variable */
+    display: inline-flex; /* Changed to inline-flex for better alignment in flow */
     align-items: center;
     justify-content: center;
     font-weight: 500;
-    font-size: 0.9rem;
-    overflow: hidden; /* To clip image */
+    font-size: 1rem; /* For initials */
+    overflow: hidden;
     cursor: pointer;
-    border: 1px solid rgba(var(--bs-light-rgb), 0.3); /* Subtle border */
+    border: 2px solid rgba(var(--bs-light-rgb, 255, 255, 255), 0.25);
+    transition: var(--transition-base, all 0.2s ease-in-out);
+    vertical-align: middle; /* Align better if next to text */
 }
 
 .user-avatar img {
@@ -2980,15 +2999,33 @@ body.theme-light .skeleton-h-card-overlay {
     object-fit: cover;
 }
 
+.user-avatar span { /* For #app-user-avatar-initials and #dropdown-user-avatar-initials-large */
+    line-height: 1;
+}
+
 #app-user-dropdown-menu {
-    min-width: 260px; /* More space for content */
-    border-radius: var(--radius-md, 0.375rem); /* Use your theme's radius */
-    margin-top: 0.5rem !important; /* Ensure spacing from navbar */
+    min-width: 250px; /* Slightly more space */
+    border-radius: var(--radius-md, 0.375rem);
+    margin-top: 0.65rem !important; /* Add a bit more space from navbar */
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.25); /* More pronounced shadow */
+}
+
+#app-user-dropdown-menu .px-3.py-2.text-center { /* Targeting the specific div */
+    padding-bottom: 0.75rem !important; /* More space after email */
 }
 
 #app-user-dropdown-menu .dropdown-header-custom { /* If you add a custom header div */
     padding: 0.75rem 1rem;
     text-align: center;
+}
+
+.user-avatar.user-avatar-lg {
+    width: 64px; /* Adjusted size */
+    height: 64px;
+    font-size: 1.75rem; /* Larger initials */
+    border-width: 2px; /* Can be thicker if desired */
 }
 
 .user-avatar-lg { /* For the larger avatar inside the dropdown */
@@ -3000,24 +3037,42 @@ body.theme-light .skeleton-h-card-overlay {
 }
 
 #dropdown-user-name {
-    font-size: 1.1rem;
+    font-size: 1.05rem; /* Slightly larger name in dropdown */
+    margin-top: 0.25rem;
+    color: var(--bs-dropdown-link-hover-color, var(--bs-light)); /* Ensure good contrast */
 }
+
 #dropdown-user-email {
-    word-break: break-all; /* Prevent long emails from breaking layout */
+    word-break: break-all;
+    font-size: 0.85rem;
+    color: var(--bs-tertiary-color, #adb5bd); /* Softer color for email */
 }
 
 #app-user-dropdown-menu .dropdown-item {
-    padding: 0.6rem 1.2rem; /* More padding for items */
-    font-size: 0.95rem;
+    padding: 0.5rem 1rem; /* Adjust padding for items */
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
 }
 
-#app-user-dropdown-menu .dropdown-item i {
-    margin-right: 0.75rem; /* More space for icons */
-    opacity: 0.8;
+#app-user-dropdown-menu .dropdown-item i.bi { /* Target Bootstrap Icons specifically */
+    margin-right: 0.6rem;
+    opacity: 0.7;
+    font-size: 1.1em; /* Make icons slightly larger than text */
+    width: 22px; /* Ensure consistent icon alignment */
+    text-align: center;
 }
 
-#app-logout-button-dropdown i {
-    color: var(--bs-danger); /* Make logout icon red */
+
+#app-logout-button-dropdown {
+    font-weight: 500; /* Make it stand out a bit */
+}
+#app-logout-button-dropdown i.bi {
+    color: var(--bs-danger, #dc3545) !important; /* Make logout icon red, !important if needed */
+    opacity: 1;
+}
+#app-logout-button-dropdown:hover i.bi {
+    color: var(--bs-danger-text-emphasis, #a31a26) !important;
 }
 
 
@@ -3043,7 +3098,7 @@ body.theme-light .skeleton-h-card-overlay {
 }
 
 .user-avatar:hover {
-    transform: scale(1.1); /* Scale up */
+    transform: scale(1.08); /* Scale up */
     border-color: rgba(var(--primary-accent-rgb, 255 255 255), 0.6); /* Brighter border */
     box-shadow: 0 0 10px rgba(var(--primary-accent-rgb, 255 255 255), 0.3); /* Subtle glow */
 }
@@ -3061,15 +3116,15 @@ body.theme-light .skeleton-h-card-overlay {
 
 /* Display Name (Bootstrap classes handle most styling) */
 #app-user-display-name {
-    color: var(--text-light); /* Theme text color */
-    font-weight: 500; /* Slightly less bold than avatar initials */
-    font-size: 0.9rem; /* Slightly larger */
+    color: var(--text-light, #f8f9fa);
+    font-weight: 500;
+    font-size: 0.9rem;
     white-space: nowrap;
-    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 160px; /* Slightly more width if needed */
-    opacity: 0.9; /* Slightly softer */
+    max-width: 120px; /* Adjust as needed */
+    opacity: 0.95;
+    line-height: 1.2; /* Helps vertical alignment with avatar */
 }
 
 /* Logout Button (Bootstrap handles most) */
@@ -3112,15 +3167,9 @@ body.theme-light .skeleton-h-card-overlay {
 }
 
 @media (max-width: 991.98px) { /* Bootstrap's lg breakpoint */
-    #app-user-info-area .nav-link.dropdown-toggle::after {
-        /* Optionally hide the dropdown arrow on mobile if avatar is clear enough as toggle */
-        /* display: none; */
-    }
-    #app-user-info-area {
-        margin-left: 0.5rem; /* Add some space from other items on mobile */
-    }
-    #app-user-display-name {
-        display: none !important; /* Ensure name is hidden on mobile, avatar is primary */
+   #app-user-info-area > a#userProfileDropdown.dropdown-toggle {
+        gap: 0; /* No gap if name is hidden */
+        margin-left: 0.5rem; /* Space from other items */
     }
 }
 
