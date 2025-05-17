@@ -94,13 +94,23 @@ async function trackView(dbInstance, userId, contentId) {
 }
 
 // --- Main Initialization Logic for app.html ---
+// --- Main Initialization Logic for app2.html (firebase.js) ---
 document.addEventListener('DOMContentLoaded', () => {
     console.log("[Firebase Script] DOMContentLoaded event fired. Initializing Firebase...");
 
     try {
         // 1. Initialize Firebase App (check if already initialized)
+        // Ensure firebaseConfigApp is defined above this script or globally
+        if (typeof firebaseConfigApp === 'undefined') {
+            console.error("[Firebase Script] CRITICAL ERROR: firebaseConfigApp is not defined! Cannot initialize Firebase.");
+            // Display a user-facing error if possible
+            const loginPromptFallback = document.getElementById('app-login-prompt');
+            if (loginPromptFallback) loginPromptFallback.innerHTML = `<span class="text-danger small">App Config Error</span>`;
+            return; // Stop initialization
+        }
+
         if (!firebase.apps.length) {
-            firebaseApp = firebase.initializeApp(firebaseConfigApp); // Use firebaseConfigApp
+            firebaseApp = firebase.initializeApp(firebaseConfigApp);
             console.log("[Firebase Init] Firebase App initialized successfully.");
         } else {
             firebaseApp = firebase.app(); // Use existing app instance
@@ -117,47 +127,63 @@ document.addEventListener('DOMContentLoaded', () => {
         const appUserAvatar = document.getElementById('app-user-avatar'); // Main avatar in toggle
         const appUserAvatarInitials = document.getElementById('app-user-avatar-initials');
         const appUserAvatarImage = document.getElementById('app-user-avatar-image');
-        const appUserDisplayName = document.getElementById('app-user-display-name'); // Name next to avatar
+        const appUserDisplayName = document.getElementById('app-user-display-name'); // Name next to avatar in toggle
         const appLoginPrompt = document.getElementById('app-login-prompt');
 
-        // New Dropdown Elements
+        // Dropdown Menu Elements
+        const userProfileDropdownToggle = document.getElementById('userProfileDropdown'); // The <a> tag that toggles
+        const dropdownUserMenu = document.getElementById('app-user-dropdown-menu'); // The <ul> dropdown
         const dropdownUserName = document.getElementById('dropdown-user-name');
         const dropdownUserEmail = document.getElementById('dropdown-user-email');
         const appLogoutButtonDropdown = document.getElementById('app-logout-button-dropdown');
+        const dropdownUserAvatarLarge = document.getElementById('dropdown-user-avatar-large');
+        const dropdownUserAvatarInitialsLarge = document.getElementById('dropdown-user-avatar-initials-large');
+        const dropdownUserAvatarImageLarge = document.getElementById('dropdown-user-avatar-image-large');
 
         // Validate that critical UI elements exist
-        if (!appUserInfoArea || !appLoginPrompt || !appUserAvatar || !appUserDisplayName || !appUserAvatarImage || !appUserAvatarInitials ||
-            !dropdownUserName || !dropdownUserEmail || !appLogoutButtonDropdown) { // Added new elements to check
-            console.error("[Firebase Script] CRITICAL ERROR: One or more navbar UI elements for auth display (including dropdown) are missing in app2.html! Cannot proceed.");
+        const criticalElements = [
+            appUserInfoArea, appUserAvatar, appUserAvatarInitials, appUserAvatarImage, appUserDisplayName,
+            appLoginPrompt, userProfileDropdownToggle, dropdownUserMenu, dropdownUserName, dropdownUserEmail,
+            appLogoutButtonDropdown, dropdownUserAvatarLarge, dropdownUserAvatarInitialsLarge, dropdownUserAvatarImageLarge
+        ];
+
+        const missingElements = criticalElements.filter(el => !el);
+        if (missingElements.length > 0) {
+            console.error("[Firebase Script] CRITICAL ERROR: One or more navbar UI elements for auth display are missing in app2.html! IDs not found:", missingElements.map(el => el ? 'Exists' : 'Missing -> Check HTML ID').join(', '));
             if(appLoginPrompt) appLoginPrompt.innerHTML = `<span class="text-danger small">UI Error</span>`;
-            return;
+            // You might want to log which specific IDs are missing if criticalElements[i] was checked against a list of strings
+            return; // Stop initialization if UI is critically broken
         }
 
         // 4. Listen for Authentication State Changes
         console.log("[Firebase Script] Setting up Auth State Change listener...");
         appAuth.onAuthStateChanged(user => {
-            console.log(`[Auth State] Changed. User is ${user ? `LOGGED IN (UID: ${user.uid})` : 'LOGGED OUT'}.`);
+            console.log(`[Auth State] Changed. User is ${user ? `LOGGED IN (UID: ${user.uid}, Email: ${user.email})` : 'LOGGED OUT'}.`);
 
+            // ----- Notify the main App script (from script.js) -----
             if (typeof App !== 'undefined' && typeof App.handleAuthReady === 'function') {
                 console.log("[Auth State] Notifying App.handleAuthReady...");
-                App.handleAuthReady(user, appDb);
+                App.handleAuthReady(user, appDb); // Pass user object (or null) and Firestore instance
             } else {
-                console.warn("[Auth State] App object or App.handleAuthReady function not found.");
+                console.warn("[Auth State] App object or App.handleAuthReady function not found. Main app may not initialize correctly with auth state.");
             }
 
+             // ----- Update Navbar UI based on Auth State -----
              if (user) {
                  // --- USER IS LOGGED IN ---
-                 console.log("[Auth State] Updating UI for logged-in user (including dropdown)...");
+                 console.log("[Auth State] Updating UI for logged-in user...");
                  appUserInfoArea.classList.remove('d-none');
                  appLoginPrompt.classList.add('d-none');
-                 // The main logout button is now inside the dropdown, so no separate visibility needed for it here.
 
-                 // Display Name (next to avatar)
-                 const displayName = user.displayName || user.email.split('@')[0]; // More robust fallback
+                 // Display Name (for the toggle in the navbar)
+                 const displayName = user.displayName || user.email.split('@')[0];
                  appUserDisplayName.textContent = escapeHtmlSimple(displayName);
+                 userProfileDropdownToggle.title = `User Menu for ${escapeHtmlSimple(displayName)}`; // Update toggle title
 
-                 // Avatar (Image or Initials) - in the toggle
                  const photoURL = user.photoURL;
+                 const initials = getAppInitials(user.displayName, user.email);
+
+                 // Populate Navbar Avatar (the small one in the toggle)
                  if (photoURL) {
                      appUserAvatarImage.src = photoURL;
                      appUserAvatarImage.alt = `${displayName}'s profile picture`;
@@ -165,7 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
                      appUserAvatarInitials.classList.add('d-none');
                      appUserAvatarInitials.textContent = '';
                  } else {
-                     const initials = getAppInitials(user.displayName, user.email);
                      appUserAvatarInitials.textContent = initials;
                      appUserAvatarInitials.classList.remove('d-none');
                      appUserAvatarImage.classList.add('d-none');
@@ -173,9 +198,24 @@ document.addEventListener('DOMContentLoaded', () => {
                      appUserAvatarImage.alt = '';
                  }
 
-                 // Populate Dropdown Content
-                 dropdownUserName.textContent = escapeHtmlSimple(user.displayName || 'User');
+                 // Populate Dropdown Menu Content
+                 dropdownUserName.textContent = escapeHtmlSimple(user.displayName || 'Not Set');
                  dropdownUserEmail.textContent = escapeHtmlSimple(user.email);
+
+                 // Populate Large Avatar in Dropdown
+                 if (photoURL) {
+                     dropdownUserAvatarImageLarge.src = photoURL;
+                     dropdownUserAvatarImageLarge.alt = `${displayName}'s profile picture`;
+                     dropdownUserAvatarImageLarge.classList.remove('d-none');
+                     dropdownUserAvatarInitialsLarge.classList.add('d-none');
+                     dropdownUserAvatarInitialsLarge.textContent = '';
+                 } else {
+                     dropdownUserAvatarInitialsLarge.textContent = initials;
+                     dropdownUserAvatarInitialsLarge.classList.remove('d-none');
+                     dropdownUserAvatarImageLarge.classList.add('d-none');
+                     dropdownUserAvatarImageLarge.src = '';
+                     dropdownUserAvatarImageLarge.alt = '';
+                 }
 
                  // Logout Button Listener (for the one in the dropdown)
                  if (!appLogoutButtonDropdown.hasAttribute('data-listener-attached')) {
@@ -184,7 +224,12 @@ document.addEventListener('DOMContentLoaded', () => {
                          console.log("[Logout] Dropdown logout button clicked. Signing out...");
                          appAuth.signOut().catch(error => {
                              console.error("[Logout] Error signing out:", error);
-                             alert("Logout failed. Please try again.");
+                             // Use the Utils.showToast if available and initialized, otherwise alert
+                             if (typeof Utils !== 'undefined' && Utils.showToast) {
+                                 Utils.showToast("Logout failed. Please try again.", "danger");
+                             } else {
+                                 alert("Logout failed. Please try again.");
+                             }
                          });
                      });
                      appLogoutButtonDropdown.setAttribute('data-listener-attached', 'true');
@@ -199,35 +244,44 @@ document.addEventListener('DOMContentLoaded', () => {
                  // Reset dropdown content (optional, as it will be hidden)
                  dropdownUserName.textContent = 'Guest';
                  dropdownUserEmail.textContent = 'Not logged in';
+                 dropdownUserAvatarInitialsLarge.textContent = '??';
+                 dropdownUserAvatarInitialsLarge.classList.remove('d-none');
+                 dropdownUserAvatarImageLarge.classList.add('d-none');
+                 dropdownUserAvatarImageLarge.src = '';
 
-                 const isAppPage = window.location.pathname.includes('app');
-                 const isIndexPage = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('index.html');
 
-                 if (isAppPage && !isIndexPage) { // Redirect only if on an app page and not already index
+                 const currentPagePath = window.location.pathname;
+                 const isAppPage = currentPagePath.includes('app.html') || currentPagePath.includes('app2.html'); // Be more specific
+                 const isIndexPage = currentPagePath.endsWith('/') || currentPagePath.endsWith('index.html');
+
+                 // Redirect to index.html if logged out and currently on an app page (not index.html itself)
+                 if (isAppPage && !isIndexPage) {
                      console.warn("[Auth State] User is logged out on app page. Redirecting to landing page (index.html)...");
-                     window.location.replace('index.html');
+                     window.location.replace('index.html'); // Or the correct path to your landing page
                  } else {
-                     console.log("[Auth State] User is logged out, but already on landing page or redirection not needed.");
+                     console.log("[Auth State] User is logged out. Redirection not needed or already on landing page.");
                  }
              }
-        });
+             // ----- End Navbar UI Update -----
+        }); // End onAuthStateChanged
 
     } catch (e) {
-        console.error("[Firebase Script] CRITICAL ERROR during Firebase initialization:", e);
+        console.error("[Firebase Script] CRITICAL ERROR during Firebase initialization process:", e);
         const body = document.querySelector('body');
         if (body) {
             const errorBanner = document.createElement('div');
-            errorBanner.style.cssText = 'background-color: red; border-radius: 8px; color: white; padding: 10px; text-align: center; position: fixed; top: 6rem; left: 0; width: 40%; font-size: 12px; z-index: 9999;';
-            errorBanner.textContent = 'Application Error: Essential services failed to load. Please refresh.';
-            body.prepend(errorBanner);
+            errorBanner.style.cssText = 'background-color: #dc3545; border-radius: 0.25rem; color: white; padding: 10px 15px; text-align: center; position: fixed; top: 5rem; left: 50%; transform: translateX(-50%); font-size: 0.9rem; z-index: 10000; box-shadow: 0 4px 8px rgba(0,0,0,0.2);';
+            errorBanner.textContent = 'Application Error: Core services failed. Please refresh or try again later.';
+            body.prepend(errorBanner); // Prepend to ensure visibility
+            setTimeout(() => errorBanner.remove(), 7000); // Auto-remove after 7 seconds
         }
+        // Attempt to hide sensitive areas if possible, though they might not even be rendered.
         const userInfoArea = document.getElementById('app-user-info-area');
         const loginPrompt = document.getElementById('app-login-prompt');
         if(userInfoArea) userInfoArea.classList.add('d-none');
-        if(loginPrompt) loginPrompt.innerHTML = '<span class="text-danger">Error</span>';
+        if(loginPrompt) loginPrompt.innerHTML = '<span class="text-danger small">Init Error</span>';
     }
-});
-
+}); 
 
 
 
