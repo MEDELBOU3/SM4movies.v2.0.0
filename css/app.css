@@ -2919,7 +2919,7 @@ body.theme-light .skeleton-h-card-overlay {
     gap: 0.65rem; /* Slightly adjusted gap */
     margin-left: 0.5rem;
     padding: 0.25rem 0; /* Add some vertical padding if needed */
-    max-width: 90px; /* Limit width for smaller screens */
+    max-width: 140px; /* Limit width for smaller screens */
     overflow: hidden; /* Prevent overflow */
     text-overflow: ellipsis; /* Add ellipsis for overflowed text */
     white-space: nowrap; /* Prevent text wrapping */
@@ -2976,8 +2976,8 @@ body.theme-light .skeleton-h-card-overlay {
 
 /* General Avatar Circle Styles (Same as Landing Page potentially) */
 .user-avatar {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background-color: var(--bs-secondary, #6c757d); /* Bootstrap secondary or theme variable */
     color: var(--bs-light, #f8f9fa); /* Bootstrap light or theme variable */
