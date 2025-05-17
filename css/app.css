@@ -1025,10 +1025,6 @@ body.theme-light .dropdown-item:focus {
     transition: transform 0.3s ease;
 }
 
-.h-card:hover img.h-card-backdrop {
-    transform: scale(1.05);
-}
-
 .h-card .ranking-badge {
     position: absolute;
     top: 0; /* Align with the top edge */
