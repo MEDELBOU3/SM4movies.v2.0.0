@@ -18,6 +18,27 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavPolicy" aria-controls="navbarNavPolicy" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            <div id="auth-button-area">
+                     <!-- Logged OUT View -->
+                     <button type="button" class="btn btn-primary-gradient btn-nav-cta" data-bs-toggle="modal" data-bs-target="#launchAppModal" id="login-signup-button">
+                       Login / Sign Up
+                     </button>
+                      <!-- Logged IN View -->
+                     <div class="d-none align-items-center" id="user-info-area">
+                         <!-- Avatar Placeholder - THIS will display the image -->
+                         <div id="user-avatar" class="user-avatar me-2" title="User Profile">
+                             <!-- Initials shown if no image -->
+                             <span id="user-avatar-initials"></span>
+                             <!-- Image shown when available -->
+                             <img id="user-avatar-image" src="" alt="Profile" class="d-none" />
+                         </div>
+                         <!-- Span for User Name (will be populated by JS) -->
+                         <span id="user-display-name" class="me-3 text-light small fw-medium"></span>
+                         <button type="button" class="btn btn-secondary-outline btn-sm" id="logout-button"> <!-- Made button smaller -->
+                             Logout
+                         </button>
+                     </div>
+            </div>
             <div class="collapse navbar-collapse" id="navbarNavPolicy">
                 <ul class="navbar-nav ms-auto"> <!-- Align to right or keep simple -->
                     <li class="nav-item">
