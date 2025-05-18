@@ -543,6 +543,8 @@
              overflow: hidden;
              max-width: 90px;
              text-overflow: ellipsis;
+             vertical-align: middle;
+             display: inline-block;
              opacity: 0.9; /* Slightly softer */
         }
 
