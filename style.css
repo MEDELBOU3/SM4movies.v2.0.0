@@ -541,8 +541,8 @@
              font-size: 0.9rem; /* Slightly larger */
              white-space: nowrap;
              overflow: hidden;
+             max-width: 90px;
              text-overflow: ellipsis;
-             max-width: 160px; /* Slightly more width if needed */
              opacity: 0.9; /* Slightly softer */
         }
 
