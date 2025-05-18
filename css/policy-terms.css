@@ -156,40 +156,47 @@ body {
 
 
 /* --- FOOTER STYLES START --- */
-.landing-footer.footer-custom { /* Styles for the new footer structure */
+/* ... (all your other styles from the previous answer) ... */
+
+/* --- FOOTER STYLES (already provided, but ensure these are present) --- */
+.landing-footer.footer-custom {
     background-color: #1A1A21;
     color: #A0AEC0;
     padding-top: 3rem; /* More padding for multi-column layout */
     padding-bottom: 1.5rem;
     margin-top: auto;
     border-top: 1px solid #2a2a33;
-    font-size: 0.9rem; /* Base font size for footer content */
+    font-size: 0.9rem;
 }
 
-.footer-content {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2rem; /* Space between columns */
-    margin-bottom: 2.5rem; /* Space before footer-bottom */
-}
-
-.footer-column {
-    flex: 1 1 200px; /* Flex properties for responsive columns */
-    min-width: 180px; /* Minimum width for smaller screens */
-}
-
+/*
+   NO NEED TO CHANGE .footer-content or .footer-column if using Bootstrap's grid.
+   Bootstrap's .row and .col-* classes will handle the flex behavior.
+   The existing .footer-column styles for text, h4, ul, etc., will apply to the content
+   WITHIN each Bootstrap .col-lg-*, .col-md-* div.
+*/
 .footer-column .navbar-brand-landing { /* Brand in footer */
-    font-size: 1.5rem; /* Slightly smaller than navbar */
-    margin-bottom: 0.75rem !important; /* Override Bootstrap mb-3 if needed */
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem !important;
+    font-family: 'Poppins', sans-serif; /* Consistent branding font */
+    display: inline-block; /* Ensure it behaves well */
+    color: #FFFFFF;
+    text-decoration: none;
+}
+.footer-column .navbar-brand-landing:hover {
+    color: #A78BFA;
 }
 .footer-column .navbar-brand-landing i {
-    font-size: 1.4rem; /* Adjust icon size */
+    font-size: 1.4rem;
+    color: #A78BFA;
+    margin-right: 0.25rem;
 }
 
+
 .footer-column p {
-    font-size: 0.85rem; /* Specific size for paragraph */
+    font-size: 0.85rem;
     line-height: 1.6;
-    margin-bottom: 0; /* Reset if needed */
+    margin-bottom: 1rem; /* Add some bottom margin to paragraphs in columns */
 }
 
 .footer-column h4 {
@@ -197,47 +204,47 @@ body {
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    font-family: 'Poppins', sans-serif; /* Example: Using Poppins for headings */
+    font-family: 'Poppins', sans-serif;
 }
 
-.footer-column ul {
-    list-style: none;
+.footer-column ul.list-unstyled { /* Target Bootstrap's class */
     padding-left: 0;
     margin-bottom: 0;
 }
 
-.footer-column ul li {
+.footer-column ul.list-unstyled li {
     margin-bottom: 0.6rem;
 }
 
-.footer-column ul li a.footer-link-bottom,
-.footer-column ul li .footer-link { /* Style for conceptual links too */
+.footer-column ul.list-unstyled li a.footer-link-bottom,
+.footer-column ul.list-unstyled li .footer-link {
     color: #A0AEC0;
     text-decoration: none;
-    font-weight: 400; /* Slightly less bold for list items */
+    font-weight: 400;
     transition: color 0.2s ease;
+    display: inline-flex; /* For icon alignment */
+    align-items: center;
 }
-.footer-column ul li a.footer-link-bottom:hover,
-.footer-column ul li .footer-link:hover {
+.footer-column ul.list-unstyled li a.footer-link-bottom:hover,
+.footer-column ul.list-unstyled li .footer-link:hover {
     color: #FFFFFF;
-    text-decoration: none; /* Keep no underline or add one as you prefer */
 }
-.footer-column ul li a.footer-link-bottom i,
-.footer-column ul li .footer-link i {
-    margin-right: 0.4rem;
+.footer-column ul.list-unstyled li a.footer-link-bottom i,
+.footer-column ul.list-unstyled li .footer-link i {
+    margin-right: 0.5rem; /* Increased margin for icon */
     font-size: 0.8rem;
     opacity: 0.7;
 }
 
 .footer-social {
     display: flex;
-    gap: 1rem; /* Space between social icons */
+    gap: 1rem;
     margin-top: 0.5rem;
 }
 
 .social-icon {
     color: #A0AEC0;
-    font-size: 1.5rem; /* Size of social icons */
+    font-size: 1.5rem;
     transition: color 0.2s ease;
 }
 .social-icon:hover {
@@ -247,28 +254,25 @@ body {
 .footer-bottom {
     text-align: center;
     padding-top: 1.5rem;
-    border-top: 1px solid #2a2a33; /* Separator for the bottom part */
+    border-top: 1px solid #2a2a33;
     font-size: 0.8rem;
-    color: #808A9A; /* Slightly dimmer for copyright text */
+    color: #808A9A;
 }
 .footer-bottom p {
     margin-bottom: 0.5rem;
 }
 .footer-bottom a.footer-link-bottom {
     color: #A0AEC0;
-    font-weight: 500; /* Restore some weight for legal links */
+    font-weight: 500;
 }
 .footer-bottom a.footer-link-bottom:hover {
     color: #FFFFFF;
     text-decoration: underline;
 }
-/* --- FOOTER STYLES END --- */
 
-
-/* Policy Pages Specific Styles */
+/* Ensure policy container and other page content have enough bottom padding so footer doesn't overlap */
 .policy-container {
-    padding-top: 2rem;
-    padding-bottom: 4rem;
+    padding-bottom: 5rem; /* Increased this to ensure footer clear */
 }
 .policy-container h1 {
     color: #FFFFFF;
