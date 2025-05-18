@@ -497,7 +497,7 @@
         .social-icon { width: 35px; height: 35px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; color: var(--text-light); text-decoration: none; transition: var(--transition-fast); font-size: 0.95rem; }
         .social-icon:hover { background-color: var(--primary-accent); transform: translateY(-4px); box-shadow: 0 5px 10px rgba(var(--primary-accent-rgb), 0.3); }
         .footer-bottom { text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.85rem; opacity: 0.8; }
-        .footer-bottom p { margin-bottom: 0.4rem; }
+        .footer-bottom p { margin: 0 auto; }
         .footer-bottom a { color: var(--text-medium); text-decoration: underline; }
         .footer-bottom a:hover { color: #fff; }
 
