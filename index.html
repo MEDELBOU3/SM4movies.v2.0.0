@@ -240,14 +240,17 @@
                             <h4>Interactive Preview</h4>
                             <p>See AuraStream in action with a quick interface demo.</p>
                             <!-- The Video Container -->
-                            <div id="intro-overlay">
-                              <video autoplay muted playsinline preload="auto" id="intro-video">
-                                  <source src="brand.mp4" type="video/mp4" />
-                                  Your browser does not support the video tag.
-                              </video>
-                              <!-- THIS BUTTON MUST EXIST WITH THIS EXACT ID -->
-                              <button id="skip-intro-button">Skip Intro <i class="bi bi-skip-forward-fill ms-1"></i></button>
-                             </div>
+                             <div id="intro-overlay"  style="position: relative; padding-top: 56.25%; height: 0; overflow: hidden; border-radius: 10px;">
+                                <iframe
+                                    id="intro-video"
+                                    src="https://www.youtube.com/embed/zEpdM_zW6yY?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&rel=0&showinfo=0"
+                                    frameborder="0"
+                                    allow="autoplay; encrypted-media"
+                                    allowfullscreen
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                                </iframe>
+                                <button id="skip-intro-button">Skip Intro <i class="bi bi-skip-forward-fill ms-1"></i></button>
+                            </div>
                       
                           </article>
                         </div>
