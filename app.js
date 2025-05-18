@@ -165,6 +165,7 @@
 // --- Initialization ---
 init: function() {
     this.utils.log("AuraStream Landing (v9.5 - Force Fetch Test) Initializing..."); // Version marker
+    this.utils.log(`AuraStreamApp.init called on: ${window.location.pathname}`);
     if (this.state.domReady) return;
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -219,6 +220,7 @@ initializeFirebase: function() {
     const app = AuraStreamApp;
 
     utils.log("Initializing Firebase...");
+    utils.log(`Policy Page Check: Attempting Firebase init on: ${window.location.pathname}`);
 
     // 1. Check Config (apiKey, authDomain, projectId required)
     if (!config?.apiKey || !config?.authDomain || !config?.projectId || config.apiKey === "YOUR_API_KEY") {
@@ -265,8 +267,10 @@ initializeFirebase: function() {
             utils.log("Attaching Firebase onAuthStateChanged listener...");
             state.authListenerUnsubscribe = state.firebaseAuth.onAuthStateChanged(user => {
                 utils.log(`Firebase onAuthStateChanged: User is ${user ? 'LOGGED IN' : 'LOGGED OUT'}`);
+                utils.log(`Policy Page Check: onAuthStateChanged on ${window.location.pathname}. User:`, user);
+                // Directly before calling app.modules.auth.updateAuthUI()
+                utils.log(`Policy Page Check: About to call updateAuthUI. isLoggedIn: ${state.isLoggedIn}`);
                 let isInitialAuthCheck = !state.initializationComplete;
-
                 // Update Auth State
                 if (user) {
                      // Fetch potentially updated profile info each time state changes
@@ -1792,6 +1796,9 @@ initializeFirebase: function() {
             const utils = AuraStreamApp.utils;
             const els = AuraStreamApp.elements;
             const state = AuraStreamApp.state;
+            utils.log(`Policy Page Check: updateAuthUI called on ${window.location.pathname}. Logged In: ${AuraStreamApp.state.isLoggedIn}`);
+            if (!els.loginSignupButton) utils.warn("Policy Page Check - updateAuthUI: loginSignupButton element NOT FOUND!");
+            if (!els.userInfoArea) utils.warn("Policy Page Check - updateAuthUI: userInfoArea element NOT FOUND!");
             // Run only if the essential elements were cached
             if (!els.loginSignupButton || !els.userInfoArea || !els.logoutButton || !els.userDisplayName || !els.userAvatar || !els.userAvatarImage || !els.userAvatarInitials) {
                 // Log warning only once maybe? Or only in debug mode?
