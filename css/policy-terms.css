@@ -289,3 +289,80 @@ body {
     color: #A8C7FA;
     text-decoration: underline;
 }
+
+
+.btn-primary-gradient {
+    background-image: linear-gradient(to right, #A78BFA 0%, #D946EF 50%, #A78BFA 100%);
+    background-size: 200% auto;
+    color: white;
+    border: none;
+    transition: background-position 0.5s ease;
+    font-weight: 500;
+}
+.btn-primary-gradient:hover {
+    background-position: right center;
+    color: white;
+}
+
+.btn-secondary-outline {
+    border: 1px solid #4A5568; /* Adjust color to match your theme */
+    color: #E0E0E0;
+    background-color: transparent;
+}
+.btn-secondary-outline:hover {
+    background-color: #4A5568;
+    color: #FFFFFF;
+}
+
+/* Ensure user avatar in navbar is styled (already likely in your style.css from index page) */
+.navbar-custom .user-avatar { /* More specific selector for navbar context */
+    background-color: #3B82F6;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+}
+.navbar-custom .user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Small adjustments for navbar auth elements */
+.navbar-custom .nav-actions {
+    gap: 0.75rem; /* Spacing between search, auth button/user info */
+}
+.navbar-custom .search-bar { /* If you add a search bar here too */
+    position: relative;
+}
+.navbar-custom .search-bar input {
+    background-color: #2D3748;
+    border: 1px solid #4A5568;
+    color: #FFFFFF;
+    border-radius: 0.375rem;
+    padding-left: 30px; /* Space for icon */
+    font-size: 0.9rem;
+}
+.navbar-custom .search-bar input::placeholder { color: #A0AEC0; }
+.navbar-custom .search-bar .bi-search {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #A0AEC0;
+    font-size: 0.85rem;
+}
+
+/* Style for the main navbar Login/Signup button */
+.btn-nav-cta {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
