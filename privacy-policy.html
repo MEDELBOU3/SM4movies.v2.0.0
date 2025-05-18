@@ -107,16 +107,41 @@
     </div>
 
     <!-- Footer -->
-    <footer class="footer-custom">
-        <div class="container text-center">
-            <p class="mb-2">
-                <a href="privacy-policy.html" class="btn btn-link p-0 conceptual-link footer-link-bottom">Privacy Policy</a>
-                <span class="mx-2">|</span>
-                <a href="terms-of-service.html" class="btn btn-link p-0 conceptual-link footer-link-bottom">Terms of Service</a>
-            </p>
-            <p class="small text-muted">© 2024 AuraStream. All Rights Reserved.</p>
-        </div>
-    </footer>
+    <!-- Footer (Same as index.html for consistency) -->
+     <footer class="landing-footer footer-custom"> <!-- Added footer-custom for shared styles -->
+         <div class="container footer-content">
+              <div class="footer-column">
+                  <a class="navbar-brand-landing d-block mb-3" href="index.html"> <i class="bi bi-stars"></i> AuraStream </a>
+                  <p style="font-size: 0.85rem;">Your portal to the entertainment universe. Discover, track, and connect.</p>
+              </div>
+              <div class="footer-column">
+                  <h4>Quick Links</h4>
+                  <ul>
+                      <li><a class="footer-link-bottom" href="index.html#hero"><i class="bi bi-chevron-right"></i> Home</a></li>
+                      <li><a class="footer-link-bottom" href="index.html#content-showcase"><i class="bi bi-chevron-right"></i> Discover</a></li>
+                      <li><a class="footer-link-bottom" href="index.html#features"><i class="bi bi-chevron-right"></i> Features</a></li>
+                      <li><a class="footer-link-bottom" href="index.html#faq"><i class="bi bi-chevron-right"></i> FAQ</a></li>
+                  </ul>
+              </div>
+              <div class="footer-column">
+                  <h4>Connect</h4>
+                  <div class="footer-social">
+                      <a href="https://github.com/MEDELBOU3/AuraStream-Concept" class="social-icon" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="bi bi-github"></i></a>
+                      <!-- Add other social links if desired -->
+                  </div>
+              </div>
+         </div>
+          <div class="footer-bottom">
+               <p>© <span id="copy-year">2024</span> AuraStream Concept. All Rights Reserved.</p> <!-- Placeholder for year -->
+               <p>Movie data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener" class="footer-link-bottom">TMDb</a>.</p>
+               <p class="mb-2">
+                    <a href="privacy-policy.html" class="btn btn-link p-0 footer-link-bottom">Privacy Policy</a>
+                    <span class="mx-2">|</span>
+                     <a href="terms-of-service.html" class="btn btn-link p-0 footer-link-bottom">Terms of Service</a>
+                </p>
+          </div>
+      </footer>
+
 
         <div class="modal fade" id="launchAppModal" tabindex="-1" aria-labelledby="launchAppModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
