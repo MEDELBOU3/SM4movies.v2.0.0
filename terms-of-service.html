@@ -4,37 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service - AuraStream</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Your Custom CSS -->
     <link rel="stylesheet" href="css/policy-terms.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Navbar (Simplified for policy pages or keep consistent) -->
-    <nav class="navbar navbar-expand-lg navbar-custom fixed-top py-3">
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top py-3 landing-navbar">
         <div class="container">
-            <a class="navbar-brand" href="index.html">
+            <a class="navbar-brand navbar-brand-landing" href="index.html">
                 <span class="logo-icon">✨</span>AuraStream
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavTerms" aria-controls="navbarNavTerms" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler mobile-menu-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavTerms" aria-controls="navbarNavTerms" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavTerms">
-                <ul class="navbar-nav ms-auto"> <!-- Align to right or keep simple -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Back to Home</a>
-                    </li>
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html#hero">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#content-showcase">Discover</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#faq">FAQ</a></li>
                 </ul>
+                <div class="nav-actions d-flex align-items-center" id="auth-button-area-wrapper">
+                    <div id="auth-button-area">
+                         <button type="button" class="btn btn-primary-gradient btn-nav-cta" data-bs-toggle="modal" data-bs-target="#launchAppModal" id="login-signup-button">Login / Sign Up</button>
+                         <div class="d-none align-items-center" id="user-info-area">
+                             <div id="user-avatar" class="user-avatar me-2" title="User Profile">
+                                 <span id="user-avatar-initials"></span>
+                                 <img id="user-avatar-image" src="" alt="Profile" class="d-none" />
+                             </div>
+                             <span id="user-display-name" class="me-3 text-light small fw-medium"></span>
+                             <button type="button" class="btn btn-secondary-outline btn-sm" id="logout-button">Logout</button>
+                         </div>
+                      </div>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
     <div class="container policy-container">
         <h1>Terms of Service</h1>
         <hr>
-
         <p><strong>Last Updated: October 26, 2023</strong></p>
-
         <p>Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the AuraStream website and services (the "Service") operated by AuraStream ("us", "we", or "our").</p>
         <p>Your access to and use of the Service is conditioned on your acceptance of and compliance with these Terms. These Terms apply to all visitors, users, and others who access or use the Service.</p>
         <p>By accessing or using the Service you agree to be bound by these Terms. If you disagree with any part of the terms then you may not access the Service.</p>
@@ -75,18 +93,143 @@
         <p>AuraStream Legal Team</p>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer-custom">
-        <div class="container text-center">
-            <p class="mb-2">
-                <a href="privacy-policy.html" class="btn btn-link p-0 conceptual-link footer-link-bottom">Privacy Policy</a>
-                <span class="mx-2">|</span>
-                <a href="terms-of-service.html" class="btn btn-link p-0 conceptual-link footer-link-bottom">Terms of Service</a>
-            </p>
-            <p class="small text-muted">© 2024 AuraStream. All Rights Reserved.</p>
+    <footer class="landing-footer footer-custom">
+        <div class="container">
+            <div class="row gy-4 gx-lg-5 footer-content">
+                <div class="col-lg-4 col-md-6 footer-column">
+                    <a class="navbar-brand-landing d-block mb-3" href="index.html">
+                        <i class="bi bi-stars"></i> AuraStream
+                    </a>
+                    <p>Your portal to the entertainment universe. Discover, track, and connect.</p>
+                </div>
+
+                <div class="col-lg-2 col-md-6 footer-column">
+                    <h4>Quick Links</h4>
+                    <ul class="list-unstyled">
+                        <li><a class="footer-link-bottom" href="index.html#hero"><i class="bi bi-chevron-right"></i> Home</a></li>
+                        <li><a class="footer-link-bottom" href="index.html#content-showcase"><i class="bi bi-chevron-right"></i> Discover</a></li>
+                        <li><a class="footer-link-bottom" href="index.html#features"><i class="bi bi-chevron-right"></i> Features</a></li>
+                        <li><a class="footer-link-bottom" href="index.html#faq"><i class="bi bi-chevron-right"></i> FAQ</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6 footer-column">
+                    <h4>Explore</h4>
+                    <ul class="list-unstyled">
+                        <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link-bottom"><i class="bi bi-chevron-right"></i> Movies (Concept)</button></li>
+                        <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link-bottom"><i class="bi bi-chevron-right"></i> TV Shows (Concept)</button></li>
+                        <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link-bottom"><i class="bi bi-chevron-right"></i> Community (Concept)</button></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6 footer-column">
+                    <h4>Connect</h4>
+                    <div class="footer-social mb-2">
+                        <a href="https://github.com/MEDELBOU3/AuraStream-Concept" class="social-icon me-3" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="bi bi-github"></i></a>
+                        <a href="#" class="social-icon me-3 conceptual-link" target="_blank" rel="noopener noreferrer" title="Twitter / X (Concept)"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="social-icon conceptual-link" target="_blank" rel="noopener noreferrer" title="Discord (Concept)"><i class="bi bi-discord"></i></a>
+                    </div>
+                    <p style="font-size: 0.8rem;">Follow the project's development and get in touch!</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom mt-4">
+                <p class="mb-1">© <span id="copy-year">2024</span> AuraStream Concept. All Rights Reserved.</p>
+                <p class="mb-1 small">Movie data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener" class="footer-link-bottom">TMDb</a>. This product uses the TMDb API but is not endorsed or certified by TMDb.</p>
+                <p class="mb-0 small">
+                     <a href="privacy-policy.html" class="btn btn-link p-0 footer-link-bottom">Privacy Policy</a>
+                     <span class="mx-2">|</span>
+                     <a href="terms-of-service.html" class="btn btn-link p-0 footer-link-bottom">Terms of Service</a>
+                 </p>
+           </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <div class="modal fade" id="launchAppModal" tabindex="-1" aria-labelledby="launchAppModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="launchAppModalLabel"><i class="bi bi-stars me-2"></i> Enter AuraStream</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="auth-modal-close-button"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-pills nav-fill mb-3" id="authTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-panel" type="button" role="tab" aria-controls="login-panel" aria-selected="true">Login</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup-panel" type="button" role="tab" aria-controls="signup-panel" aria-selected="false">Sign Up</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="authTabsContent">
+                        <div class="tab-pane fade show active" id="login-panel" role="tabpanel" aria-labelledby="login-tab">
+                            <form id="login-form">
+                                <div class="mb-3">
+                                    <label for="login-email" class="form-label">Email address</label>
+                                    <input type="email" class="form-control form-control-lg" id="login-email" placeholder="name@example.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="login-password" class="form-label">Password</label>
+                                    <input type="password" class="form-control form-control-lg" id="login-password" placeholder="Password" required>
+                                </div>
+                                <div class="d-grid mb-3">
+                                     <button type="submit" class="btn btn-primary-gradient btn-lg">Login</button>
+                                </div>
+                            </form>
+                            <div class="text-center text-muted my-3">OR</div>
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-light btn-lg border" id="google-login-button">
+                                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Login with Google
+                                </button>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="signup-panel" role="tabpanel" aria-labelledby="signup-tab">
+                             <form id="signup-form">
+                                <div class="mb-3">
+                                    <label for="signup-name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control form-control-lg" id="signup-name" placeholder="Your Full Name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signup-age" class="form-label">Age</label>
+                                    <input type="number" class="form-control form-control-lg" id="signup-age" placeholder="Your Age" required min="1">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signup-email" class="form-label">Email address</label>
+                                    <input type="email" class="form-control form-control-lg" id="signup-email" placeholder="name@example.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signup-password" class="form-label">Password</label>
+                                    <input type="password" class="form-control form-control-lg" id="signup-password" placeholder="Choose a strong password" required minlength="6">
+                                     <div class="form-text">Minimum 6 characters</div>
+                                </div>
+                                 <div class="mb-3">
+                                     <label for="signup-avatar" class="form-label">Profile Picture (Optional)</label>
+                                     <input type="file" class="form-control form-control-lg" id="signup-avatar" accept="image/png, image/jpeg, image/gif">
+                                     <div class="form-text">Upload an image for your profile avatar.</div>
+                                 </div>
+                                <div class="d-grid mb-3">
+                                     <button type="submit" class="btn btn-success btn-lg">Sign Up</button>
+                                </div>
+                            </form>
+                             <div class="text-center text-muted my-3">OR</div>
+                             <div class="d-grid">
+                                 <button type="button" class="btn btn-light btn-lg border" id="google-signup-button">
+                                     <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Sign Up with Google
+                                 </button>
+                             </div>
+                        </div>
+                    </div>
+                     <div id="auth-error-message" class="alert alert-danger mt-3 d-none" role="alert"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
