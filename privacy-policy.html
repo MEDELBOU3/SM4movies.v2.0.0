@@ -10,41 +10,49 @@
 <body>
 
     <!-- Navbar (Simplified for policy pages or keep consistent) -->
-    <nav class="navbar navbar-expand-lg navbar-custom fixed-top py-3">
+     <nav class="navbar navbar-expand-lg navbar-custom fixed-top py-3 landing-navbar">
         <div class="container">
-            <a class="navbar-brand" href="index.html">
-                AuraStream
+            <a class="navbar-brand navbar-brand-landing" href="index.html">
+                <span class="logo-icon">✨</span>AuraStream
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavPolicy" aria-controls="navbarNavPolicy" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler mobile-menu-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavPolicy" aria-controls="navbarNavPolicy" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list"></i>
             </button>
-            <div id="auth-button-area">
-                     <!-- Logged OUT View -->
-                     <button type="button" class="btn btn-primary-gradient btn-nav-cta" data-bs-toggle="modal" data-bs-target="#launchAppModal" id="login-signup-button">
-                       Login / Sign Up
-                     </button>
-                      <!-- Logged IN View -->
-                     <div class="d-none align-items-center" id="user-info-area">
-                         <!-- Avatar Placeholder - THIS will display the image -->
-                         <div id="user-avatar" class="user-avatar me-2" title="User Profile">
-                             <!-- Initials shown if no image -->
-                             <span id="user-avatar-initials"></span>
-                             <!-- Image shown when available -->
-                             <img id="user-avatar-image" src="" alt="Profile" class="d-none" />
-                         </div>
-                         <!-- Span for User Name (will be populated by JS) -->
-                         <span id="user-display-name" class="me-3 text-light small fw-medium"></span>
-                         <button type="button" class="btn btn-secondary-outline btn-sm" id="logout-button"> <!-- Made button smaller -->
-                             Logout
-                         </button>
-                     </div>
-            </div>
             <div class="collapse navbar-collapse" id="navbarNavPolicy">
-                <ul class="navbar-nav ms-auto"> <!-- Align to right or keep simple -->
+                <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html">Back to Home</a>
+                        <a class="nav-link" href="index.html#hero">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#content-showcase">Discover</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#faq">FAQ</a>
                     </li>
                 </ul>
+                <!-- Auth Button Area - Copied from index.html's structure -->
+                <div class="nav-actions d-flex align-items-center" id="auth-button-area-wrapper"> <!-- Wrapper for alignment -->
+                    <div id="auth-button-area">
+                         <!-- Logged OUT View -->
+                         <button type="button" class="btn btn-primary-gradient btn-nav-cta" data-bs-toggle="modal" data-bs-target="#launchAppModal" id="login-signup-button">
+                           Login / Sign Up
+                         </button>
+                          <!-- Logged IN View -->
+                         <div class="d-none align-items-center" id="user-info-area">
+                             <div id="user-avatar" class="user-avatar me-2" title="User Profile">
+                                 <span id="user-avatar-initials"></span>
+                                 <img id="user-avatar-image" src="" alt="Profile" class="d-none" />
+                             </div>
+                             <span id="user-display-name" class="me-3 text-light small fw-medium"></span>
+                             <button type="button" class="btn btn-secondary-outline btn-sm" id="logout-button">
+                                 Logout
+                             </button>
+                         </div>
+                      </div>
+                </div>
             </div>
         </div>
     </nav>
