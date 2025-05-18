@@ -1,0 +1,291 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #121217; /* Main dark background from image */
+    color: #E0E0E0; /* Light text color */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 80px; /* Global padding for fixed navbar - adjust if navbar height changes */
+}
+
+/* Navbar */
+.navbar-custom {
+    background-color: #1A1A21; /* Slightly lighter dark for navbar */
+    border-bottom: 1px solid #2a2a33; /* Subtle border */
+}
+
+.navbar-custom .navbar-brand {
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 1.75rem;
+}
+
+.navbar-custom .navbar-brand .logo-icon {
+    color: #A78BFA; /* Purple for stars (approx) */
+    margin-right: 0.25rem;
+}
+
+.navbar-custom .nav-link {
+    color: #A0AEC0; /* Lighter gray for nav links */
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+    font-weight: 500;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link.active {
+    color: #FFFFFF;
+}
+
+.navbar-custom .navbar-toggler {
+    border-color: rgba(255,255,255,0.1);
+}
+.navbar-custom .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+
+.search-input-wrapper {
+    min-width: 200px; /* Give search input some base width */
+}
+.search-input {
+    background-color: #2D3748; /* Darker input background */
+    border: 1px solid #4A5568;
+    color: #FFFFFF;
+    border-radius: 0.375rem;
+    padding-left: 35px; /* Space for icon */
+}
+
+.search-input::placeholder {
+    color: #A0AEC0;
+}
+
+.search-input-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #A0AEC0;
+    pointer-events: none; /* So it doesn't interfere with input click */
+}
+
+.user-avatar {
+    background-color: #3B82F6; /* Blue avatar */
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+}
+
+.btn-logout {
+    background-color: #2D3748;
+    border: 1px solid #4A5568;
+    color: #FFFFFF;
+    font-weight: 500;
+}
+.btn-logout:hover {
+    background-color: #4A5568;
+    color: #FFFFFF;
+}
+
+/* Hero Section (index.html - not directly used by policy pages but part of the shared CSS) */
+.hero-section-container {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+.hero-main-text h1 {
+    font-size: 3.5rem; /* Adjusted for typical screens */
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+    .hero-main-text h1 {
+        font-size: 4.5rem;
+    }
+}
+
+
+.hero-main-text .text-magenta {
+    color: #D946EF; /* Magenta color for "Everywhere" */
+}
+
+.hero-main-text p.lead {
+    font-size: 1.15rem;
+    color: #A0AEC0;
+    margin-bottom: 2rem;
+    max-width: 550px;
+}
+
+.platform-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.platform-list li {
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    color: #E0E0E0;
+}
+
+.platform-list li i { /* For icons */
+    margin-right: 0.85rem;
+    color: #3B82F6; /* Blue for icons */
+    font-size: 1.6rem;
+    min-width: 25px; /* Ensure icons align nicely */
+}
+.platform-list .badge {
+    margin-left: auto; /* Pushes badge to the right */
+    font-size: 0.7rem;
+    padding: 0.4em 0.7em;
+    font-weight: 500;
+}
+.badge-planned {
+    background-color: #4A5568; /* Dark gray for planned */
+    color: #E0E0E0;
+}
+.badge-future {
+    background-color: #313B4C; /* Darker gray for future */
+    color: #A0AEC0;
+}
+
+
+.btn-roadmap {
+    background-color: #222938;
+    border: 1px solid #353f52;
+    color: #FFFFFF;
+    padding: 0.75rem 1.75rem;
+    font-weight: 500;
+    font-size: 1rem;
+}
+.btn-roadmap:hover {
+    background-color: #353f52;
+    color: #FFFFFF;
+}
+
+/* AuraStream Mockup Section (index.html - not directly used by policy pages but part of the shared CSS) */
+.mockup-section-outer {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+.mockup-card {
+    background-color: #F3F4F6; /* Light gray as per image */
+    border-radius: 20px; /* Rounded corners */
+    padding: 2rem;
+    color: #1F2937; /* Dark text for this light section */
+}
+
+@media (min-width: 768px) {
+    .mockup-card {
+        padding: 3rem;
+    }
+}
+
+.mockup-card h2.brand-title {
+    font-weight: 900;
+    color: #111827;
+    font-size: 2.5rem;
+}
+.mockup-card .tagline {
+    font-weight: 700;
+    color: #374151;
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+.mockup-card .description {
+    color: #4B5563;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    max-width: 300px;
+}
+.mockup-image-placeholder {
+    background-color: #E5E7EB;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    text-align: center;
+    color: #6B7280;
+    font-size: 0.9rem;
+    padding: 1rem;
+}
+
+
+/* Footer (Used by ALL pages, including policy pages) */
+.footer-custom {
+    background-color: #1A1A21; /* Same as navbar */
+    color: #A0AEC0;
+    padding: 2rem 0;
+    margin-top: auto; /* Pushes footer to bottom if content is short */
+    border-top: 1px solid #2a2a33;
+}
+
+.footer-link-bottom {
+    color: #A0AEC0;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer-link-bottom:hover {
+    color: #FFFFFF;
+    text-decoration: underline;
+}
+
+/* Policy Pages Specific Styles (THESE ARE KEY FOR TERMS/PRIVACY PAGES) */
+.policy-container {
+    padding-top: 2rem; /* Space below fixed navbar */
+    padding-bottom: 4rem; /* Space above footer */
+}
+.policy-container h1 {
+    color: #FFFFFF;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    font-size: 2.25rem; /* Slightly smaller than hero H1 */
+}
+.policy-container h2 {
+    color: #E0E0E0;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+.policy-container p, .policy-container ul li {
+    color: #B0B0C0; /* Slightly lighter for readability of dense text */
+    line-height: 1.7;
+    font-size: 0.95rem; /* Standard text size for readability */
+}
+.policy-container ul {
+    padding-left: 1.5rem; /* Indent list items */
+    margin-bottom: 1rem;
+}
+.policy-container ul li {
+    margin-bottom: 0.5rem; /* Space between list items */
+}
+.policy-container strong {
+    color: #E0E0E0; /* Make strong text stand out a bit */
+}
+.policy-container hr {
+    border-color: #4A5568; /* Darker hr */
+    margin-top: 2rem; /* More space around hr for separation */
+    margin-bottom: 2rem;
+}
+.policy-container a { /* Style links within policy content */
+    color: #8AB4F8; /* A distinct link color for readability on dark bg */
+    text-decoration: none;
+}
+.policy-container a:hover {
+    color: #A8C7FA;
+    text-decoration: underline;
+}
