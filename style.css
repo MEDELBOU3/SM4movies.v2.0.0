@@ -535,16 +535,16 @@
             object-fit: cover; /* Ensures image covers the circle */
         }
 
-user-display-name {
-    color: var(--text-light); /* Theme text color */
-    font-weight: 500; /* Slightly less bold than avatar initials */
-    font-size: 0.9rem; /* Slightly larger */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 160px; /* Slightly more width if needed */
-    opacity: 0.9; /* Slightly softer */
-}
+        #user-display-name {
+             color: var(--text-light); /* Theme text color */
+             font-weight: 500; /* Slightly less bold than avatar initials */
+             font-size: 0.9rem; /* Slightly larger */
+             white-space: nowrap;
+             overflow: hidden;
+             text-overflow: ellipsis;
+             max-width: 160px; /* Slightly more width if needed */
+             opacity: 0.9; /* Slightly softer */
+        }
 
         /* --- Ensure form controls in modal have consistent styling --- */
         .modal-body .form-control {
