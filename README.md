@@ -39,7 +39,7 @@ AuraStream is a feature-rich, client-side web application designed to provide a 
     *   **User Authentication:** (Handled via a separate landing page, with user state passed to this app).
     *   **Watchlist:** Add/remove movies and TV shows to a personal watchlist (localStorage).
     *   **View Tracking (User-Specific):** Tracks what a user has watched via Firestore.
-    *   **Favorites:** (Conceptual - if `Favorites.js` module is implemented).
+    *   **Favorites:** you can just click on hearth icon on the cards and go to Analyrics Tab to show you favorite content.
 *   **Genre & Network Browsing:**
     *   Dedicated pages for browsing content by specific genres or streaming networks.
     *   "Load More" pagination.
@@ -53,7 +53,7 @@ AuraStream is a feature-rich, client-side web application designed to provide a 
 *   **Live Sports Section (Conceptual):**
     *   Integration with Sportradar API to display live soccer scores and upcoming matches (API key required).
 *   **Analytics Dashboard (Conceptual):**
-    *   Visualizations of user preferences (e.g., top genres, actors - if `Analytics.js` is fully implemented with data tracking).
+    *   Visualizations of user preferences (e.g., top genres, actors - if `js/Analytics.js` is fully implemented with data tracking).
 *   **Connection Explorer:**
     *   Visualize connections between movies, TV shows, and people (cast/crew) using Vis Network.
 *   **Theming:** Multiple pre-defined themes with a theme switcher.
@@ -83,16 +83,16 @@ AuraStream is a feature-rich, client-side web application designed to provide a 
     cd SM4movies.v2.0.0
     ```
 2.  **API Keys:**
-    *   **TMDB API Key:** Open `script.js` and replace the placeholder in `config.TMDB_API_KEY` with your valid TMDB API key.
+    *   **TMDB API Key:** Open `js/script.js` and replace the placeholder in `config.TMDB_API_KEY` with your valid TMDB API key.
     *   **Firebase Configuration:**
-        *   Open `firebase.js` (and your landing page's Firebase script).
+        *   Open `js/firebase.js` (and your landing page's Firebase script).
         *   Replace all placeholder values in `firebaseConfigApp` (and the landing page's equivalent) with your actual Firebase project configuration details (apiKey, authDomain, projectId, etc.).
         *   Set up Firestore in your Firebase project and configure security rules (see `firestore.rules` example or provided rules).
-    *   **Google Gemini API Key:** Open `script.js` and replace the placeholder in `config.GEMINI_API_KEY`. Ensure the Gemini API (Generative Language API) is enabled for your Google Cloud project.
-    *   **Spotify API Credentials:** Open `script.js` and replace placeholders in `config.SPOTIFY_CLIENT_ID` and `config.SPOTIFY_CLIENT_SECRET`.
-    *   **Sportradar API Key:** Open `script.js` and replace the placeholder in `config.SPORTRADAR_API_KEY`.
+    *   **Google Gemini API Key:** Open `js/script.js` and replace the placeholder in `config.GEMINI_API_KEY`. Ensure the Gemini API (Generative Language API) is enabled for your Google Cloud project.
+    *   **Spotify API Credentials:** Open `js/script.js` and replace placeholders in `config.SPOTIFY_CLIENT_ID` and `config.SPOTIFY_CLIENT_SECRET`.
+    *   **Sportradar API Key:** Open `js/script.js` and replace the placeholder in `config.SPORTRADAR_API_KEY`.
 3.  **HTML Structure for Home Sections (Optional but Recommended):**
-    *   For sections like "Popular on AuraStream" (`most-viewed`) and "Top Rated on AuraStream" (`top-rated-aurastream`), it's recommended to have placeholder `<section>` divs in your `app2.html` (or main app HTML file) with the corresponding IDs (`most-viewed-section`, `top-rated-aurastream-section`). This allows the JavaScript to target them correctly and manage their visibility. See `script.js` (`App.loadHomeSections`) for details.
+    *   For sections like "Popular on AuraStream" (`most-viewed`) and "Top Rated on AuraStream" (`top-rated-aurastream`), it's recommended to have placeholder `<section>` divs in your `app.html` (or main app HTML file) with the corresponding IDs (`most-viewed-section`, `top-rated-aurastream-section`). This allows the JavaScript to target them correctly and manage their visibility. See `js/script.js` (`App.loadHomeSections`) for details.
     *   Example:
         ```html
         <section id="most-viewed-section" class="content-section mb-5" style="display: none;">
@@ -110,6 +110,6 @@ AuraStream is a feature-rich, client-side web application designed to provide a 
         *   Public or authenticated writes to `viewCounts` (depending on your design).
         *   Public reads and authenticated writes for `item_ratings`.
     *   An example set of rules has been discussed during development. **Always review and test your security rules thoroughly.**
-5.  **Run Locally:** Open `app2.html` (or your main app HTML file) in a modern web browser. An internet connection is required for API calls.
+5.  **Run Locally:** Open `app.html` (or your main app HTML file) in a modern web browser. An internet connection is required for API calls.
 
 ## Made By MOHAMED EL-BOUANANI
