@@ -79,8 +79,8 @@ AuraStream is a feature-rich, client-side web application designed to provide a 
 
 1.  **Clone the Repository (if applicable):**
     ```bash
-    git clone [your-repository-url]
-    cd [repository-name]
+    git clone https://github.com/MEDELBOU3/SM4movies.v2.0.0
+    cd SM4movies.v2.0.0
     ```
 2.  **API Keys:**
     *   **TMDB API Key:** Open `script.js` and replace the placeholder in `config.TMDB_API_KEY` with your valid TMDB API key.
