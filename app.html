@@ -371,6 +371,84 @@
                 </div>
             </section>
 
+             <section id="community-view" class="view-section py-4" style="display: none;">
+    <div class="container">
+        <div id="community-header" class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-white">AuraStream Community</h1>
+            <!-- User info/actions will be populated by JS if logged in -->
+            <div id="community-user-actions">
+                <!-- e.g., Create New Thread Button -->
+            </div>
+        </div>
+
+        <!-- Optional: Category Filter/Navigation -->
+        <!-- <div id="community-categories-nav" class="mb-3"></div> -->
+
+        <div id="community-threads-list" class="mb-4">
+            <!-- Threads will be loaded here -->
+            <!-- Example Thread Item (rendered by JS) -->
+            <!--
+            <div class="community-thread-item card card-body bg-darker mb-2">
+                <h5 class="card-title"><a href="#community/thread/threadId123">Thread Title</a></h5>
+                <p class="card-text small text-muted">
+                    Started by UserXYZ on Jan 1, 2025 - 5 replies
+                    <span class="badge bg-secondary">Movie: Inception</span>
+                </p>
+            </div>
+            -->
+        </div>
+
+        <!-- Modal for Creating New Thread (Bootstrap) -->
+        <div class="modal fade" id="createThreadModal" tabindex="-1" aria-labelledby="createThreadModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark text-light">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createThreadModalLabel">Create New Discussion Thread</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="create-thread-form">
+                            <div class="mb-3">
+                                <label for="threadTitle" class="form-label">Thread Title</label>
+                                <input type="text" class="form-control form-control-dark" id="threadTitle" required maxlength="150">
+                            </div>
+                            <div class="mb-3">
+                                <label for="threadFirstPost" class="form-label">Your First Post</label>
+                                <textarea class="form-control form-control-dark" id="threadFirstPost" rows="5" required maxlength="5000"></textarea>
+                            </div>
+                           
+                            <div class="mb-3">
+                                <label for="threadLinkMovieId" class="form-label">Link to Movie (TMDB ID - Optional)</label>
+                                <input type="number" class="form-control form-control-dark" id="threadLinkMovieId" placeholder="e.g., 157336">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Thread</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="community-thread-detail-view" class="view-section py-4" style="display: none;">
+    <div class="container">
+        <button class="btn btn-outline-light btn-sm mb-3" onclick="location.hash='#community'"><i class="bi bi-arrow-left"></i> Back to Community</button>
+        <div id="thread-detail-content" class="mb-4">
+        </div>
+        <h3 class="text-white mb-3">Replies</h3>
+        <div id="thread-posts-list">
+       
+        </div>
+        <form id="add-post-form" class="mt-4" style="display:none;"> 
+            <h4 class="text-white">Add Your Reply</h4>
+            <div class="mb-3">
+                <textarea class="form-control form-control-dark" id="newPostContent" rows="4" required placeholder="Write your reply..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Post Reply</button>
+        </form>
+    </div>
+</section>
+
         </div> <!-- End View Container -->
     </main>
 
