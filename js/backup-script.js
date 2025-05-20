@@ -1158,7 +1158,16 @@ const Router = {
 
          // Stop visualizer if running
          Visualizer.stop();
+         if (DOM.tmdbLiveSearchSuggestions) Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, false);
 
+        // --- NEW: Unsubscribe from Firestore listeners ---
+        if (State.postsListenerUnsubscribe) {
+            console.log("[Router] Unsubscribing from posts listener for thread:", State.currentCommunityThreadId);
+            State.postsListenerUnsubscribe();
+            State.postsListenerUnsubscribe = null; // Reset it
+            State.currentCommunityThreadId = null; // Clear current thread context
+        }
+    
          // Hide all views and deactivate nav links
          Object.values(DOM.views).forEach(view => { if(view) { view.classList.remove('active'); view.style.display = 'none';} });
          document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
@@ -5651,38 +5660,52 @@ document.addEventListener('DOMContentLoaded', App.init);
 
 
 // Create a new object similar to App, Router, API, Utils
+// This entire 'Community' object should be part of your script.js
+// It assumes 'appAuth', 'appDb', 'API', 'Utils', 'State', 'DOM', 'config', 'getAppInitials', 'timeAgo'
+// are available in the scope it's defined in.
+
 const Community = {
     initView: async () => {
         console.log("Initializing Community View...");
-        if (!DOM.communityThreadsList || !DOM.communityUserActions) return;
+        if (!DOM.communityThreadsList || !DOM.communityUserActions) {
+            console.error("Community view elements not found for init.");
+            return;
+        }
 
-        // Display "Create Thread" button if user is logged in
+        if (typeof appAuth === 'undefined' || typeof appDb === 'undefined') {
+            DOM.communityThreadsList.innerHTML = Utils.getErrorHTML("Community features are currently unavailable (service connection issue).");
+            DOM.communityUserActions.innerHTML = '';
+            return;
+        }
+
         if (appAuth.currentUser) {
             DOM.communityUserActions.innerHTML = `
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
                     <i class="bi bi-plus-circle-fill me-1"></i> Create New Thread
                 </button>`;
         } else {
-            DOM.communityUserActions.innerHTML = `<p class="text-muted small">Login to create threads and post.</p>`;
+            DOM.communityUserActions.innerHTML = `<p class="text-muted small">Login to create threads and post replies.</p>`;
         }
         await Community.loadThreads();
     },
 
     loadThreads: async () => {
-        if (!DOM.communityThreadsList || !appDb) return;
+        if (!DOM.communityThreadsList || !appDb) {
+            if (DOM.communityThreadsList) DOM.communityThreadsList.innerHTML = Utils.getErrorHTML("Cannot load discussions at this time.");
+            return;
+        }
         DOM.communityThreadsList.innerHTML = Utils.getSpinnerHTML("Loading discussions...");
-
+        State.communityThreads = [];
         try {
             const threadsSnapshot = await appDb.collection('community_threads')
-                                          .orderBy('lastReplyAt', 'desc') // Show most recent activity first
+                                          .orderBy('lastReplyAt', 'desc')
                                           .limit(25)
                                           .get();
-            State.communityThreads = []; // Clear cache
             if (threadsSnapshot.empty) {
-                DOM.communityThreadsList.innerHTML = '<p class="text-center text-muted">No discussions yet. Be the first to start one!</p>';
+                DOM.communityThreadsList.innerHTML = '<p class="text-center text-muted py-4">No discussions yet. Be the first to start one!</p>';
                 return;
             }
-            DOM.communityThreadsList.innerHTML = ''; // Clear spinner
+            DOM.communityThreadsList.innerHTML = '';
             threadsSnapshot.forEach(doc => {
                 const thread = { id: doc.id, ...doc.data() };
                 State.communityThreads.push(thread);
@@ -5697,29 +5720,32 @@ const Community = {
 
     renderThreadItem: (thread, container) => {
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'community-thread-item card card-body bg-darker mb-3 shadow-sm'; // Added shadow
+        itemDiv.className = 'community-thread-item card card-body bg-darker mb-3 shadow-sm';
 
-        const linkedItemHtml = thread.linkedMovieId ? `<span class="badge bg-info bg-opacity-25 text-info-emphasis me-2">Movie: ${Utils.escapeHtml(thread.linkedMovieTitle || 'N/A')}</span>` :
-                              thread.linkedTvShowId ? `<span class="badge bg-success bg-opacity-25 text-success-emphasis me-2">TV: ${Utils.escapeHtml(thread.linkedTvShowTitle || 'N/A')}</span>` : '';
+        let linkedItemDisplayHtml = '';
+        if (thread.linkedItemId && thread.linkedItemType && thread.linkedItemTitle) {
+            let badgeClass = thread.linkedItemType === 'movie' ? 'bg-info text-info-emphasis' : 'bg-success text-success-emphasis';
+            linkedItemDisplayHtml = `<span class="badge ${badgeClass} bg-opacity-25 me-2">${thread.linkedItemType === 'movie' ? 'Movie' : 'TV Show'}: ${Utils.escapeHtml(thread.linkedItemTitle)}</span>`;
+        }
 
         itemDiv.innerHTML = `
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <h5 class="card-title mb-1">
-                        <a href="#community/thread/${thread.id}" class="text-decoration-none stretched-link">${Utils.escapeHtml(thread.title)}</a>
+                        <a href="#community/thread/${thread.id}" class="text-decoration-none stretched-link text-light hover-primary">${Utils.escapeHtml(thread.title)}</a>
                     </h5>
                     <p class="card-text small text-muted mb-1">
                         Started by ${Utils.escapeHtml(thread.createdBy?.displayName || 'User')}
-                        on ${thread.createdAt ? Utils.formatAirDate(thread.createdAt.toDate()) : 'N/A'}
+                        on ${thread.createdAt?.toDate ? Utils.formatAirDate(thread.createdAt.toDate()) : 'N/A'}
                     </p>
                 </div>
-                <span class="badge bg-secondary bg-opacity-50 text-light-emphasis flex-shrink-0">${thread.postCount || 0} replies</span>
+                <span class="badge bg-secondary bg-opacity-50 text-light-emphasis flex-shrink-0 align-self-center">${thread.postCount || 0} replies</span>
             </div>
             ${thread.firstPostContent ? `<p class="text-muted small mt-1 mb-2 text-truncate">${Utils.escapeHtml(thread.firstPostContent)}</p>`: ''}
-            <div>
-                ${linkedItemHtml}
-                <small class="text-muted">Last reply by ${Utils.escapeHtml(thread.lastReplyBy?.displayName || 'N/A')}
-                ${thread.lastReplyAt ? `at ${thread.lastReplyAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+            <div class="d-flex align-items-center mt-1">
+                ${linkedItemDisplayHtml}
+                <small class="text-muted ms-auto">Last reply by ${Utils.escapeHtml(thread.lastReplyBy?.displayName || 'N/A')}
+                ${thread.lastReplyAt?.toDate ? ` at ${thread.lastReplyAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
                 </small>
             </div>
         `;
@@ -5733,10 +5759,16 @@ const Community = {
             return;
         }
 
-        const title = document.getElementById('threadTitle').value.trim();
-        const firstPostContent = document.getElementById('threadFirstPost').value.trim();
-        const linkedMovieIdRaw = document.getElementById('threadLinkMovieId').value.trim();
-        // TODO: Add similar for TV Show ID if you have a field for it
+        const titleInput = document.getElementById('threadTitle');
+        const firstPostContentInput = document.getElementById('threadFirstPost');
+        const linkedMovieIdInput = document.getElementById('threadLinkMovieId'); // Assuming this is its ID
+        // const linkedTvIdInput = document.getElementById('threadLinkTvId'); // Add if you have a TV ID input
+
+        const title = titleInput?.value.trim();
+        const firstPostContent = firstPostContentInput?.value.trim();
+        const linkedMovieIdRaw = linkedMovieIdInput?.value.trim();
+        // const linkedTvIdRaw = linkedTvIdInput?.value.trim();
+
 
         if (!title || !firstPostContent) {
             Utils.showToast("Title and first post content are required.", "warning");
@@ -5745,29 +5777,48 @@ const Community = {
 
         const submitButton = DOM.createThreadForm.querySelector('button[type="submit"]');
         submitButton.disabled = true;
-        submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating...`;
+        submitButton.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Creating...`;
 
         try {
             const user = appAuth.currentUser;
             const now = firebase.firestore.FieldValue.serverTimestamp();
-            let linkedMovieData = {};
+            let linkedItemData = {}; // Store all linked item details here
 
+            // Prefer Movie ID if both are somehow filled, or handle more gracefully
             if (linkedMovieIdRaw) {
-                const movieId = parseInt(linkedMovieIdRaw);
-                if (!isNaN(movieId)) {
-                    const movieDetails = await API.fetchTMDB(`/movie/${movieId}`);
-                    if (movieDetails) {
-                        linkedMovieData.linkedMovieId = movieId;
-                        linkedMovieData.linkedMovieTitle = movieDetails.title;
+                const itemId = parseInt(linkedMovieIdRaw);
+                if (!isNaN(itemId)) {
+                    const itemDetails = await API.fetchTMDB(`/movie/${itemId}`);
+                    if (itemDetails && itemDetails.id) { // Check if valid details were returned
+                        linkedItemData = {
+                            linkedItemId: itemDetails.id,
+                            linkedItemType: 'movie',
+                            linkedItemTitle: itemDetails.title,
+                            linkedItemPosterPath: itemDetails.poster_path || null
+                        };
                     } else {
-                        Utils.showToast("Invalid Movie TMDB ID provided.", "warning");
-                        // Optionally allow creating thread without link or clear field
+                        Utils.showToast(`Could not find movie with ID: ${itemId}. Thread will be created without a movie link.`, "info");
+                        if(linkedMovieIdInput) linkedMovieIdInput.value = ''; // Clear invalid input
                     }
                 }
             }
-            // TODO: Similar logic for linkedTvShowId
+            // else if (linkedTvIdRaw) { // Add logic for TV show linking
+            //     const itemId = parseInt(linkedTvIdRaw);
+            //     if (!isNaN(itemId)) {
+            //         const itemDetails = await API.fetchTMDB(`/tv/${itemId}`);
+            //         if (itemDetails && itemDetails.id) {
+            //             linkedItemData = {
+            //                 linkedItemId: itemDetails.id,
+            //                 linkedItemType: 'tv',
+            //                 linkedItemTitle: itemDetails.name,
+            //                 linkedItemPosterPath: itemDetails.poster_path || null
+            //             };
+            //         } else { Utils.showToast(`Could not find TV show with ID: ${itemId}.`, "info"); }
+            //     }
+            // }
 
-            const threadRef = await appDb.collection('community_threads').add({
+
+            const threadDataObject = {
                 title: title,
                 createdAt: now,
                 createdBy: {
@@ -5775,18 +5826,21 @@ const Community = {
                     displayName: user.displayName || user.email.split('@')[0],
                     photoURL: user.photoURL || null
                 },
-                ...linkedMovieData, // Add linked movie data if exists
-                firstPostContent: firstPostContent.substring(0, 200), // Store a snippet
-                postCount: 1, // Starts with the first post
+                // Spread linkedItemData. If it's empty, nothing is added.
+                ...(Object.keys(linkedItemData).length > 0 && linkedItemData),
+                firstPostContent: firstPostContent.substring(0, 250), // Snippet
+                postCount: 1,
                 lastReplyAt: now,
                 lastReplyBy: {
                     userId: user.uid,
                     displayName: user.displayName || user.email.split('@')[0]
                 }
-            });
+            };
 
-            // Add the first post
-            await appDb.collection('community_posts').add({
+            const threadRef = await appDb.collection('community_threads').add(threadDataObject);
+
+            // Add the first post, also including linked item data
+            const firstPostDataObject = {
                 threadId: threadRef.id,
                 content: firstPostContent,
                 createdAt: now,
@@ -5795,20 +5849,21 @@ const Community = {
                     displayName: user.displayName || user.email.split('@')[0],
                     photoURL: user.photoURL || null
                 },
-                isOriginalPost: true
-            });
+                isOriginalPost: true,
+                ...(Object.keys(linkedItemData).length > 0 && linkedItemData)
+            };
+            await appDb.collection('community_posts').add(firstPostDataObject);
 
-            // Optional: Update user's thread count (denormalization)
             const userDocRef = appDb.collection('users').doc(user.uid);
-            await userDocRef.update({
-                communityThreadsCreatedCount: firebase.firestore.FieldValue.increment(1)
-            });
-
+            await userDocRef.set({ // Use set with merge to create field if not exists
+                communityThreadsCreatedCount: firebase.firestore.FieldValue.increment(1),
+                lastActivityAt: now // Also update user's last activity
+            }, { merge: true });
 
             Utils.showToast("Thread created successfully!", "success");
-            State.createThreadModalInstance.hide();
+            if (State.createThreadModalInstance) State.createThreadModalInstance.hide();
             DOM.createThreadForm.reset();
-            location.hash = `#community/thread/${threadRef.id}`; // Navigate to new thread
+            location.hash = `#community/thread/${threadRef.id}`;
 
         } catch (error) {
             console.error("Error creating thread:", error);
@@ -5819,100 +5874,6 @@ const Community = {
         }
     },
 
-    loadThreadDetailView: async (threadId) => {
-        State.currentCommunityThreadId = threadId;
-        if (!DOM.threadDetailContent || !DOM.threadPostsList || !DOM.addPostForm || !appDb) return;
-
-        DOM.threadDetailContent.innerHTML = Utils.getSpinnerHTML("Loading thread...");
-        DOM.threadPostsList.innerHTML = Utils.getSpinnerHTML("Loading replies...");
-        Utils.setElementVisibility(DOM.addPostForm, !!appAuth.currentUser); // Show form if logged in
-
-        try {
-            const threadDoc = await appDb.collection('community_threads').doc(threadId).get();
-            if (!threadDoc.exists) {
-                DOM.threadDetailContent.innerHTML = Utils.getErrorHTML("Thread not found.");
-                DOM.threadPostsList.innerHTML = '';
-                return;
-            }
-            const threadData = { id: threadDoc.id, ...threadDoc.data() };
-            Community.renderThreadHeader(threadData, DOM.threadDetailContent); // New function to render title etc.
-            await Community.loadPostsForThread(threadId, DOM.threadPostsList);
-
-        } catch (error) {
-            console.error("Error loading thread details:", error);
-            DOM.threadDetailContent.innerHTML = Utils.getErrorHTML("Could not load thread details.");
-            DOM.threadPostsList.innerHTML = '';
-            Utils.showToast("Failed to load thread.", "danger");
-        }
-    },
-
-    renderThreadHeader: (thread, container) => { // Renders the main thread title/info
-        const linkedItemHtml = thread.linkedMovieId ? `<p class="mb-1"><span class="badge bg-info bg-opacity-25 text-info-emphasis">Topic: ${Utils.escapeHtml(thread.linkedMovieTitle || 'Movie')}</span></p>` :
-                              thread.linkedTvShowId ? `<p class="mb-1"><span class="badge bg-success bg-opacity-25 text-success-emphasis">Topic: ${Utils.escapeHtml(thread.linkedTvShowTitle || 'TV Show')}</span></p>` : '';
-        container.innerHTML = `
-            <h1 class="text-white mb-2">${Utils.escapeHtml(thread.title)}</h1>
-            ${linkedItemHtml}
-            <p class="text-muted small">
-                Started by ${Utils.escapeHtml(thread.createdBy?.displayName || 'User')}
-                on ${thread.createdAt ? Utils.formatAirDate(thread.createdAt.toDate()) : 'N/A'}
-            </p>
-            <hr class="border-secondary">
-        `;
-    },
-
-    loadPostsForThread: async (threadId, container) => {
-        if (!appDb) return;
-        container.innerHTML = Utils.getSpinnerHTML("Loading replies...");
-        State.currentCommunityPosts = [];
-
-        try {
-            const postsSnapshot = await appDb.collection('community_posts')
-                                          .where('threadId', '==', threadId)
-                                          .orderBy('createdAt', 'asc') // Show oldest first for conversational flow
-                                          .limit(50) // Add pagination later
-                                          .get();
-            if (postsSnapshot.empty) {
-                container.innerHTML = '<p class="text-center text-muted fst-italic py-3">No replies yet. Be the first to reply!</p>';
-                return;
-            }
-            container.innerHTML = ''; // Clear spinner
-            postsSnapshot.forEach(doc => {
-                const post = { id: doc.id, ...doc.data() };
-                State.currentCommunityPosts.push(post);
-                Community.renderPostItem(post, container);
-            });
-        } catch (error) {
-            console.error(`Error loading posts for thread ${threadId}:`, error);
-            container.innerHTML = Utils.getErrorHTML("Could not load replies.");
-        }
-    },
-
-    renderPostItem: (post, container) => {
-        const postDiv = document.createElement('div');
-        postDiv.className = `community-post-item card mb-3 ${post.isOriginalPost ? 'bg-darker shadow-sm' : 'bg-dark bg-opacity-50'}`; // Differentiate original post
-        postDiv.id = `post-${post.id}`;
-
-        // Basic HTML sanitation for post.content (replace with a proper library if allowing complex HTML)
-        const safeContent = Utils.escapeHtml(post.content).replace(/\n/g, '<br>');
-
-        postDiv.innerHTML = `
-            <div class="card-header bg-transparent border-bottom-0 py-2 px-3 d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                    <img src="${post.createdBy?.photoURL || 'https://via.placeholder.com/30/secondary/white?text=' + getAppInitials(post.createdBy?.displayName, '')}" alt="${Utils.escapeHtml(post.createdBy?.displayName || 'User')}" class="rounded-circle me-2" width="30" height="30">
-                    <span class="fw-medium text-light small">${Utils.escapeHtml(post.createdBy?.displayName || 'Anonymous')}</span>
-                </div>
-                <small class="text-muted" title="${post.createdAt ? post.createdAt.toDate().toLocaleString() : ''}">
-                    ${post.createdAt ? timeAgo(post.createdAt.toDate()) : 'some time ago'}
-                </small>
-            </div>
-            <div class="card-body py-2 px-3">
-                <p class="card-text post-content">${safeContent}</p>
-            </div>
-            {/* Add actions like reply, edit, delete later */}
-        `;
-        container.appendChild(postDiv);
-    },
-
     handleAddPostSubmit: async (event) => {
         event.preventDefault();
         if (!appAuth.currentUser || !appDb || !State.currentCommunityThreadId) {
@@ -5920,22 +5881,33 @@ const Community = {
             return;
         }
 
-        const content = document.getElementById('newPostContent').value.trim();
+        const contentInput = document.getElementById('newPostContent');
+        const content = contentInput?.value.trim();
+        const currentThreadId = State.currentCommunityThreadId;
+        const user = appAuth.currentUser;
+
+        // Debug logs added previously are good here.
+        console.log("Attempting to add post to Thread ID:", currentThreadId, "Content:", content);
+
         if (!content) {
             Utils.showToast("Reply content cannot be empty.", "warning");
             return;
         }
+        if (!currentThreadId) {
+            Utils.showToast("Error: Could not determine the current thread.", "danger");
+            console.error("handleAddPostSubmit: State.currentCommunityThreadId is missing.");
+            return;
+        }
+
 
         const submitButton = DOM.addPostForm.querySelector('button[type="submit"]');
         submitButton.disabled = true;
-        submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Posting...`;
+        submitButton.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Posting...`;
 
         try {
-            const user = appAuth.currentUser;
             const now = firebase.firestore.FieldValue.serverTimestamp();
-
-            const newPostRef = await appDb.collection('community_posts').add({
-                threadId: State.currentCommunityThreadId,
+            const postData = {
+                threadId: currentThreadId,
                 content: content,
                 createdAt: now,
                 createdBy: {
@@ -5944,10 +5916,13 @@ const Community = {
                     photoURL: user.photoURL || null
                 },
                 isOriginalPost: false
-            });
+                // We are NOT adding linkedItemData here for replies by default.
+                // If reply form allows linking, that logic would go here.
+            };
 
-            // Update thread's postCount and lastReply info
-            const threadRef = appDb.collection('community_threads').doc(State.currentCommunityThreadId);
+            await appDb.collection('community_posts').add(postData);
+
+            const threadRef = appDb.collection('community_threads').doc(currentThreadId);
             await threadRef.update({
                 postCount: firebase.firestore.FieldValue.increment(1),
                 lastReplyAt: now,
@@ -5957,18 +5932,20 @@ const Community = {
                 }
             });
 
-            // Optional: Update user's post count
             const userDocRef = appDb.collection('users').doc(user.uid);
-            await userDocRef.update({
-                communityPostsCount: firebase.firestore.FieldValue.increment(1)
-            });
+            await userDocRef.set({ // Use set with merge for increment
+                communityPostsCount: firebase.firestore.FieldValue.increment(1),
+                lastActivityAt: now
+            }, { merge: true });
 
             Utils.showToast("Reply posted!", "success");
-            document.getElementById('newPostContent').value = ''; // Clear textarea
+            if(contentInput) contentInput.value = '';
 
-            // Optimistically render the new post or reload all posts
-            // For simplicity, reload all for now. For better UX, add to list directly.
-            await Community.loadPostsForThread(State.currentCommunityThreadId, DOM.threadPostsList);
+            // Reload posts to show the new one
+            await Community.loadPostsForThread(currentThreadId, DOM.threadPostsList);
+            // Scroll to the new post (more advanced, requires knowing new post ID or last post)
+            DOM.threadPostsList.lastChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
 
         } catch (error) {
             console.error("Error posting reply:", error);
@@ -5978,8 +5955,176 @@ const Community = {
             submitButton.innerHTML = `Post Reply`;
         }
     },
-    // More community functions (edit, delete, profiles, categories) would go here...
-};
+
+    loadThreadDetailView: async (threadId) => {
+        State.currentCommunityThreadId = threadId; // Set this immediately
+        if (!DOM.threadDetailContent || !DOM.threadPostsList || !DOM.addPostForm || !appDb) {
+             console.error("Missing DOM elements or DB for thread detail view.");
+             // Potentially display an error in a global error area if DOM elements for thread view are missing
+             if(DOM.threadDetailContent) DOM.threadDetailContent.innerHTML = Utils.getErrorHTML("Cannot load thread page components.");
+             if(DOM.threadPostsList) DOM.threadPostsList.innerHTML = "";
+            return;
+        }
+
+        DOM.threadDetailContent.innerHTML = Utils.getSpinnerHTML("Loading thread details...");
+        DOM.threadPostsList.innerHTML = Utils.getSpinnerHTML("Loading replies...");
+        Utils.setElementVisibility(DOM.addPostForm, !!(typeof appAuth !== 'undefined' && appAuth.currentUser));
+
+        try {
+            const threadDoc = await appDb.collection('community_threads').doc(threadId).get();
+            if (!threadDoc.exists) {
+                DOM.threadDetailContent.innerHTML = Utils.getErrorHTML("Thread not found or you don't have permission to view it.");
+                DOM.threadPostsList.innerHTML = '';
+                return;
+            }
+            const threadData = { id: threadDoc.id, ...threadDoc.data() };
+            Community.renderThreadHeader(threadData, DOM.threadDetailContent);
+            await Community.loadPostsForThread(threadId, DOM.threadPostsList);
+
+        } catch (error) {
+            console.error("Error loading thread details:", error);
+            DOM.threadDetailContent.innerHTML = Utils.getErrorHTML("Could not load thread content.");
+            DOM.threadPostsList.innerHTML = Utils.getErrorHTML("Could not load replies for this thread.");
+            Utils.showToast("Failed to load thread.", "danger");
+        }
+    },
+
+    renderThreadHeader: (thread, container) => {
+        let linkedItemHeaderHtml = '';
+        if (thread.linkedItemId && thread.linkedItemType && thread.linkedItemTitle) {
+            const posterPath = thread.linkedItemPosterPath;
+            const posterUrl = posterPath
+                ? `${config.IMAGE_BASE_URL.replace('w500', 'w185')}${posterPath}`
+                : `https://via.placeholder.com/60x90/2c3034/868e96?text=${thread.linkedItemType === 'movie' ? 'M' : 'TV'}`;
+
+            linkedItemHeaderHtml = `
+                <div class="linked-item-header d-flex align-items-center bg-darker p-2 mb-3 rounded shadow-sm border border-secondary border-opacity-25">
+                    <a href="#details=${thread.linkedItemType}/${thread.linkedItemId}" class="flex-shrink-0">
+                        <img src="${posterUrl}" alt="${Utils.escapeHtml(thread.linkedItemTitle)}" style="width: 50px; height: 75px; object-fit: cover; border-radius: var(--radius-sm);" class="me-3">
+                    </a>
+                    <div class="ms-2"> {/* Added ms-2 for spacing from image */}
+                        <small class="text-muted d-block" style="font-size: 0.8em;">Discussion about:</small>
+                        <h5 class="mb-0 text-light" style="font-size: 1.1rem;">
+                            <a href="#details=${thread.linkedItemType}/${thread.linkedItemId}" class="text-decoration-none text-light hover-primary">
+                                ${Utils.escapeHtml(thread.linkedItemTitle)}
+                            </a>
+                        </h5>
+                        <span class="badge bg-secondary small">${thread.linkedItemType === 'movie' ? 'Movie' : 'TV Show'}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = `
+            <h1 class="text-white mb-2 display-6">${Utils.escapeHtml(thread.title)}</h1>
+            ${linkedItemHeaderHtml}
+            <div class="d-flex justify-content-between align-items-center">
+                <p class="text-muted small mb-0">
+                    Started by 
+                    <img src="${thread.createdBy?.photoURL || 'https://via.placeholder.com/24/secondary/white?text=' + getAppInitials(thread.createdBy?.displayName, '')}" alt="" class="rounded-circle me-1" width="24" height="24">
+                    <strong>${Utils.escapeHtml(thread.createdBy?.displayName || 'User')}</strong>
+                    on ${thread.createdAt?.toDate ? Utils.formatAirDate(thread.createdAt.toDate()) : 'N/A'}
+                </p>
+                <span class="text-muted small">${thread.postCount || 0} posts</span>
+            </div>
+            <hr class="border-secondary my-3">
+        `;
+    },
+
+    loadPostsForThread: async (threadId, container) => {
+        if (!appDb) return;
+        container.innerHTML = Utils.getSpinnerHTML("Loading replies...");
+        State.currentCommunityPosts = [];
+
+        try {
+            // Add real-time listener for posts
+            // Store the unsubscribe function to clean up later if user navigates away
+            if (State.postsListenerUnsubscribe) {
+                State.postsListenerUnsubscribe(); // Unsubscribe from previous listener
+            }
+            State.postsListenerUnsubscribe = appDb.collection('community_posts')
+                .where('threadId', '==', threadId)
+                .orderBy('createdAt', 'asc')
+                .onSnapshot(querySnapshot => {
+                    container.innerHTML = ''; // Clear container on new snapshot
+                    State.currentCommunityPosts = [];
+                    if (querySnapshot.empty) {
+                        container.innerHTML = '<p class="text-center text-muted fst-italic py-3">No replies yet. Be the first to reply!</p>';
+                        return;
+                    }
+                    querySnapshot.forEach(doc => {
+                        const post = { id: doc.id, ...doc.data() };
+                        State.currentCommunityPosts.push(post);
+                        Community.renderPostItem(post, container);
+                    });
+                     // Scroll to bottom if new posts are likely added at the end
+                     if (querySnapshot.docChanges().some(change => change.type === "added")) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                }, error => {
+                    console.error(`Error listening to posts for thread ${threadId}:`, error);
+                    container.innerHTML = Utils.getErrorHTML("Could not load replies in real-time.");
+                    Utils.showToast("Error fetching replies.", "danger");
+                });
+
+        } catch (error) { // This catch is for the initial setup of the listener, not for snapshot errors
+            console.error(`Error setting up listener for posts for thread ${threadId}:`, error);
+            container.innerHTML = Utils.getErrorHTML("Could not set up replies listener.");
+        }
+    },
+
+    renderPostItem: (post, container) => {
+        const postDiv = document.createElement('div');
+        const isCurrentUserPost = typeof appAuth !== 'undefined' && appAuth.currentUser && post.createdBy?.userId === appAuth.currentUser.uid;
+        postDiv.className = `community-post-item card mb-3 shadow-sm ${post.isOriginalPost ? 'border-primary border-2 bg-darker' : 'bg-dark bg-opacity-75'}`;
+        postDiv.id = `post-${post.id}`;
+
+        const safeContent = Utils.escapeHtml(post.content).replace(/\n/g, '<br>');
+        let linkedItemPostHtml = '';
+
+        if (post.linkedItemId && post.linkedItemType && post.linkedItemTitle && post.linkedItemPosterPath) {
+            // This typically would only be true for the original post if linkedItemData was added there
+            const posterUrl = `${config.IMAGE_BASE_URL.replace('w500', 'w92')}${post.linkedItemPosterPath}`;
+            linkedItemPostHtml = `
+                <div class="linked-item-in-post d-flex align-items-start my-2 p-2 border rounded border-secondary border-opacity-10" style="background-color: rgba(var(--bs-tertiary-bg-rgb), 0.2);">
+                    <a href="#details=${post.linkedItemType}/${post.linkedItemId}" class="flex-shrink-0">
+                        <img src="${posterUrl}" alt="${Utils.escapeHtml(post.linkedItemTitle)}" style="width: 40px; height: 60px; object-fit: cover; border-radius: var(--radius-xs);" class="me-2">
+                    </a>
+                    <div class="ms-2">
+                        <small class="text-muted d-block" style="font-size: 0.75em;">Discussing:</small>
+                        <a href="#details=${post.linkedItemType}/${post.linkedItemId}" class="text-light fw-medium text-decoration-none small hover-primary">
+                            ${Utils.escapeHtml(post.linkedItemTitle)}
+                        </a>
+                         <span class="badge bg-dark small ms-1">${post.linkedItemType === 'movie' ? 'Movie' : 'TV'}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        postDiv.innerHTML = `
+            <div class="card-header bg-transparent border-bottom-0 py-2 px-3 d-flex justify-content-between align-items-center ${post.isOriginalPost ? 'border-primary border-opacity-25' : 'border-secondary border-opacity-10'}">
+                <div class="d-flex align-items-center">
+                    <img src="${post.createdBy?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.createdBy?.displayName || 'A')}&background=random&size=30`}" alt="${Utils.escapeHtml(post.createdBy?.displayName || 'User')}" class="rounded-circle me-2" width="30" height="30">
+                    <span class="fw-medium text-light small">${Utils.escapeHtml(post.createdBy?.displayName || 'Anonymous')}</span>
+                    ${post.isOriginalPost ? '<span class="badge bg-primary bg-opacity-50 text-primary-emphasis ms-2 small">Original Poster</span>' : ''}
+                </div>
+                <small class="text-muted" title="${post.createdAt?.toDate ? post.createdAt.toDate().toLocaleString() : ''}">
+                    ${post.createdAt?.toDate ? timeAgo(post.createdAt.toDate()) : 'some time ago'}
+                </small>
+            </div>
+            <div class="card-body py-2 px-3">
+                ${linkedItemPostHtml}
+                <div class="card-text post-content text-light-emphasis">${safeContent}</div> {/* Changed p to div for block */}
+            </div>
+            ${isCurrentUserPost || (typeof App !== 'undefined' && App.isUserAdmin && App.isUserAdmin()) ? `
+            <div class="card-footer bg-transparent border-top-0 text-end py-1 px-2">
+                {/* Add Edit/Delete buttons here later if isCurrentUserPost */}
+            </div>
+            ` : ''}
+        `;
+        container.appendChild(postDiv);
+    },
+}; // End Community Object
 
 // Helper function for time ago (simple version)
 function timeAgo(date) {
