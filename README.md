@@ -2,7 +2,7 @@
 
 AuraStream is a feature-rich, client-side web application designed to provide a modern and engaging interface for discovering, tracking, and (conceptually) streaming movies and TV shows. It leverages the TMDB API for metadata, Firebase for user-specific data and global analytics, and integrates various third-party services for content embedding and additional features.
 
-**Live Demo (Conceptual):** [Link to your GitHub Pages or deployed site if available]
+**Live Demo :** https://medelbou3.github.io/SM4movies.v2.0.0/
 
 **Disclaimer:**
 *This project is for educational and demonstration purposes. The streaming functionality relies on embedding content from third-party providers. Users are responsible for ensuring they comply with all applicable copyright laws and the terms of service of any third-party providers they access through AuraStream. The developers of AuraStream do not host any copyrighted video content and are not responsible for the content provided by third-party embed sources.*
@@ -112,4 +112,4 @@ AuraStream is a feature-rich, client-side web application designed to provide a 
     *   An example set of rules has been discussed during development. **Always review and test your security rules thoroughly.**
 5.  **Run Locally:** Open `app2.html` (or your main app HTML file) in a modern web browser. An internet connection is required for API calls.
 
-## Project Structure (Conceptual)
+## Made By MOHAMED EL-BOUANANI
