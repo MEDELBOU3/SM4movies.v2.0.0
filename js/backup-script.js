@@ -1,4 +1,4 @@
-// --- Configuration ---
+   // --- Configuration ---
         const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
@@ -10,10 +10,16 @@
             GEMINI_API_KEY: 'AIzaSyC581OIEWWS2Op7wUPtIVRGCSe0hr9btAg', // YOUR ACTUAL KEY HERE
             GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash', 
             STREAMING_PROVIDERS: [ // Providers for the player view iframe
-                 { name: 'VidSrc.to', urlFormat: (id, type, season, episode) => `https://vidsrc.to/embed/${type}/${id}${type==='tv'&&season?`/${season}-${episode||1}`:''}` },
-                 { name: 'SuperEmbed', urlFormat: (id, type, season, episode) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type==='tv'&&season?`&s=${season}&e=${episode||1}`:''}` },
-                 // Add more player sources if desired, e.g., 2embed.cc
-                 // { name: '2Embed', urlFormat: (id, type, season, episode) => `https://www.2embed.cc/embed${type==='tv'?'tv':' películas'}/${id}${type==='tv'&&season?`?s=${season}&e=${episode||1}`:''}` }
+               { name: 'VidSrc.to', urlFormat: (id, type, season, episode) => `https://vidsrc.to/embed/${type}/${id}${type === 'tv' && season ? `/${season}-${episode || 1}` : ''}` },
+               { name: 'SuperEmbed', urlFormat: (id, type, season, episode) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type === 'tv' && season ? `&s=${season}&e=${episode || 1}` : ''}` },
+               { name: '2Embed', urlFormat: (id, type, season, episode) => `https://www.2embed.cc/embed${type === 'tv' ? 'tv' : 'películas'}/${id}${type === 'tv' && season ? `?s=${season}&e=${episode || 1}` : ''}` },
+               { name: 'Smashystream', urlFormat: (id, type, season, episode) => `https://embed.smashystream.com/watch/${id}?type=${type}${type === 'tv' && season ? `&s=${season}&e=${episode || 1}` : ''}` },
+               { name: 'MoviesWeb', urlFormat: (id, type, season, episode) => `https://moviesweb.app/embed/${type}/${id}${type === 'tv' && season ? `?s=${season}&e=${episode || 1}` : ''}` },
+               { name: 'OTTOcean', urlFormat: (id, type, season, episode) => `https://your-backend-api.com/ottocean/stream?tmdb_id=${id}&type=${type}${type === 'tv' && season ? `&s=${season}&e=${episode || 1}` : ''}` },
+               { name: 'DigitaLizard', urlFormat: (id, type, season, episode) => `https://your-backend-api.com/digitalizard/stream?tmdb_id=${id}&type=${type}${type === 'tv' && season ? `&s=${season}&e=${episode || 1}` : ''}` },
+               { name: 'TiviStation', urlFormat: (id, type, season, episode) => `https://your-backend-api.com/tivistation/stream?tmdb_id=${id}&type=${type}${type === 'tv' && season ? `&s=${season}&e=${episode || 1}` : ''}` },
+               { name: 'Netflix', urlFormat: (id, type, season, episode) => `https://www.netflix.com/watch/${id}${type === 'tv' && season ? `?s=${season}&e=${episode || 1}` : ''}` }
+
             ],
             HOME_SECTIONS: [
                 {
@@ -91,6 +97,8 @@
         // Views
         views: {
             hero: document.getElementById('hero-view'),
+            community: document.getElementById('community-view'),
+            communityThreadDetail: document.getElementById('community-thread-detail-view'),
             discover: document.getElementById('discover-view'),
             details: document.getElementById('details-view'),
             player: document.getElementById('player-view'),
@@ -106,6 +114,7 @@
         navbarMenu: document.getElementById('navbarNav'),
         tmdbSearchForm: document.getElementById('tmdb-search-form'),
         tmdbSearchInput: document.getElementById('tmdb-search-input'),
+        tmdbLiveSearchSuggestions: document.getElementById('tmdb-live-search-suggestions'),
         spotifyStatusNavMessage: document.getElementById('spotify-auth-nav-message'),
         genreDropdownMenu: document.getElementById('genre-dropdown-menu'),
         analyticsNavLink: document.querySelector('.nav-link[href="#analytics"]'), // Link to activate analytics view
@@ -146,6 +155,16 @@
         analyticsActorChartPlaceholder: document.getElementById('analyticsActorChartPlaceholder'),
         analyticsRecommendedGrid: document.getElementById('analyticsRecommendedGrid'),
         clearAnalyticsHistoryBtn: document.getElementById('clearAnalyticsHistoryBtn'), // Button to clear analytics data
+        //  community-specific elements
+        communityHeader: document.getElementById('community-header'),
+        communityUserActions: document.getElementById('community-user-actions'),
+        communityThreadsList: document.getElementById('community-threads-list'),
+        createThreadModal: document.getElementById('createThreadModal'), // Bootstrap Modal instance needed
+        createThreadForm: document.getElementById('create-thread-form'),
+        threadDetailContent: document.getElementById('thread-detail-content'),
+        threadPostsList: document.getElementById('thread-posts-list'),
+        addPostForm: document.getElementById('add-post-form'),
+        
         // Player View
         playerTitleEl: document.getElementById('player-title'),
         playerSourceBtnsContainer: document.getElementById('stream-source-buttons'),
@@ -207,6 +226,10 @@
         isVisualizerConnected: false,
         visNetworkInstance: null,
         currentExplorerItem: null,
+        currentCommunityThreadId: null,
+        communityThreads: [], // Cache for threads list
+        currentCommunityPosts: [], // Cache for posts in current thread
+        createThreadModalInstance: null, // For Bootstrap Modal
         // Analytics State
         userPreferences: { genres: {}, actors: {}, directors: {}, keywords: {} }, // For analytics
         watchHistory: [], // For analytics and continue watching seeds
@@ -792,7 +815,7 @@
                     State.spotifyAppAccessToken = data.access_token;
                     // Set expiry time (e.g., 60 seconds buffer before actual expiry)
                     State.spotifyAppTokenExpiresAt = Date.now() + (data.expires_in - 60) * 1000;
-                    App.setSpotifyStatus("Authorized", "success", false);
+                    App.setSpotifyStatus('Authorized', "success", false);
                     State.spotifyTokenPromise = null; // Clear promise on success
                     return State.spotifyAppAccessToken;
                 })
@@ -1135,7 +1158,8 @@
 
         // --- Routing Module ---
         const Router = {
-             updateView: (hash) => {
+            // Inside app2.html -> App object -> Router module (or wherever Router.updateView is defined)
+            updateView: (hash) => {
                  console.log("Routing to:", hash);
                  hash = hash || location.hash || '#home'; // Default to #home
                  if (hash === '#') hash = '#home'; // Handle empty hash
@@ -1155,6 +1179,10 @@
                  Utils.setElementVisibility(DOM.tmdbSearchResultsContainer, false);
                  Utils.setElementVisibility(DOM.homeContentWrapper, true);
 
+                 
+                 if (DOM.tmdbLiveSearchSuggestions) { // Hide live suggestions on any view change
+                     Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, false);
+                 }
 
                  // --- Route Matching ---
                  if (hash === '#home') {
@@ -1289,6 +1317,43 @@
                     }
                  }
                  else if (hash === '#search') {
+                    targetViewElement = DOM.views.discover;
+                    activeNavLinkHref = '#home';
+                    runOnViewLoad = () => {
+                        Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, false); // Explicitly hide live suggestions
+                        DOM.tmdbLiveSearchSuggestions.innerHTML = '';                     // Clear its content
+                        Utils.setElementVisibility(DOM.tmdbSearchResultsContainer, true);
+                        Utils.setElementVisibility(DOM.homeContentWrapper, false);
+                        const currentQuery = DOM.tmdbSearchInput?.value.trim();
+                        if (currentQuery) {
+                           App.loadTmdbSearchResults(currentQuery);
+                        } else if (DOM.tmdbSearchResultsGrid) {
+                            DOM.tmdbSearchResultsGrid.innerHTML = '<p class="text-muted col-12 py-5 text-center">Please enter a search term for full results.</p>';
+                        if(DOM.tmdbSearchResultsTitle) DOM.tmdbSearchResultsTitle.textContent = 'Search';
+                        }
+                           DOM.tmdbSearchInput?.focus();
+                    };
+                }
+
+                else if (hash === '#community') {
+    targetViewElement = DOM.views.community;
+    activeNavLinkHref = '#community'; // Assuming you add this ID to the nav link
+    runOnViewLoad = () => Community.initView();
+}
+else if (hash.startsWith('#community/thread/')) {
+    targetViewElement = DOM.views.communityThreadDetail;
+    activeNavLinkHref = '#community'; // Keep community link active
+    const threadId = hash.substring('#community/thread/'.length);
+    if (threadId) {
+        runOnViewLoad = () => Community.loadThreadDetailView(threadId);
+    } else {
+        Utils.showToast("Invalid thread link.", "warning");
+        location.hash = '#community'; // Redirect
+        return;
+    }
+}
+
+                 /*else if (hash === '#search') {
                      // Show discover view, hide home content, show search results area
                      targetViewElement = DOM.views.discover;
                      activeNavLinkHref = '#home';
@@ -1305,7 +1370,8 @@
                          }
                          DOM.tmdbSearchInput?.focus(); // Focus search input
                      };
-                 }
+                 }*/
+                
                  else if (hash === '#music') {
                      targetViewElement = DOM.views.music;
                      activeNavLinkHref = '#music';
@@ -1553,7 +1619,8 @@
 
         // --- Main App Module ---
         const App = {
-            init: () => {
+        // --- COMPLETE App.init function for app2.html ---
+        init: () => {
                console.log("🚀 App Init Starting..."); // Use an emoji for fun!
 
                 // --- 1. Essential Initializations (Must Happen First) ---
@@ -1573,40 +1640,59 @@
                        });
                     } else { console.warn("  Trailer Modal element not found."); }
 
-             // Initialize Connection Explorer Modal
-             if (DOM.connectionExplorerModal) {
-                  console.log("  Initializing Connection Modal & listeners...");
-                  bsInstances.connectionModal = new bootstrap.Modal(DOM.connectionExplorerModal);
-                  DOM.connectionExplorerModal.addEventListener('shown.bs.modal', () => {
-                     if (State.currentExplorerItem && State.isGraphLoading) {
+                    // Initialize Connection Explorer Modal
+                    if (DOM.connectionExplorerModal) {
+                       console.log("  Initializing Connection Modal & listeners...");
+                       bsInstances.connectionModal = new bootstrap.Modal(DOM.connectionExplorerModal);
+                       DOM.connectionExplorerModal.addEventListener('shown.bs.modal', () => {
+                    if (State.currentExplorerItem && State.isGraphLoading) {
                          console.log("[Modal Event] 'shown' triggered, loading graph for:", State.currentExplorerItem);
                          App.loadAndDisplayConnections(State.currentExplorerItem);
-                     } else {
+                    } else {
                          console.warn("[Modal Event] 'shown' triggered without active item/loading state.");
                          if(!State.isGraphLoading && DOM.connectionGraphLoading) Utils.setElementVisibility(DOM.connectionGraphLoading, false);
-                     }
-                  });
-                  DOM.connectionExplorerModal.addEventListener('hidden.bs.modal', () => {
-                      console.log("[Modal Event] 'hidden' triggered, cleaning up graph.");
-                      App.destroyVisNetwork();
-                      State.currentExplorerItem = null;
-                      State.isGraphLoading = false;
-                      // Reset internal states safely
-                       if (DOM.connectionGraphContainer) DOM.connectionGraphContainer.innerHTML = '';
-                       Utils.setElementVisibility(DOM.connectionGraphContainer, false);
-                       Utils.setElementVisibility(DOM.connectionGraphError, false);
-                       Utils.setElementVisibility(DOM.connectionGraphLoading, false);
-                  });
-              } else { console.warn("  Connection Explorer Modal element not found."); }
+                    }
+                    });
+                    DOM.connectionExplorerModal.addEventListener('hidden.bs.modal', () => {
+                        console.log("[Modal Event] 'hidden' triggered, cleaning up graph.");
+                        App.destroyVisNetwork();
+                        State.currentExplorerItem = null;
+                        State.isGraphLoading = false;
+                        // Reset internal states safely
+                        if (DOM.connectionGraphContainer) DOM.connectionGraphContainer.innerHTML = '';
+                        Utils.setElementVisibility(DOM.connectionGraphContainer, false);
+                        Utils.setElementVisibility(DOM.connectionGraphError, false);
+                        Utils.setElementVisibility(DOM.connectionGraphLoading, false);
+                    });
+                    } else { console.warn("  Connection Explorer Modal element not found."); }
 
-        } catch (error) {
-             console.error("💥 ERROR during essential UI initialization:", error);
-             // Display a user-facing error if critical UI fails?
-             // e.g., document.body.innerHTML = "<h2>Application failed to initialize. Please refresh.</h2>";
-             return; // Stop initialization if basic UI components fail
+                    } catch (error) {
+                        console.error("💥 ERROR during essential UI initialization:", error);
+                        // Display a user-facing error if critical UI fails?
+                        // e.g., document.body.innerHTML = "<h2>Application failed to initialize. Please refresh.</h2>";
+                        return; // Stop initialization if basic UI components fail
+                }
+
+                // Inside App.init in script.js
+try {
+    const userProfileDropdownToggleEl = document.getElementById('userProfileDropdown');
+    if (userProfileDropdownToggleEl) {
+        if (!bootstrap.Dropdown.getInstance(userProfileDropdownToggleEl)) { // Check if not already initialized
+            new bootstrap.Dropdown(userProfileDropdownToggleEl);
+            console.log("User profile dropdown explicitly initialized via JS.");
         }
+    } else {
+        console.warn("User profile dropdown toggle element (#userProfileDropdown) not found for JS init.");
+    }
+} catch (e) {
+    console.error("Error explicitly initializing user profile dropdown:", e);
+}
 
-
+if (DOM.createThreadModal) {
+    State.createThreadModalInstance = new bootstrap.Modal(DOM.createThreadModal);
+}
+DOM.createThreadForm?.addEventListener('submit', Community.handleCreateThreadSubmit);
+DOM.addPostForm?.addEventListener('submit', Community.handleAddPostSubmit);
         // --- 2. Initialize Firebase (with Try/Catch) ---
         try {
             if (typeof firebase !== 'undefined' && typeof firebase.initializeApp === 'function') {
@@ -1629,7 +1715,7 @@
                 console.warn("  Firebase SDK not fully loaded. Backend features (Global Views) will be disabled.");
                 Utils.showToast("Global features unavailable (Service Load Error).", "warning");
             }
-        } catch (error) {
+           } catch (error) {
             console.error("💥 Firebase initialization FAILED:", error);
             db = null; // Ensure db is null if init fails
             Utils.showToast("Failed to connect to backend services. Global features disabled.", "danger");
@@ -1674,8 +1760,11 @@
 
             // TMDB Search Listeners
             DOM.tmdbSearchForm?.addEventListener('submit', App.handleTmdbSearchSubmit);
-            DOM.tmdbSearchInput?.addEventListener('input', Utils.debounce(App.handleTmdbSearchInput, 400));
-            DOM.clearTmdbSearchResultsBtn?.addEventListener('click', App.clearTmdbSearch);
+            DOM.tmdbSearchInput?.addEventListener('input', Utils.debounce(App.handleTmdbLiveSearchInput, 350)); // Debounced input
+            DOM.tmdbSearchInput?.addEventListener('focus', App.handleTmdbLiveSearchFocus); // New
+            DOM.tmdbSearchInput?.addEventListener('blur', App.handleTmdbLiveSearchBlur);   // New
+
+            DOM.clearTmdbSearchResultsBtn?.addEventListener('click', App.clearTmdbSearch); 
 
             // Pagination Listeners
             DOM.loadMoreGenreBtn?.addEventListener('click', App.handleLoadMoreGenres);
@@ -2726,24 +2815,27 @@
 
         console.log("[Home Sections] Finished processing all section configurations.");
     }, // End loadHomeSections
-             
- loadMostViewedSection: async (sectionDiv, sectionConfig) => {
+           
+    loadMostViewedSection: async (sectionDiv, sectionConfig) => {
     const container = sectionDiv.querySelector('.most-viewed-container');
     const isHorizontal = container?.classList.contains('horizontal-card-container');
     const maxItems = sectionConfig.max_items || (isHorizontal ? 15 : 12);
     const prevBtn = isHorizontal ? sectionDiv.querySelector('.h-scroll-btn.prev') : null;
     const nextBtn = isHorizontal ? sectionDiv.querySelector('.h-scroll-btn.next') : null;
-
+    const utils = App.utils; // Use App's utils
 
     if (!container) {
-         console.error('[Most Viewed Load] Container .most-viewed-container not found within section.');
+         utils.error('[Most Viewed Load] Container .most-viewed-container not found within section.');
          return;
     }
-    console.log('[Most Viewed Load] Loading global most viewed items from Firestore...');
-    // Skeletons should have been added by loadHomeSections
+    utils.log('[Most Viewed Load] Loading global most viewed items from Firestore...');
+    // Show Skeletons (Assuming they were added by loadHomeSections)
+    const skeletonCount = isHorizontal ? 5 : 6;
+    container.innerHTML = isHorizontal ? utils.getSkeletonHorizontalCardHTML(skeletonCount) : utils.getSkeletonCardHTML(skeletonCount);
 
-    if (typeof appDb === 'undefined' || !appDb) { // Check if Firestore is initialized
-        container.innerHTML = Utils.getErrorHTML("Database service unavailable for popular items.");
+
+    if (typeof appDb === 'undefined' || !appDb) { // Check Firestore instance
+        container.innerHTML = utils.getErrorHTML("Database service unavailable for popular items.");
         if (isHorizontal && prevBtn && nextBtn) App.updateHScrollButtons(container, prevBtn, nextBtn);
         return;
     }
@@ -2754,28 +2846,27 @@
             .orderBy("viewCount", "desc") // Order by count
             .limit(maxItems) // Limit to top N
             .get();
-        // ---------------------
 
         if (querySnapshot.empty) {
-            console.log('[Most Viewed Load] No view data found in Firestore.');
+            utils.log('[Most Viewed Load] No view data found in Firestore.');
             container.innerHTML = `<p class="text-muted px-3 col-12">Be the first to watch something popular!</p>`;
             if(isHorizontal && prevBtn && nextBtn){ App.updateHScrollButtons(container, prevBtn, nextBtn);}
             return;
         }
 
-        // Extract data needed for TMDB lookup
+        // Extract data needed for TMDB lookup, INCLUDING viewCount
         const topItemsData = querySnapshot.docs.map(doc => ({
             id: doc.data().tmdbId,
             type: doc.data().type,
-            count: doc.data().viewCount
+            count: doc.data().viewCount // <<< Make sure viewCount is retrieved
         }));
 
-        console.log('[Most Viewed Load] Fetched top items from Firestore:', topItemsData.map(i => `${i.type}-${i.id}(${i.count})`));
+        utils.log('[Most Viewed Load] Fetched top items from Firestore:', topItemsData.map(i => `${i.type}-${i.id}(${i.count})`));
 
         // --- Fetch TMDB Details for these items ---
         const itemDetailPromises = topItemsData.map(viewData =>
             API.fetchTMDB(`/${viewData.type}/${viewData.id}`).catch(err => {
-                console.warn(`[Most Viewed Load] Failed to fetch TMDB details for ${viewData.type}-${viewData.id}`, err);
+                utils.warn(`[Most Viewed Load] Failed to fetch TMDB details for ${viewData.type}-${viewData.id}`, err);
                 return null; // Return null on error
             })
         );
@@ -2786,22 +2877,25 @@
              throw new Error("Could not fetch details for popular items from TMDB.");
         }
 
-        // --- Combine TMDB details with view counts (Optional) ---
+        // --- Combine TMDB details with view counts ---
          const itemsToRender = detailedItems.map(item => {
-              const type = item.title ? 'movie' : 'tv'; // Re-determine type just in case
+              const type = item.title ? 'movie' : 'tv'; // Re-determine type
+              // Find the original view data to get the count back
               const originalViewData = topItemsData.find(v => v.id === item.id && v.type === type);
               return {
-                   ...item,
+                   ...item, // Spread all TMDB details
                    media_type: type, // Ensure media_type is set
-                   viewCount: originalViewData ? originalViewData.count : '?',
+                   viewCount: originalViewData ? originalViewData.count : '?', // <<< Add viewCount here
                };
           });
+        // ----------------------------------------------
 
-        // --- Render using appropriate function (replace skeletons) ---
-         console.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items.`);
+        // --- Render using appropriate function ---
+         utils.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items.`);
          if (isHorizontal) {
-             App.renderHorizontalCards(itemsToRender, container, null, false); // Pass items, container
-             // Setup scroll for THIS specific section
+             // Pass itemsToRender (which now includes viewCount)
+             App.renderHorizontalCards(itemsToRender, container, null, false, true); // <<< Added 'true' for showViewCount
+             // Setup scroll
              if (container && prevBtn && nextBtn) {
                   if (!State.horizontalScrollContainers.some(c => c.container === container)) {
                       State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
@@ -2809,24 +2903,21 @@
                       prevBtn.addEventListener('click', () => App.handleHScrollPrev(container));
                       nextBtn.addEventListener('click', () => App.handleHScrollNext(container));
                   }
-                  App.updateHScrollButtons(container, prevBtn, nextBtn); // Update immediately after render
+                  App.updateHScrollButtons(container, prevBtn, nextBtn);
               }
          } else {
              // Assuming default is vertical card grid
-             App.renderTmdbCards(itemsToRender, container, null, false); // Pass items, container
-             // Optional: Add view count display logic for vertical cards here if needed
+             // Pass itemsToRender (which now includes viewCount)
+             App.renderTmdbCards(itemsToRender, container, null, false, true); // <<< Added 'true' for showViewCount
          }
 
     } catch (error) {
-        console.error("[Most Viewed Load] Error fetching or processing items:", error);
-        container.innerHTML = Utils.getErrorHTML(`Could not display popular items: ${error.message}`);
+        utils.error("[Most Viewed Load] Error fetching or processing items:", error);
+        container.innerHTML = utils.getErrorHTML(`Could not display popular items: ${error.message}`);
         if(isHorizontal && prevBtn && nextBtn){ App.updateHScrollButtons(container, prevBtn, nextBtn);}
     }
-},
-
-
-         
-              // --- NEW: Function to specifically load and render Continue Watching ---
+}, 
+         // --- NEW: Function to specifically load and render Continue Watching ---
               loadContinueWatchingSection: (sectionDiv) => {
                 if (!sectionDiv) {
                     sectionDiv = document.getElementById('continue-watching-section'); // Try to find it if not passed
@@ -2951,9 +3042,7 @@
            
 
             // --- NEW Rendering Function for Horizontal Cards ---
-                 // Inside App object
-
-   renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false) => {
+            renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false) => {
                  if (!containerElement) return;
                  containerElement.innerHTML = ''; // Clear spinner/previous
 
@@ -3054,7 +3143,7 @@
                     containerElement.appendChild(cardLink);
                 });
             },
-           
+
              // --- NEW: Handler for Trailer Button Click ---
              handlePlayTrailerClick: async (button) => {
                  const itemId = button.dataset.itemId;
@@ -3185,8 +3274,114 @@
          },
 
           
+          handleTmdbLiveSearchInput: async () => {
+        if (!DOM.tmdbSearchInput || !DOM.tmdbLiveSearchSuggestions) return;
+        const query = DOM.tmdbSearchInput.value.trim();
 
-             loadTmdbSearchResults: async (query) => {
+        if (query.length > 1) {
+            try {
+                DOM.tmdbLiveSearchSuggestions.innerHTML = `
+                    <div class="suggestion-item text-muted small fst-italic p-2">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        Searching...
+                    </div>`;
+                Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, true);
+
+                const searchData = await API.fetchTMDB('/search/multi', { query: query, page: 1, include_adult: false });
+                if (searchData && searchData.results) {
+                    const mediaResults = searchData.results
+                        .filter(item => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path)
+                        .slice(0, 7);
+                    App.renderLiveSearchSuggestions(mediaResults, query);
+                } else {
+                    App.renderLiveSearchSuggestions([], query);
+                }
+            } catch (error) {
+                console.error("Live search TMDB fetch failed:", error);
+                DOM.tmdbLiveSearchSuggestions.innerHTML = `<div class="suggestion-item text-danger p-2 small">Error fetching suggestions.</div>`;
+                Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, true);
+            }
+        } else {
+            Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, false);
+            DOM.tmdbLiveSearchSuggestions.innerHTML = '';
+        }
+    },
+
+    renderLiveSearchSuggestions: (items, query) => {
+        if (!DOM.tmdbLiveSearchSuggestions) return;
+        DOM.tmdbLiveSearchSuggestions.innerHTML = '';
+
+        if (items && items.length > 0) {
+            items.forEach(item => {
+                const itemType = item.media_type;
+                const title = Utils.escapeHtml(item.title || item.name || 'N/A');
+                const year = (item.release_date || item.first_air_date || '').substring(0, 4);
+                const posterUrl = item.poster_path ? `${config.IMAGE_BASE_URL.replace('w500', 'w92')}${item.poster_path}` : 'https://via.placeholder.com/40x60/343a40/868e96?text=N/A';
+
+                const suggestionElement = document.createElement('a');
+                suggestionElement.href = `#details=${itemType}/${item.id}`;
+                suggestionElement.className = 'suggestion-item';
+                suggestionElement.innerHTML = `
+                    <img src="${posterUrl}" alt="${title} poster" loading="lazy">
+                    <div class="info">
+                        <div class="title">${title}</div>
+                        <div class="meta">${itemType === 'tv' ? 'TV Show' : 'Movie'} ${year ? `(${year})` : ''}</div>
+                    </div>
+                `;
+                suggestionElement.addEventListener('click', () => {
+                    location.hash = `#details=${itemType}/${item.id}`;
+                    if(DOM.tmdbSearchInput) DOM.tmdbSearchInput.value = '';
+                    Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, false);
+                    DOM.tmdbLiveSearchSuggestions.innerHTML = '';
+                    bsInstances.navbarCollapse?.hide();
+                });
+                DOM.tmdbLiveSearchSuggestions.appendChild(suggestionElement);
+            });
+            Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, true);
+        } else if (query.length > 1) {
+            DOM.tmdbLiveSearchSuggestions.innerHTML = `<div class="suggestion-item list-group-item no-results p-2">No matches found for "${Utils.escapeHtml(query)}".</div>`;
+            Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, true);
+        } else {
+            Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, false);
+        }
+    },
+
+    handleTmdbLiveSearchFocus: () => {
+        if (DOM.tmdbSearchInput && DOM.tmdbSearchInput.value.trim().length > 1 && DOM.tmdbLiveSearchSuggestions && DOM.tmdbLiveSearchSuggestions.children.length > 0) {
+            Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, true);
+        }
+    },
+
+    handleTmdbLiveSearchBlur: () => {
+        setTimeout(() => {
+            if (DOM.tmdbLiveSearchSuggestions && !DOM.tmdbLiveSearchSuggestions.contains(document.activeElement)) {
+                Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, false);
+            }
+        }, 200);
+    },
+
+ loadTmdbSearchResults: async (query) => {
+        if (!DOM.tmdbSearchResultsGrid || !DOM.tmdbSearchResultsTitle) return;
+        Utils.setElementVisibility(DOM.tmdbLiveSearchSuggestions, false); // Hide live suggestions
+        DOM.tmdbLiveSearchSuggestions.innerHTML = '';
+        DOM.tmdbSearchResultsTitle.textContent = `Search Results for "${query}"`;
+        DOM.tmdbSearchResultsGrid.innerHTML = Utils.getSkeletonCardHTML(18);
+        try {
+            const searchData = await API.fetchTMDB('/search/multi', { query: query, page: 1, include_adult: false });
+            if (searchData && searchData.results) {
+                const mediaResults = searchData.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+                App.renderTmdbCards(mediaResults, DOM.tmdbSearchResultsGrid, null, false);
+            } else {
+                DOM.tmdbSearchResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found.</p>';
+            }
+        } catch (error) {
+            console.error("Search failed:", error);
+            DOM.tmdbSearchResultsGrid.innerHTML = Utils.getErrorHTML(`Search failed: ${error.message}`);
+        }
+    },
+
+
+            /* loadTmdbSearchResults: async (query) => {
                  if (!DOM.tmdbSearchResultsGrid || !DOM.tmdbSearchResultsTitle) return;
 
                  DOM.tmdbSearchResultsTitle.textContent = `Search Results for "${query}"`;
@@ -3206,7 +3401,7 @@
                      console.error("Search failed:", error);
                      DOM.tmdbSearchResultsGrid.innerHTML = Utils.getErrorHTML(`Search failed: ${error.message}`); // Replace skeleton
                  }
-             },
+             },*/
 
 
 
@@ -3253,19 +3448,20 @@
                  }
              },
 
-            handleTmdbSearchSubmit: (event) => {
-                 event.preventDefault();
-                 const query = DOM.tmdbSearchInput?.value.trim();
-                 if (query) {
-                     // Change hash to trigger search view via Router
-                     location.hash = '#search';
-                     // Router will call loadTmdbSearchResults if query exists
-                 } else {
-                     Utils.showToast("Please enter something to search for.", "warning");
-                 }
-             },
+                handleTmdbSearchSubmit: (event) => {
+                    event.preventDefault();
+                    const query = DOM.tmdbSearchInput?.value.trim();
+                    if (query) {
+                       location.hash = '#search';
+                    } else {
+                       Utils.showToast("Please enter something to search for.", "warning");
+                    }
+                 },
 
-             handleTmdbSearchInput: () => {
+
+
+              
+              handleTmdbSearchInput: () => {
                 // Optional: Can implement live search suggestions here
                 // For now, just allows typing until submit
                 console.log("Search input changed:", DOM.tmdbSearchInput?.value);
@@ -3277,15 +3473,11 @@
                  // }, 500);
              },
 
-             clearTmdbSearch: (event) => {
-                 event.preventDefault();
+              clearTmdbSearch: (event) => {
+                    event.preventDefault();
                  if (DOM.tmdbSearchInput) DOM.tmdbSearchInput.value = '';
-                 // Navigate back to home view
-                 location.hash = '#home';
-                 // Hide search results container (Router will handle view switching)
-                 // Utils.setElementVisibility(DOM.tmdbSearchResultsContainer, false);
-                 // Utils.setElementVisibility(DOM.homeContentWrapper, true);
-             },
+                   location.hash = '#home';
+              },
 
              handleLoadMoreGenres: () => {
                  if (!DOM.loadMoreGenreBtn) return;
@@ -3299,7 +3491,7 @@
      * Uses Maps for efficient lookup.
      * @returns {Promise<boolean>} True if providers are loaded/cached, false on error.
      */
-    ensureTmdbWatchProvidersLoaded: async () => {
+        ensureTmdbWatchProvidersLoaded: async () => {
         if (State.tmdbWatchProviders) {
             return true; // Already loaded
         }
@@ -3429,123 +3621,120 @@
      * Shows skeleton loaders for a minimum duration on initial load.
      * @param {number} [page=1] - The page number to fetch.
      */
-    loadNetworkResultsPage: async (page = 1) => {
-        // --- 1. Initial Checks ---
-        if (!State.currentNetwork || !DOM.networkResultsGrid || !DOM.networkResultsTitle || !DOM.loadMoreNetworkBtn || !DOM.networkLoadingSpinner) {
-            console.error("loadNetworkResultsPage: Missing state or required DOM elements.");
-            if (DOM.networkResultsGrid) { // Attempt to show error in grid if possible
-                 DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML("Page setup error. Cannot load results.");
-            }
-            // Optionally hide spinner/button if they exist
-            if (DOM.networkLoadingSpinner) Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
-            if (DOM.loadMoreNetworkBtn) Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
-            return;
-        }
 
-        // --- 2. State and Flags ---
-        const { id, name, logo } = State.currentNetwork;
-        const isInitialLoad = (page === 1);
-        let startTime = null;
+loadNetworkResultsPage: async (page = 1) => {
+  // --- 1. Initial Checks ---
+  if (!State.currentNetwork || !DOM.networkResultsGrid || !DOM.networkResultsTitle || !DOM.loadMoreNetworkBtn || !DOM.networkLoadingSpinner) {
+    console.error("loadNetworkResultsPage: Missing state or required DOM elements.");
+    if (DOM.networkResultsGrid) {
+      DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML("Page setup error. Cannot load results.");
+    }
+    Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
+    Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+    return;
+  }
 
-        // --- 3. Setup Loading State ---
-        Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false); // Always hide 'Load More' at the start of any load
-        Utils.setElementVisibility(DOM.networkLoadingSpinner, true); // Show spinner
+  const { id, name, logo } = State.currentNetwork;
+  const isInitialLoad = (page === 1);
+  let startTime = null;
 
+  // --- 2. Show Loading State ---
+  Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+  Utils.setElementVisibility(DOM.networkLoadingSpinner, true);
+
+  if (isInitialLoad) {
+    let titleHtml = Utils.escapeHtml(name);
+    if (logo) {
+      titleHtml = `<img src="${logo}" alt="${Utils.escapeHtml(name)}" style="height: 30px; width: auto; margin-right: 10px; vertical-align: middle; border-radius: 4px;"> ${titleHtml}`;
+      DOM.networkResultsTitle.innerHTML = `Content on ${titleHtml}`;
+    } else {
+      DOM.networkResultsTitle.textContent = `Content on ${titleHtml}`;
+    }
+
+    DOM.networkResultsGrid.innerHTML = Utils.getSkeletonCardHTML(24);
+    startTime = performance.now();
+  }
+
+  // --- 3. Fetch Both Movie + TV Data ---
+  let movieData = null;
+  let tvData = null;
+  let fetchError = null;
+
+  try {
+    const [movieResponse, tvResponse] = await Promise.all([
+      API.fetchTMDB(`/discover/movie`, {
+        with_watch_providers: id,
+        watch_region: config.TARGET_REGION,
+        page,
+        sort_by: 'popularity.desc'
+      }),
+      API.fetchTMDB(`/discover/tv`, {
+        with_watch_providers: id,
+        watch_region: config.TARGET_REGION,
+        page,
+        sort_by: 'popularity.desc'
+      })
+    ]);
+    movieData = movieResponse;
+    tvData = tvResponse;
+  } catch (error) {
+    fetchError = error;
+    console.error("Failed to fetch movie or TV data:", error);
+  }
+
+  // --- 4. Render Content ---
+  const renderContent = () => {
+    Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
+
+    if (fetchError) {
+      if (isInitialLoad) {
+        DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load results: ${fetchError.message}`);
+      } else {
+        Utils.showToast(`Failed to load more results: ${fetchError.message}`, 'warning');
+      }
+    } else {
+      const movieResults = (movieData?.results || []);
+      const tvResults = (tvData?.results || []);
+
+      if (movieResults.length === 0 && tvResults.length === 0) {
         if (isInitialLoad) {
-            // a. Set Title (only on initial load)
-            let titleHtml = Utils.escapeHtml(name);
-            if (logo && DOM.networkResultsTitle) {
-                 // Example: Logo first, then name
-                 titleHtml = `<img src="${logo}" alt="${Utils.escapeHtml(name)}" style="height: 30px; width: auto; margin-right: 10px; vertical-align: middle; border-radius: 4px;"> ${titleHtml}`;
-                 DOM.networkResultsTitle.innerHTML = `Content on ${titleHtml}`;
-            } else if (DOM.networkResultsTitle) {
-                 DOM.networkResultsTitle.textContent = `Content on ${titleHtml}`;
-            }
-
-            // b. Show Skeletons
-            DOM.networkResultsGrid.innerHTML = Utils.getSkeletonCardHTML(24); // Use a sufficiently large number
-
-            // c. Start Timer
-            startTime = performance.now();
+          DOM.networkResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this network.</p>';
         }
+        Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+        return;
+      }
 
-        // --- 4. Data Fetching ---
-        let networkData = null;
-        let fetchError = null;
-        let discoveryType = 'movie'; // Default
+      // Sort by popularity (optional)
+      const combinedResults = [...movieResults.map(r => ({ ...r, media_type: 'movie' })), ...tvResults.map(r => ({ ...r, media_type: 'tv' }))];
+      combinedResults.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
-        try {
-            // Determine content type (simple example, adjust as needed)
-            const tvFocusedProviders = [203]; // e.g., Crunchyroll ID
-            if (tvFocusedProviders.includes(id)) {
-                 discoveryType = 'tv';
-            }
-            console.log(`Fetching page ${page} of /discover/${discoveryType} for provider ${id} (${name})`);
+      // Render combined results
+      App.renderTmdbCards(combinedResults, DOM.networkResultsGrid, null, !isInitialLoad); // null = mixed types
 
-            networkData = await API.fetchTMDB(`/discover/${discoveryType}`, {
-                 with_watch_providers: id,
-                 watch_region: config.TARGET_REGION,
-                 page: page,
-                 sort_by: 'popularity.desc' // Or other relevant sorting
-            });
-            // Store type for rendering phase if needed (optional, depends if renderContent needs it)
-             State.currentNetwork.lastDiscoveryType = discoveryType;
+      // Update Load More
+      const moreMoviePages = movieData.page < movieData.total_pages;
+      const moreTvPages = tvData.page < tvData.total_pages;
+      const canLoadMore = moreMoviePages || moreTvPages;
 
-        } catch (error) {
-            fetchError = error;
-            console.error(`Failed to fetch network results (page ${page}):`, error);
-        }
+      if (canLoadMore) {
+        DOM.loadMoreNetworkBtn.dataset.page = page;
+        DOM.loadMoreNetworkBtn.dataset.itemType = 'mixed';
+        Utils.setElementVisibility(DOM.loadMoreNetworkBtn, true);
+      }
+    }
+  };
 
-        // --- 5. Render Content Function ---
-        const renderContent = () => {
-            // Hide spinner *before* potentially replacing grid content
-            Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
+  // --- 5. Respect Skeleton Delay ---
+  if (isInitialLoad && startTime) {
+    const endTime = performance.now();
+    const elapsedTime = endTime - startTime;
+    const remainingTime = Math.max(0, (config.MIN_SKELETON_DISPLAY_TIME || 3000) - elapsedTime);
+    setTimeout(renderContent, remainingTime);
+  } else {
+    renderContent();
+  }
+},
 
-            if (fetchError) {
-                 // Handle fetch error display
-                 if (isInitialLoad) {
-                     DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load results: ${fetchError.message}`);
-                 } else {
-                     // Show toast for "Load More" errors, don't clear existing results
-                     Utils.showToast(`Failed to load more results: ${fetchError.message}`, 'warning');
-                     // Optionally re-enable the button to allow retry?
-                     // Utils.setElementVisibility(DOM.loadMoreNetworkBtn, true);
-                 }
-            } else if (networkData && networkData.results && networkData.results.length > 0) {
-                 // Render successful results
-                 // Retrieve the type determined during fetch
-                 const fetchedType = State.currentNetwork.lastDiscoveryType || 'movie';
-                 App.renderNetworkResultsPage(
-                     networkData.results,
-                     networkData.page,
-                     networkData.total_pages,
-                     fetchedType, // Pass the correct type
-                     !isInitialLoad // Pass append flag (true if not initial load)
-                 );
-            } else {
-                 // Handle case where fetch was successful but no results found
-                 if (isInitialLoad) {
-                     DOM.networkResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this network.</p>';
-                 }
-                 // If no results on page 1, or no more results on subsequent pages, keep 'Load More' hidden
-                 Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
-            }
-        };
-
-        // --- 6. Delay Logic ---
-        if (isInitialLoad && startTime) {
-            const endTime = performance.now();
-            const elapsedTime = endTime - startTime;
-            // Calculate remaining time, ensuring it's not negative
-            const remainingTime = Math.max(0, (config.MIN_SKELETON_DISPLAY_TIME || 3000) - elapsedTime); // Use config or default
-
-            console.log(`Data fetch took ${elapsedTime.toFixed(0)}ms. Waiting additional ${remainingTime.toFixed(0)}ms.`);
-            setTimeout(renderContent, remainingTime);
-        } else {
-            // Render immediately for "Load More" (page > 1) or if timer logic failed
-            renderContent();
-        }
-    },
 
     /**
      * Renders the fetched network results into the grid and updates the 'Load More' button.
@@ -3578,12 +3767,13 @@
     },
 
           
+    handleLoadMoreNetworkResults: () => {
+        if (!DOM.loadMoreNetworkBtn) return;
+        const currentPage = parseInt(DOM.loadMoreNetworkBtn.dataset.page || '1', 10);
+        App.loadNetworkResultsPage(currentPage + 1);
+    },
 
-            handleLoadMoreNetworkResults: () => {
-                 if (!DOM.loadMoreNetworkBtn) return;
-                 const currentPage = parseInt(DOM.loadMoreNetworkBtn.dataset.page || '1');
-                 App.loadNetworkResultsPage(currentPage + 1);
-            },
+         
 
              // --- Network Carousel Scrolling ---
             handleNetworkScrollPrev: () => {
@@ -4222,7 +4412,8 @@
 
             /* --- Rendering Functions --- */
 
-                renderTmdbCards: (items, containerElement, defaultType = null, append = false) => {
+             // Renders a grid of TMDB movie/TV cards
+            renderTmdbCards: (items, containerElement, defaultType = null, append = false) => {
                 if (!containerElement) return;
 
                 if (!append) { // Clear container if not appending
@@ -4326,6 +4517,7 @@
                 });
                 App.initializeTooltips(containerElement); 
             },
+
              // Renders the Hero section item
              renderHeroItem: (item) => {
                  if (!DOM.views.hero) return;
@@ -4365,6 +4557,7 @@
                  `;
              },
 
+             /*
              // Renders the details page content
              renderDetailsPage: (itemData) => {
                  if (!DOM.detailsWrapper) return;
@@ -4398,11 +4591,10 @@
 
                  // Similar items
                  const similarList = itemData.similar?.results?.slice(0, 12) || [];
-
-                
+              
                 // Watch Providers (US Flatrate only)
                 const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
-
+            
                 const actionsContainerSelector = '.details-actions';
                  let detailsHtml = `
                      <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
@@ -4440,16 +4632,34 @@
                                     </button>
                                     <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
                                 </div>
-                                 <div class="details-actions mt-4">
-                                     <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
-                                      <!-- Add Trailer Button if videos exist -->
+                                  <div class="details-actions mt-4">
+                                    <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
+                                     <!-- Add Trailer Button if videos exist -->
                                       ${itemData.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ?
                                           `<button class="btn btn-outline-secondary btn-lg" onclick="App.playTrailer('${itemData.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}')"><i class="bi bi-film me-2"></i> Play Trailer</button>` : ''
                                       }
                                  </div>
                              </div>
-                         </div>
+                    </div>
                  `;
+
+                  let ratingSystemHtml = `
+                    <div id="user-rating-section-details" class="details-section mt-4" style="display: none;"> <!-- Hidden by default -->
+                        <h4 class="text-white fw-semibold custom-color">Your Rating</h4>
+                        <div id="user-stars-details" class="rating-stars-details mb-1">
+                           <i class="bi bi-star rating-star-details" data-value="1" title="Rate 1 star"></i>
+                           <i class="bi bi-star rating-star-details" data-value="2" title="Rate 2 stars"></i>
+                           <i class="bi bi-star rating-star-details" data-value="3" title="Rate 3 stars"></i>
+                           <i class="bi bi-star rating-star-details" data-value="4" title="Rate 4 stars"></i>
+                           <i class="bi bi-star rating-star-details" data-value="5" title="Rate 5 stars"></i>
+                        </div>
+                        <small id="user-rating-text-details" class="text-muted"></small>
+                    </div>
+                    <div id="community-rating-section-details" class="details-section mt-2">
+                       <p class="mb-0"><strong class="text-white-50">Community Rating:</strong> <span id="community-rating-text-details">Loading...</span></p>
+                    </div>
+                `;
+                detailsHtml += ratingSystemHtml; 
 
                  // Seasons & Episodes Section (for TV only)
                  if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
@@ -4463,6 +4673,7 @@
                 // Cast Section - UPDATED to use links to #person view
                 if (castList.length > 0) {
                     detailsHtml += `
+                        
                         <div class="details-section mt-5">
                             <h2 class="details-section-title">Cast</h2>
                             <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
@@ -4470,6 +4681,7 @@
                                     const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A'; // Use smaller image for cast grid
                                     // Wrap in an anchor tag linking to the person view
                                 return `
+
                             <div class="col mb-3">
                                 <a href="#person=${member.id}" class="cast-member-link">
                                     <i class="bi bi-person-circle img-fallback-icon-init d-none"></i>
@@ -4483,13 +4695,13 @@
                                     }
 
                                     .img-fallback-icon-init {
-                                        font-size: 8rem;  /* Adjust size of the fallback icon */
-                                        color: #ccc;  /* You can adjust the color to match your design */
+                                        font-size: 8rem;  
+                                        color: #ccc;  
                                         display: inline-block;
-                                        width: 120px;  /* Match the size of your images */
-                                        height: 180px; /* Match the size of your images */
+                                        width: 120px;  
+                                        height: 180px; 
                                         text-align: center;
-                                        line-height: 180px;  /* Center the icon vertically */
+                                        line-height: 180px; 
                                     }
 
                                 </style>
@@ -4500,7 +4712,22 @@
                       </div>
                     `;
                 }
-
+                // --- <<<SPOTIFY SECTION INSERTION >>> ---
+                detailsHtml += `
+                    <div class="details-section mt-5" id="spotify-soundtrack-section" > <!-- Start hidden -->
+                        <h2 class="details-section-title d-flex align-items-center">
+                            <i class="bi bi-spotify me-2" style="color: #1DB954;"></i> Soundtrack on Spotify
+                        </h2>
+                        <div id="spotify-soundtrack-content" class="d-flex flex-column flex-md-row align-items-start gap-4">
+                            <!-- Content loaded by JS -->
+                            <div class="spinner-border text-light spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading soundtrack...</span>
+                            </div>
+                            <span class="text-muted small">Searching Spotify...</span>
+                        </div>
+                    </div>
+                `;
+                // --- <<< END SPOTIFY SECTION INSERTION >>> ---
 
                  // Similar Section
                  if (similarList.length > 0) {
@@ -4534,7 +4761,7 @@
 
                  detailsHtml += `</div>`; // Close main container
                  DOM.detailsWrapper.innerHTML = detailsHtml;
-
+    
                  // --- Post-Render Actions ---
                  // Render similar cards
                  if (similarList.length > 0) {
@@ -4578,9 +4805,791 @@
                         );
                     });
                 }
+                console.log(`[renderDetailsPage] Calling loadAndRenderSoundtrack for ${displayTitle} (${year})`); 
+                App.loadAndRenderSoundtrack(type, displayTitle, year);
+                // ---Initialize Rating System After Rendering Details ---
+                // These functions will select their own DOM elements as they are now part of detailsWrapper
+                const itemIdForRating = itemData.id;
+                const itemTypeForRating = type; // 'movie' or 'tv'
+
+                App._fetchAndDisplayUserRating(itemIdForRating, itemTypeForRating); // Handles login check internally
+                const ratingDocIdForCommunity = `${itemTypeForRating}_${itemIdForRating}`;
+                App._fetchAndDisplayCommunityRating(ratingDocIdForCommunity);
+                // --- END NEW RATING SYSTEM INIT ---
 
                  App.initializeTooltips(DOM.detailsWrapper); // Activate tooltips within details view
-             },
+             },*/
+        
+
+         // Detail Page
+renderDetailsPage: (itemData) => {
+    if (!DOM.detailsWrapper) {
+        console.error("Details wrapper DOM element not found!");
+        return;
+    }
+    DOM.detailsWrapper.innerHTML = ''; // Clear previous content or skeletons
+
+    const type = itemData.title ? 'movie' : 'tv';
+    const displayTitle = Utils.escapeHtml(itemData.title || itemData.name || 'N/A');
+    const backdropUrl = itemData.backdrop_path ? `${config.BACKDROP_BASE_URL}${itemData.backdrop_path}` : '';
+    const posterUrl = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : '';
+    const rating = itemData.vote_average ? itemData.vote_average.toFixed(1) : null;
+    const year = (itemData.release_date || itemData.first_air_date || '').substring(0, 4);
+    const formattedRuntime = type === 'movie' && itemData.runtime ? Utils.formatRuntime(itemData.runtime) : null;
+    const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
+    const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
+
+    const connectionButtonHtml = `
+        <button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2"
+           data-item-id="${itemData.id}"
+           data-item-type="${type}"
+           data-item-title="${Utils.escapeHtml(itemData.title || itemData.name || '')}">
+           <i class="bi bi-diagram-3-fill me-1"></i> Show Connections
+        </button>
+     `;
+
+    const credits = itemData.credits;
+    const director = credits?.crew?.find(p => p.job === 'Director')?.name;
+    const creators = type === 'tv' ? credits?.crew?.filter(p => p.department === 'Writing' && (p.job === 'Creator' || p.job === 'Writer')).map(c => Utils.escapeHtml(c.name)).slice(0, 3).join(', ') : '';
+    const castList = credits?.cast?.slice(0, 12) || [];
+    const similarList = itemData.similar?.results?.slice(0, 12) || [];
+    const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
+    const actionsContainerSelector = '.details-actions';
+
+    let detailsHtml = `
+        <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
+        <div class="container details-content-overlay"> 
+            <button onclick="Utils.goBackOrHome();" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+            <div class="details-header row mb-5 align-items-center">
+                <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
+                    ${posterUrl ? `<img src="${posterUrl}" alt="${displayTitle} Poster" class="img-fluid shadow-lg" style="border-radius: var(--radius-lg); border: 3px solid rgba(255,255,255,0.1);" loading="lazy">` : `<div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center mx-auto" style="width:100%; aspect-ratio:2/3; max-width:280px;">No Poster</div>`}
+                </div>
+                <div class="details-info col-lg-9 col-md-8">
+                    <h1 class="text-white mb-2 custom-color">${displayTitle}</h1>
+                    <div class="details-meta mb-3 d-flex align-items-center flex-wrap">
+                        ${rating && parseFloat(rating) > 0 ? `<span class="d-flex align-items-center me-3"><i class="bi bi-star-fill text-warning me-1"></i> ${rating}/10</span>` : ''}
+                        ${year ? `<span class="d-flex align-items-center me-3"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
+                        ${formattedRuntime ? `<span class="d-flex align-items-center me-3"><i class="bi bi-clock me-1"></i> ${formattedRuntime}</span>` : ''}
+                        ${numberOfSeasons ? `<span class="d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${numberOfSeasons} Season${numberOfSeasons > 1 ? 's' : ''}</span>` : ''}
+                    </div>
+                    <div class="genres mb-3">
+                        ${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}
+                    </div>
+                    ${displayOverview !== 'No overview available.' ? `<h4 class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
+                    ${director ? `<p class="small mb-1"><strong class="text-white-50">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
+                    ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
+                    <div class="details-section mt-4">
+                        <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
+                        <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;">
+                            <p class="text-muted small mb-0">Click the button to generate AI-powered insights.</p>
+                        </div>
+                        <button id="get-ai-insight-btn" class="btn btn-sm btn-outline-info"
+                            data-item-id="${itemData.id}"
+                            data-item-type="${type}"
+                            data-item-title="${displayTitle}"
+                            data-item-year="${year}">
+                            <i class="bi bi-magic me-1"></i> Get AI Insight
+                        </button>
+                        <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
+                    </div>
+                    <div class="details-actions mt-4 d-flex flex-wrap align-items-center">
+                        <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2 mb-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
+                        ${itemData.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ?
+                            `<button class="btn btn-outline-secondary btn-lg me-2" onclick="App.playTrailer('${itemData.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}')">
+                                <i class="bi bi-film me-2"></i> Play Trailer
+                            </button>` : ''
+                        }
+                        <button class="btn btn-outline-success btn-lg" onclick="App.downloadMedia('${itemData.id}', '${type}', '${displayTitle}')">
+                            <i class="bi bi-download me-2"></i> Download
+                        </button>
+
+                    </div>
+                </div> 
+            </div> 
+
+          
+            <div id="user-rating-section-details" class="details-section mt-4" style="display: none;">
+                <h4 class="text-white fw-semibold custom-color">Your Rating</h4>
+                <div id="user-stars-details" class="rating-stars-details mb-1">
+                   <i class="bi bi-star rating-star-details" data-value="1" title="Rate 1 star"></i>
+                   <i class="bi bi-star rating-star-details" data-value="2" title="Rate 2 stars"></i>
+                   <i class="bi bi-star rating-star-details" data-value="3" title="Rate 3 stars"></i>
+                   <i class="bi bi-star rating-star-details" data-value="4" title="Rate 4 stars"></i>
+                   <i class="bi bi-star rating-star-details" data-value="5" title="Rate 5 stars"></i>
+                </div>
+                <small id="user-rating-text-details" class="text-muted"></small>
+            </div>
+            <div id="community-rating-section-details" class="details-section mt-2 mb-4">
+               <p class="mb-0"><strong class="text-white-50">Community Rating:</strong> <span id="community-rating-text-details">Loading...</span></p>
+            </div>
+    `;
+
+    // Append Seasons & Episodes Section (for TV only)
+    if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
+        const validSeasons = itemData.seasons.filter(s => s.season_number > 0 || itemData.seasons.length === 1);
+        if (validSeasons.length > 0) {
+            detailsHtml += App.renderTVSeasonsSection(itemData.id, validSeasons);
+        }
+    }
+
+    // Append Cast Section
+    if (castList.length > 0) {
+        detailsHtml += `
+            <div class="details-section mt-5">
+                <h2 class="details-section-title">Cast</h2>
+                <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
+                    ${castList.map(member => {
+                        const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A';
+                        return `
+                        <div class="col mb-3">
+                            <a href="#person=${member.id}" class="cast-member-link">
+                                <i class="bi bi-person-circle img-fallback-icon-init d-none"></i>
+                               <img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy" onerror="this.previousElementSibling.classList.remove('d-none'); this.classList.add('d-none');">
+                               <div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div>
+                               <div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div>
+                            </a>
+                       </div>
+                    `;
+                       }).join('')}
+                     </div>
+                  </div>
+                `;
+    }
+
+    // Append Spotify Soundtrack Section
+    detailsHtml += `
+        <div class="details-section mt-5" id="spotify-soundtrack-section" >
+            <h2 class="details-section-title d-flex align-items-center">
+                <i class="bi bi-spotify me-2" style="color: #1DB954;"></i> Soundtrack on Spotify
+            </h2>
+            <div id="spotify-soundtrack-content" class="d-flex flex-column flex-md-row align-items-start gap-4">
+                <div class="spinner-border text-light spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading soundtrack...</span>
+                </div>
+                <span class="text-muted small">Searching Spotify...</span>
+            </div>
+        </div>
+    `;
+
+    // Append Similar Section
+    if (similarList.length > 0) {
+        detailsHtml += `
+             <div class="details-section mt-5">
+                 <h2 class="details-section-title">You Might Also Like</h2>
+                 <div id="similar-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                     ${Utils.getSpinnerHTML("Loading recommendations...")}
+                 </div>
+             </div>
+         `;
+     }
+
+    // Append Streaming Providers Section
+    if (usSubProviders.length > 0) {
+        detailsHtml += `
+              <div class="details-section mt-5">
+                  <h2 class="details-section-title">Stream on (US Subscriptions)</h2>
+                  <div class="d-flex flex-wrap gap-3 align-items-center">
+                      ${usSubProviders.map(p => `
+                          <a href="#network=${p.provider_id}" title="Browse ${Utils.escapeHtml(p.provider_name)}">
+                              <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;" loading="lazy">
+                          </a>`).join('')}
+                  </div>
+                  <small class="d-block mt-2 text-muted">Streaming availability via JustWatch/TMDb.</small>
+              </div>
+          `;
+      }
+
+    detailsHtml += `</div>`; // Close .container.details-content-overlay
+    DOM.detailsWrapper.innerHTML = detailsHtml; // Inject the complete HTML string ONCE
+
+    // --- Post-Render Actions ---
+    // Render similar cards
+    if (similarList.length > 0) {
+        const similarGrid = document.getElementById('similar-grid');
+        if (similarGrid) {
+            App.renderTmdbCards(similarList, similarGrid, type, false);
+        }
+    }
+
+    // Initialize season tabs and load first season if TV
+    if (type === 'tv' && itemData.seasons?.filter(s => s.season_number > 0 || itemData.seasons.length === 1).length > 0) {
+        App.addSeasonTabListeners(itemData.id);
+        const firstTab = DOM.detailsWrapper.querySelector('#seasons-tablist .nav-link:not(.disabled)'); // More specific selector
+        firstTab?.click();
+    }
+
+    // Add listener for the connection button (appended to actionsContainer)
+    const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
+    if (actionsContainer) {
+       const btnDiv = document.createElement('div'); // Create a temporary div to parse the button HTML
+       btnDiv.innerHTML = connectionButtonHtml.trim();
+       const connectionButton = btnDiv.firstChild; // Get the actual button element
+       if (connectionButton) { // Check if button was successfully created
+           connectionButton.addEventListener('click', App.handleShowConnectionsClick);
+           actionsContainer.appendChild(connectionButton); // Append the button
+       }
+    }
+
+    // Add AI Insight Button Listener
+    const detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn'); // Renamed for clarity
+    if (detailsAiInsightBtn) { // Check if element exists
+        detailsAiInsightBtn.addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            App.handleGetAiInsight(
+                btn.dataset.itemType,
+                btn.dataset.itemId,
+                btn.dataset.itemTitle,
+                btn.dataset.itemYear
+            );
+        });
+    }
+
+    // Load Soundtrack
+    App.loadAndRenderSoundtrack(type, displayTitle, year);
+
+    // ---Initialize Rating System After Rendering Details ---
+    const itemIdForRating = itemData.id;
+    const itemTypeForRating = type;
+    App._fetchAndDisplayUserRating(itemIdForRating, itemTypeForRating);
+    const ratingDocIdForCommunity = `${itemTypeForRating}_${itemIdForRating}`;
+    App._fetchAndDisplayCommunityRating(ratingDocIdForCommunity);
+
+    // --- Add Event Listener for Conceptual Download Button ---
+    const conceptualDownloadBtn = document.getElementById('conceptual-download-btn'); // Select by ID
+    if (conceptualDownloadBtn) {
+        conceptualDownloadBtn.addEventListener('click', () => {
+            Utils.showToast(`Download functionality for "${displayTitle}" is conceptual and not implemented.`, 'info');
+            console.log(`Conceptual download clicked for: ${displayTitle} (Type: ${type}, ID: ${itemData.id})`);
+            // Actual download logic would go here if implemented
+        });
+    }
+
+    App.initializeTooltips(DOM.detailsWrapper);
+},
+
+/*
+downloadMedia: async (id, type, title) => {
+    try {
+        const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${type}_${id}.mp4`;
+
+        // Simulate a download URL (in a real-world app this would come from a backend or third-party service)
+     
+        const downloadUrl = '';
+
+        const anchor = document.createElement('a');
+        anchor.href = downloadUrl;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+
+        Utils.notify('Download started...', 'success');
+    } catch (error) {
+        console.error('Download error:', error);
+        Utils.notify('Download failed. Please try again later.', 'danger');
+    }
+},*/
+
+downloadMedia: async (id, type, title) => {
+    try {
+        const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${type}_${id}.mp4`;
+
+        // Fetch user IP (optional, if required by API)
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const endUserIp = (await ipResponse.json()).ip;
+
+        // Fetch download URL from EarnVids API
+        const apiKey = '40766j26wmw8o0ceewfb3'; // Replace with your EarnVids API key
+        const response = await fetch(`https://earnvidsapi.com/api/file/direct_link?key=${apiKey}&file_code=${id}&ip=${endUserIp}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.msg !== 'OK' || !data.result?.versions?.length) {
+            throw new Error('No valid download URL found');
+        }
+
+        // Prefer high-quality version ('h') or fallback to first available
+        const downloadUrl = data.result.versions.find(version => version.name === 'h')?.url
+            || data.result.versions[0].url;
+
+        if (!downloadUrl) {
+            throw new Error('Download URL not found');
+        }
+
+        // Trigger the download
+        const anchor = document.createElement('a');
+        anchor.href = downloadUrl;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+
+        Utils.notify('Download started...', 'success');
+    } catch (error) {
+        console.error('Download error:', error);
+        Utils.notify('Download failed. Please try again later.', 'danger');
+    }
+},
+
+// --- Rating System Helper Functions ---
+_renderStars: (ratingValue = 0, starContainerElement, isRated = false) => {
+    if (!starContainerElement) return;
+    const stars = starContainerElement.querySelectorAll('.rating-star-details');
+    stars.forEach(star => {
+        const starVal = parseInt(star.dataset.value);
+        star.classList.toggle('bi-star-fill', starVal <= ratingValue);
+        star.classList.toggle('bi-star', starVal > ratingValue);
+        star.classList.toggle('rated', isRated && starVal <= ratingValue); // Add 'rated' class if a firm rating exists
+    });
+},
+
+_handleStarHover: (event, starContainerElement) => {
+    if (!starContainerElement) return;
+    const hoverValue = parseInt(event.target.dataset.value);
+    const stars = starContainerElement.querySelectorAll('.rating-star-details');
+    stars.forEach(star => {
+        const starVal = parseInt(star.dataset.value);
+        // Add a temporary 'hover' class instead of directly changing bi-star-fill
+        // to avoid conflict with the actual 'rated' state.
+        star.classList.toggle('hover', starVal <= hoverValue);
+        // Visually fill based on hover
+        if (starVal <= hoverValue) {
+            star.classList.add('bi-star-fill');
+            star.classList.remove('bi-star');
+        } else {
+            star.classList.remove('bi-star-fill');
+            star.classList.add('bi-star');
+        }
+    });
+},
+
+_handleStarMouseLeave: (starContainerElement) => {
+    if (!starContainerElement) return;
+    // Re-render stars based on the actual current rating (stored on the container's dataset)
+    const currentRating = parseInt(starContainerElement.dataset.currentRating || '0');
+    const isRated = starContainerElement.dataset.isRated === 'true';
+    App._renderStars(currentRating, starContainerElement, isRated);
+    // Remove temporary hover class
+    starContainerElement.querySelectorAll('.rating-star-details').forEach(s => s.classList.remove('hover'));
+},
+
+_handleStarClick: async (event, itemId, itemType) => {
+    // Uses global appAuth and appDb from firebase.js
+    if (typeof appAuth === 'undefined' || !appAuth.currentUser || typeof appDb === 'undefined' || !appDb) {
+        Utils.showToast("You must be logged in to rate items.", "warning");
+        // Optionally, redirect to login or open a login modal
+        return;
+    }
+
+    const newRating = parseInt(event.target.dataset.value);
+    const userId = appAuth.currentUser.uid;
+    const ratingDocId = `${itemType}_${itemId}`;
+    const ratingDocRef = appDb.collection('item_ratings').doc(ratingDocId);
+
+    const userRatingTextEl = document.getElementById('user-rating-text-details'); // Select dynamically
+    const starContainer = document.getElementById('user-stars-details'); // Select dynamically
+
+    if (userRatingTextEl) userRatingTextEl.textContent = "Saving your rating...";
+    if (starContainer) starContainer.style.pointerEvents = 'none'; // Disable stars during save
+
+    try {
+        await appDb.runTransaction(async (transaction) => {
+            const doc = await transaction.get(ratingDocRef);
+            let currentTotalScore = 0;
+            let currentRatingCount = 0;
+            let userRatingsMap = {};
+            let oldUserRating = 0;
+
+            if (doc.exists) {
+                currentTotalScore = doc.data().totalScore || 0;
+                currentRatingCount = doc.data().ratingCount || 0;
+                userRatingsMap = doc.data().userRatings || {};
+                oldUserRating = userRatingsMap[userId] || 0;
+            }
+
+            if (oldUserRating > 0) { // User is updating rating
+                currentTotalScore = currentTotalScore - oldUserRating + newRating;
+            } else { // New rating from this user
+                currentTotalScore = currentTotalScore + newRating;
+                currentRatingCount += 1;
+            }
+            userRatingsMap[userId] = newRating;
+            const newAverageRating = currentRatingCount > 0 ? (currentTotalScore / currentRatingCount) : 0;
+
+            transaction.set(ratingDocRef, {
+                totalScore: currentTotalScore,
+                ratingCount: currentRatingCount,
+                averageRating: parseFloat(newAverageRating.toFixed(2)), // Store as number, round to 2 decimal
+                userRatings: userRatingsMap,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        });
+
+        Utils.showToast(`Your rating of ${newRating}/5 has been saved!`, "success");
+        if (userRatingTextEl) userRatingTextEl.textContent = `Your rating: ${newRating}/5`;
+        if (starContainer) {
+            starContainer.dataset.currentRating = newRating;
+            starContainer.dataset.isRated = 'true';
+            App._renderStars(newRating, starContainer, true);
+        }
+        // After successful save, refresh the community rating display
+        App._fetchAndDisplayCommunityRating(ratingDocId);
+
+    } catch (error) {
+        console.error("Error saving rating:", error);
+        if (userRatingTextEl) userRatingTextEl.textContent = "Error saving rating. Try again.";
+        Utils.showToast("Could not save your rating. Please try again.", "danger");
+        if (starContainer) { // Re-render stars to previous state on error
+            const previousRating = parseInt(starContainer.dataset.currentRating || '0');
+            const previousIsRated = starContainer.dataset.isRated === 'true';
+            App._renderStars(previousRating, starContainer, previousIsRated);
+        }
+    } finally {
+        if (starContainer) starContainer.style.pointerEvents = 'auto'; // Re-enable stars
+    }
+},
+
+_fetchAndDisplayUserRating: async (itemId, itemType) => {
+    const userRatingSection = document.getElementById('user-rating-section-details');
+    const starContainer = document.getElementById('user-stars-details');
+    const userRatingTextEl = document.getElementById('user-rating-text-details');
+
+    if (!userRatingSection || !starContainer || !userRatingTextEl) {
+        console.warn("User rating DOM elements not found for _fetchAndDisplayUserRating.");
+        return;
+    }
+
+    // Uses global appAuth and appDb from firebase.js
+    if (typeof appAuth === 'undefined' || !appAuth.currentUser || typeof appDb === 'undefined' || !appDb) {
+        Utils.setElementVisibility(userRatingSection, false); // Hide if not logged in
+        return;
+    }
+
+    Utils.setElementVisibility(userRatingSection, true);
+    userRatingTextEl.textContent = 'Loading your rating...';
+    App._renderStars(0, starContainer, false); // Reset stars
+    starContainer.dataset.currentRating = '0';
+    starContainer.dataset.isRated = 'false';
+
+
+    const userId = appAuth.currentUser.uid;
+    const ratingDocId = `${itemType}_${itemId}`;
+    const ratingDocRef = appDb.collection('item_ratings').doc(ratingDocId);
+
+    try {
+        const doc = await ratingDocRef.get();
+        let userRating = 0;
+        let isRated = false;
+        if (doc.exists && doc.data().userRatings && doc.data().userRatings[userId]) {
+            userRating = doc.data().userRatings[userId];
+            isRated = true;
+            userRatingTextEl.textContent = `Your rating: ${userRating}/5`;
+        } else {
+            userRatingTextEl.textContent = 'Rate this title!';
+        }
+        starContainer.dataset.currentRating = userRating;
+        starContainer.dataset.isRated = String(isRated);
+        App._renderStars(userRating, starContainer, isRated);
+
+        // Attach listeners to stars
+        const stars = starContainer.querySelectorAll('.rating-star-details');
+        stars.forEach(star => {
+            star.onclick = (e) => App._handleStarClick(e, itemId, itemType);
+            star.onmouseenter = (e) => App._handleStarHover(e, starContainer);
+            star.onmouseleave = () => App._handleStarMouseLeave(starContainer);
+        });
+
+    } catch (error) {
+        console.error("Error fetching user rating:", error);
+        userRatingTextEl.textContent = 'Could not load your rating.';
+        Utils.showToast("Failed to load your rating.", "warning");
+    }
+},
+
+_fetchAndDisplayCommunityRating: async (ratingDocId) => {
+    const communityRatingTextEl = document.getElementById('community-rating-text-details');
+    if (!communityRatingTextEl) {
+        console.warn("Community rating DOM element not found.");
+        return;
+    }
+    // Uses global appDb from firebase.js
+    if (typeof appDb === 'undefined' || !appDb) {
+        communityRatingTextEl.textContent = 'Service unavailable.';
+        return;
+    }
+
+    communityRatingTextEl.textContent = 'Loading...';
+    const ratingDocRef = appDb.collection('item_ratings').doc(ratingDocId);
+
+    try {
+        const doc = await ratingDocRef.get();
+        if (doc.exists && doc.data().averageRating !== undefined) {
+            const avg = parseFloat(doc.data().averageRating).toFixed(1);
+            const count = doc.data().ratingCount || 0;
+            communityRatingTextEl.innerHTML = `<i class="bi bi-star-fill text-warning me-1"></i> ${avg}/5 <span class="text-muted small">(${count} vote${count === 1 ? '' : 's'})</span>`;
+        } else {
+            communityRatingTextEl.textContent = 'Not yet rated by the community.';
+        }
+    } catch (error) {
+        console.error("Error fetching community rating:", error);
+        communityRatingTextEl.textContent = 'Error loading rating.';
+        Utils.showToast("Failed to load community rating.", "warning");
+    }
+},
+// End Rating System Helper Functions
+
+/**
+ * Fetches the Spotify soundtrack for a given movie/TV item and renders it.
+ * Selects DOM elements dynamically within the function.
+ * @param {string} itemType - 'movie' or 'tv'
+ * @param {string} itemTitle - The title of the item (already escaped if needed for display, but raw needed for search)
+ * @param {string} itemYear - The release year (e.g., '2023')
+ */
+ loadAndRenderSoundtrack: async (itemType, itemTitle, itemYear) => {
+    console.log("[Spotify Load] Initiated for:", itemTitle, `(${itemYear})`); // DEBUG LOG
+
+    // --- Select Elements Dynamically ---
+    const soundtrackSection = document.getElementById('spotify-soundtrack-section');
+    const soundtrackContent = document.getElementById('spotify-soundtrack-content');
+    // ------------------------------------
+
+    // --- Validate Elements ---
+    if (!soundtrackSection || !soundtrackContent) {
+        console.warn("[Spotify Load] Soundtrack section/content elements not found in DOM. Aborting.");
+        return; // Exit if elements aren't rendered yet
+    }
+    // ------------------------
+
+    // --- Reset and Show Loading State ---
+    Utils.setElementVisibility(soundtrackSection, true); // Make the section visible
+    soundtrackContent.innerHTML = `
+        <div class="d-flex align-items-center text-muted small p-2">
+             <div class="spinner-border spinner-border-sm me-2" role="status">
+                 <span class="visually-hidden">Loading soundtrack...</span>
+             </div>
+             Searching Spotify for soundtrack...
+         </div>`;
+    // ---------------------------------
+
+    try {
+        // --- Ensure Spotify App Token ---
+        console.log("[Spotify Load] Attempting to get Spotify token..."); // DEBUG LOG
+        const token = await API.getSpotifyAppToken();
+        if (!token) {
+            throw new Error("Spotify token not available. Cannot search.");
+        }
+        console.log("[Spotify Load] Spotify token acquired."); // DEBUG LOG
+        // -----------------------------
+
+        // --- Construct Search Query ---
+        // Use the raw title for search accuracy, handle potential escaping issues if needed
+        const searchQueryTitle = itemTitle; // Assuming itemTitle passed is suitable for search
+        const query = `${searchQueryTitle} ${itemType === 'tv' ? 'Original Series' : ''} Soundtrack ${itemYear || ''}`.trim();
+        console.log(`[Spotify Load] Constructed Search Query: "${query}"`); // DEBUG LOG
+        // -----------------------------
+
+        // --- Search Spotify for Albums ---
+        console.log("[Spotify Load] Sending search request to Spotify API..."); // DEBUG LOG
+        const searchResults = await API.fetchSpotify(`/search?q=${encodeURIComponent(query)}&type=album&limit=10`);
+        console.log("[Spotify Load] Search API Response:", searchResults); // DEBUG LOG
+
+        if (!searchResults || !searchResults.albums || searchResults.albums.items.length === 0) {
+            // Try a broader search without year/type qualifiers
+            const simplerQuery = `${searchQueryTitle} Soundtrack`;
+            console.log(`[Spotify Load] Initial search failed, trying simpler query: "${simplerQuery}"`);
+            const simplerResults = await API.fetchSpotify(`/search?q=${encodeURIComponent(simplerQuery)}&type=album&limit=5`);
+            console.log("[Spotify Load] Simpler Search API Response:", simplerResults); // DEBUG LOG
+
+            if (!simplerResults || !simplerResults.albums || simplerResults.albums.items.length === 0) {
+                 throw new Error("No potential soundtracks found on Spotify after multiple attempts.");
+            }
+            searchResults.albums = simplerResults.albums; // Use results from simpler search
+        }
+        // -----------------------------
+
+        // --- Filtering Logic ---
+        let bestMatch = null;
+        const lowerSearchTitle = searchQueryTitle.toLowerCase();
+        const albums = searchResults.albums.items;
+
+        // Priority 1: Exact "Official Soundtrack" or "Original Score" + Title Match
+        bestMatch = albums.find(album =>
+            (album.name.toLowerCase().includes("official soundtrack") || album.name.toLowerCase().includes("original score")) &&
+            album.name.toLowerCase().includes(lowerSearchTitle)
+        );
+
+        // Priority 2: Contains "Soundtrack" or "Score" + Fuzzy Title Match
+        if (!bestMatch) {
+            bestMatch = albums.find(album =>
+                (album.name.toLowerCase().includes("soundtrack") || album.name.toLowerCase().includes("score")) &&
+                album.name.toLowerCase().includes(lowerSearchTitle.substring(0, Math.min(lowerSearchTitle.length, 10))) // Match first ~10 chars
+            );
+        }
+
+        // Priority 3: Fuzzy Title Match Only
+        if (!bestMatch) {
+            bestMatch = albums.find(album =>
+               album.name.toLowerCase().includes(lowerSearchTitle.substring(0, Math.min(lowerSearchTitle.length, 10)))
+            );
+        }
+
+         // Fallback: Just take the first result if no better match found
+         if (!bestMatch && albums.length > 0) {
+             bestMatch = albums[0];
+             console.log("[Spotify Load] No ideal match found using filtering, falling back to first result."); // DEBUG LOG
+         }
+
+        console.log("[Spotify Load] Determined Best Match Album:", bestMatch); // DEBUG LOG
+
+        if (!bestMatch) {
+             throw new Error("Could not determine the correct soundtrack from search results.");
+        }
+        // ------------------------
+
+        // --- Fetch Tracks for Album ---
+        const albumId = bestMatch.id;
+        console.log(`[Spotify Load] Fetching tracks for Album ID: ${albumId}`); // DEBUG LOG
+        const tracksData = await API.fetchSpotify(`/albums/${albumId}/tracks?limit=50`);
+        console.log("[Spotify Load] Tracks API Response:", tracksData); // DEBUG LOG
+
+        if (!tracksData || !tracksData.items) {
+            // Check if tracksData.items is empty array vs null/undefined
+            if (tracksData && tracksData.items && tracksData.items.length === 0) {
+                 console.warn(`[Spotify Load] Album ${albumId} found, but it contains no tracks.`);
+                 // Decide how to handle: show album art only, or show error? Showing album is better.
+                 App.renderSoundtrackDetails(bestMatch, []); // Render with empty track list
+                 return; // Exit successfully after rendering album info
+            } else {
+                 throw new Error(`Could not load tracks for the selected soundtrack (Album ID: ${albumId}).`);
+            }
+        }
+        // ---------------------------
+
+        // --- Render Soundtrack Details ---
+        console.log("[Spotify Load] Calling renderSoundtrackDetails..."); // DEBUG LOG
+        App.renderSoundtrackDetails(bestMatch, tracksData.items);
+        // ------------------------------
+
+    } catch (error) {
+        console.error("[Spotify Load] Error during soundtrack processing:", error); // DEBUG LOG
+        // Use the locally selected content element to display the error
+        soundtrackContent.innerHTML = `
+            <div class="d-flex align-items-center text-warning small p-2">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span>${Utils.escapeHtml(error.message) || 'Could not load soundtrack from Spotify.'}</span>
+            </div>`;
+         // Optionally hide the section entirely on error after a short delay
+         // setTimeout(() => Utils.setElementVisibility(soundtrackSection, false), 4000);
+    } finally {
+         console.log("[Spotify Load] Finished attempt for:", itemTitle); // DEBUG LOG
+    }
+}, // End loadAndRenderSoundtrack
+
+              /**
+ * Renders the fetched Spotify album details and tracklist into the designated container.
+ * Selects DOM elements dynamically within the function.
+ * @param {object} album - The Spotify Album object.
+ * @param {Array} tracks - An array of Spotify Track objects.
+ */
+renderSoundtrackDetails: (album, tracks) => {
+    console.log("[Spotify Render] Starting render for album:", album?.name); // DEBUG LOG
+
+    // --- Select Element Dynamically ---
+    const soundtrackContent = document.getElementById('spotify-soundtrack-content');
+    // ---------------------------------
+
+    // --- Validate Element ---
+    if (!soundtrackContent) {
+        console.warn("[Spotify Render] Soundtrack content element not found in DOM. Cannot render.");
+        return; // Exit if element isn't available
+    }
+    // ------------------------
+
+    const albumImageUrl = album.images?.[1]?.url || album.images?.[0]?.url || 'https://via.placeholder.com/150'; // Prefer medium image
+    const albumName = Utils.escapeHtml(album.name);
+    const artistName = Utils.escapeHtml(album.artists.map(a => a.name).join(', '));
+    const spotifyAlbumUrl = album.external_urls?.spotify;
+
+    // --- Album Info HTML (Left Side) ---
+    const albumInfoHtml = `
+        <div class="soundtrack-album-info text-center text-md-start flex-shrink-0 mb-3 mb-md-0" style="max-width: 200px;">
+            <a href="${spotifyAlbumUrl || '#'}" ${spotifyAlbumUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} title="Listen to ${albumName} on Spotify">
+                <img src="${albumImageUrl}" alt="${albumName}" class="img-fluid rounded shadow-sm mb-2 border border-secondary border-opacity-10" loading="lazy" style="max-width: 180px;">
+            </a>
+            <h5 class="fs-6 mb-1 text-light text-truncate" title="${albumName}">${albumName}</h5>
+            <p class="small text-muted mb-2 text-truncate" title="${artistName}">${artistName}</p>
+            ${spotifyAlbumUrl ? `<a href="${spotifyAlbumUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success spotify-btn"><i class="bi bi-spotify me-1"></i> Listen on Spotify</a>` : ''}
+        </div>
+    `;
+    // ------------------------------------
+
+    // --- Tracklist HTML (Right Side) ---
+    // Handle empty tracks array gracefully
+    const tracklistItemsHtml = tracks && tracks.length > 0
+        ? tracks.map((track, index) => {
+            const trackName = Utils.escapeHtml(track.name);
+            const trackArtists = Utils.escapeHtml(track.artists.map(a => a.name).join(', '));
+            const duration = Utils.formatTime(track.duration_ms);
+            const previewUrl = track.preview_url;
+
+            return `
+            <li class="list-group-item bg-transparent px-0 py-2 d-flex justify-content-between align-items-center">
+                <div class="me-3 overflow-hidden d-flex align-items-center">
+                     <span class="text-muted me-2 small" style="min-width: 20px; text-align: right;">${index + 1}.</span>
+                     <div>
+                        <div class="track-name text-light text-truncate small" title="${trackName}">${trackName}</div>
+                        <div class="artist-name text-muted text-truncate smaller" title="${trackArtists}">${trackArtists}</div>
+                     </div>
+                </div>
+                <div class="d-flex align-items-center flex-shrink-0">
+                    <span class="badge fw-normal bg-light bg-opacity-10 text-light-emphasis me-2 small" style="min-width: 45px;">${duration}</span>
+                    ${previewUrl ? `
+                        <button class="btn btn-sm btn-outline-secondary play-preview-btn flex-shrink-0" data-preview-url="${previewUrl}" title="Play 30s Preview">
+                            <i class="bi bi-play-fill"></i>
+                        </button>` : `
+                        <button class="btn btn-sm btn-outline-secondary flex-shrink-0 disabled opacity-50" title="No Preview Available">
+                            <i class="bi bi-play-fill"></i>
+                        </button>
+                    `}
+                </div>
+            </li>
+            `;
+        }).join('')
+        : '<li class="list-group-item bg-transparent px-0 py-2 text-muted small">No tracks listed for this album on Spotify.</li>'; // Message for empty tracklist
+
+    const tracklistHtml = `
+        <div class="soundtrack-tracklist flex-grow-1 overflow-hidden">
+            <h6 class="text-muted mb-1 small text-uppercase ls-1">Tracks</h6>
+            <ul class="list-group list-group-flush soundtrack-list bg-transparent border-top border-secondary border-opacity-10 pt-1" style="max-height: 300px; overflow-y: auto;">
+                ${tracklistItemsHtml}
+            </ul>
+        </div>
+    `;
+    // ------------------------------------
+
+    // --- Update DOM ---
+    soundtrackContent.innerHTML = albumInfoHtml + tracklistHtml;
+    // -----------------
+
+    // --- Add Event Listeners for Preview Buttons ---
+    // Use the locally selected soundtrackContent element
+    soundtrackContent.querySelectorAll('.play-preview-btn:not(.disabled)').forEach(button => {
+        button.addEventListener('click', (e) => {
+            console.log("[Spotify Render] Play preview button clicked for:", e.currentTarget.dataset.previewUrl); // DEBUG LOG
+            App.playPreview(e.currentTarget); // Reuse existing preview function
+        });
+    });
+    // ------------------------------------------
+    console.log("[Spotify Render] Finished rendering and adding listeners for:", album?.name); // DEBUG LOG
+}, // End renderSoundtrackDetails
 
             // Renders the Season Tabs and Episode Panes structure
             renderTVSeasonsSection: (tvId, seasons) => {
@@ -4672,7 +5681,7 @@
              },
 
              // Renders the player page source buttons
-             renderStreamingSourceButtons: () => {
+             /* renderStreamingSourceButtons: () => {
                  if (!DOM.playerSourceBtnsContainer) return;
                  DOM.playerSourceBtnsContainer.innerHTML = '<p class="text-muted small mb-2">Select streaming source:</p>'; // Reset
 
@@ -4690,7 +5699,34 @@
                      });
                      DOM.playerSourceBtnsContainer.appendChild(button);
                  });
-             },
+             },*/
+             renderStreamingSourceButtons: () => {
+    if (!DOM.playerSourceBtnsContainer) return;
+    DOM.playerSourceBtnsContainer.innerHTML = `
+        <p class="text-muted small mb-2">Select streaming source:</p>
+        <p class="text-warning small mb-2">Warning: Some providers may offer unlicensed content. Use a VPN and ensure compliance with local laws.</p>
+    `; // Reset with warning
+
+    config.STREAMING_PROVIDERS.forEach((provider, index) => {
+        const button = document.createElement('button');
+        button.className = 'btn btn-outline-secondary btn-sm me-2 mb-2';
+        button.textContent = provider.name;
+        // Add badge for verified providers
+        if (provider.name === 'Netflix') {
+            button.innerHTML += ' <span class="badge bg-success">Verified</span>';
+        } else {
+            button.innerHTML += ' <span class="badge bg-warning">Unverified</span>';
+        }
+        button.dataset.sourceIndex = index;
+        button.addEventListener('click', (e) => {
+            DOM.playerSourceBtnsContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            App.setStreamingSource(index);
+        });
+        DOM.playerSourceBtnsContainer.appendChild(button);
+    });
+},
+            
 
              recordGlobalView: async (type, id, title) => {
         // Use the globally initialized appDb from firebase.js
@@ -5107,7 +6143,351 @@
             },
         };
 
-   
+        const Community = {
+    initView: async () => {
+        console.log("Initializing Community View...");
+        if (!DOM.communityThreadsList || !DOM.communityUserActions) return;
+
+        // Display "Create Thread" button if user is logged in
+        if (appAuth.currentUser) {
+            DOM.communityUserActions.innerHTML = `
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
+                    <i class="bi bi-plus-circle-fill me-1"></i> Create New Thread
+                </button>`;
+        } else {
+            DOM.communityUserActions.innerHTML = `<p class="text-muted small">Login to create threads and post.</p>`;
+        }
+        await Community.loadThreads();
+    },
+
+    loadThreads: async () => {
+        if (!DOM.communityThreadsList || !appDb) return;
+        DOM.communityThreadsList.innerHTML = Utils.getSpinnerHTML("Loading discussions...");
+
+        try {
+            const threadsSnapshot = await appDb.collection('community_threads')
+                                          .orderBy('lastReplyAt', 'desc') // Show most recent activity first
+                                          .limit(25)
+                                          .get();
+            State.communityThreads = []; // Clear cache
+            if (threadsSnapshot.empty) {
+                DOM.communityThreadsList.innerHTML = '<p class="text-center text-muted">No discussions yet. Be the first to start one!</p>';
+                return;
+            }
+            DOM.communityThreadsList.innerHTML = ''; // Clear spinner
+            threadsSnapshot.forEach(doc => {
+                const thread = { id: doc.id, ...doc.data() };
+                State.communityThreads.push(thread);
+                Community.renderThreadItem(thread, DOM.communityThreadsList);
+            });
+        } catch (error) {
+            console.error("Error loading community threads:", error);
+            DOM.communityThreadsList.innerHTML = Utils.getErrorHTML("Could not load discussions.");
+            Utils.showToast("Failed to load discussions.", "danger");
+        }
+    },
+
+    renderThreadItem: (thread, container) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'community-thread-item card card-body bg-darker mb-3 shadow-sm'; // Added shadow
+
+        const linkedItemHtml = thread.linkedMovieId ? `<span class="badge bg-info bg-opacity-25 text-info-emphasis me-2">Movie: ${Utils.escapeHtml(thread.linkedMovieTitle || 'N/A')}</span>` :
+                              thread.linkedTvShowId ? `<span class="badge bg-success bg-opacity-25 text-success-emphasis me-2">TV: ${Utils.escapeHtml(thread.linkedTvShowTitle || 'N/A')}</span>` : '';
+
+        itemDiv.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="card-title mb-1">
+                        <a href="#community/thread/${thread.id}" class="text-decoration-none stretched-link">${Utils.escapeHtml(thread.title)}</a>
+                    </h5>
+                    <p class="card-text small text-muted mb-1">
+                        Started by ${Utils.escapeHtml(thread.createdBy?.displayName || 'User')}
+                        on ${thread.createdAt ? Utils.formatAirDate(thread.createdAt.toDate()) : 'N/A'}
+                    </p>
+                </div>
+                <span class="badge bg-secondary bg-opacity-50 text-light-emphasis flex-shrink-0">${thread.postCount || 0} replies</span>
+            </div>
+            ${thread.firstPostContent ? `<p class="text-muted small mt-1 mb-2 text-truncate">${Utils.escapeHtml(thread.firstPostContent)}</p>`: ''}
+            <div>
+                ${linkedItemHtml}
+                <small class="text-muted">Last reply by ${Utils.escapeHtml(thread.lastReplyBy?.displayName || 'N/A')}
+                ${thread.lastReplyAt ? `at ${thread.lastReplyAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+                </small>
+            </div>
+        `;
+        container.appendChild(itemDiv);
+    },
+
+    handleCreateThreadSubmit: async (event) => {
+        event.preventDefault();
+        if (!appAuth.currentUser || !appDb) {
+            Utils.showToast("You must be logged in to create a thread.", "warning");
+            return;
+        }
+
+        const title = document.getElementById('threadTitle').value.trim();
+        const firstPostContent = document.getElementById('threadFirstPost').value.trim();
+        const linkedMovieIdRaw = document.getElementById('threadLinkMovieId').value.trim();
+        // TODO: Add similar for TV Show ID if you have a field for it
+
+        if (!title || !firstPostContent) {
+            Utils.showToast("Title and first post content are required.", "warning");
+            return;
+        }
+
+        const submitButton = DOM.createThreadForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating...`;
+
+        try {
+            const user = appAuth.currentUser;
+            const now = firebase.firestore.FieldValue.serverTimestamp();
+            let linkedMovieData = {};
+
+            if (linkedMovieIdRaw) {
+                const movieId = parseInt(linkedMovieIdRaw);
+                if (!isNaN(movieId)) {
+                    const movieDetails = await API.fetchTMDB(`/movie/${movieId}`);
+                    if (movieDetails) {
+                        linkedMovieData.linkedMovieId = movieId;
+                        linkedMovieData.linkedMovieTitle = movieDetails.title;
+                    } else {
+                        Utils.showToast("Invalid Movie TMDB ID provided.", "warning");
+                        // Optionally allow creating thread without link or clear field
+                    }
+                }
+            }
+            // TODO: Similar logic for linkedTvShowId
+
+            const threadRef = await appDb.collection('community_threads').add({
+                title: title,
+                createdAt: now,
+                createdBy: {
+                    userId: user.uid,
+                    displayName: user.displayName || user.email.split('@')[0],
+                    photoURL: user.photoURL || null
+                },
+                ...linkedMovieData, // Add linked movie data if exists
+                firstPostContent: firstPostContent.substring(0, 200), // Store a snippet
+                postCount: 1, // Starts with the first post
+                lastReplyAt: now,
+                lastReplyBy: {
+                    userId: user.uid,
+                    displayName: user.displayName || user.email.split('@')[0]
+                }
+            });
+
+            // Add the first post
+            await appDb.collection('community_posts').add({
+                threadId: threadRef.id,
+                content: firstPostContent,
+                createdAt: now,
+                createdBy: {
+                    userId: user.uid,
+                    displayName: user.displayName || user.email.split('@')[0],
+                    photoURL: user.photoURL || null
+                },
+                isOriginalPost: true
+            });
+
+            // Optional: Update user's thread count (denormalization)
+            const userDocRef = appDb.collection('users').doc(user.uid);
+            await userDocRef.update({
+                communityThreadsCreatedCount: firebase.firestore.FieldValue.increment(1)
+            });
+
+
+            Utils.showToast("Thread created successfully!", "success");
+            State.createThreadModalInstance.hide();
+            DOM.createThreadForm.reset();
+            location.hash = `#community/thread/${threadRef.id}`; // Navigate to new thread
+
+        } catch (error) {
+            console.error("Error creating thread:", error);
+            Utils.showToast(`Failed to create thread: ${error.message}`, "danger");
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = `Create Thread`;
+        }
+    },
+
+    loadThreadDetailView: async (threadId) => {
+        State.currentCommunityThreadId = threadId;
+        if (!DOM.threadDetailContent || !DOM.threadPostsList || !DOM.addPostForm || !appDb) return;
+
+        DOM.threadDetailContent.innerHTML = Utils.getSpinnerHTML("Loading thread...");
+        DOM.threadPostsList.innerHTML = Utils.getSpinnerHTML("Loading replies...");
+        Utils.setElementVisibility(DOM.addPostForm, !!appAuth.currentUser); // Show form if logged in
+
+        try {
+            const threadDoc = await appDb.collection('community_threads').doc(threadId).get();
+            if (!threadDoc.exists) {
+                DOM.threadDetailContent.innerHTML = Utils.getErrorHTML("Thread not found.");
+                DOM.threadPostsList.innerHTML = '';
+                return;
+            }
+            const threadData = { id: threadDoc.id, ...threadDoc.data() };
+            Community.renderThreadHeader(threadData, DOM.threadDetailContent); // New function to render title etc.
+            await Community.loadPostsForThread(threadId, DOM.threadPostsList);
+
+        } catch (error) {
+            console.error("Error loading thread details:", error);
+            DOM.threadDetailContent.innerHTML = Utils.getErrorHTML("Could not load thread details.");
+            DOM.threadPostsList.innerHTML = '';
+            Utils.showToast("Failed to load thread.", "danger");
+        }
+    },
+
+    renderThreadHeader: (thread, container) => { // Renders the main thread title/info
+        const linkedItemHtml = thread.linkedMovieId ? `<p class="mb-1"><span class="badge bg-info bg-opacity-25 text-info-emphasis">Topic: ${Utils.escapeHtml(thread.linkedMovieTitle || 'Movie')}</span></p>` :
+                              thread.linkedTvShowId ? `<p class="mb-1"><span class="badge bg-success bg-opacity-25 text-success-emphasis">Topic: ${Utils.escapeHtml(thread.linkedTvShowTitle || 'TV Show')}</span></p>` : '';
+        container.innerHTML = `
+            <h1 class="text-white mb-2">${Utils.escapeHtml(thread.title)}</h1>
+            ${linkedItemHtml}
+            <p class="text-muted small">
+                Started by ${Utils.escapeHtml(thread.createdBy?.displayName || 'User')}
+                on ${thread.createdAt ? Utils.formatAirDate(thread.createdAt.toDate()) : 'N/A'}
+            </p>
+            <hr class="border-secondary">
+        `;
+    },
+
+    loadPostsForThread: async (threadId, container) => {
+        if (!appDb) return;
+        container.innerHTML = Utils.getSpinnerHTML("Loading replies...");
+        State.currentCommunityPosts = [];
+
+        try {
+            const postsSnapshot = await appDb.collection('community_posts')
+                                          .where('threadId', '==', threadId)
+                                          .orderBy('createdAt', 'asc') // Show oldest first for conversational flow
+                                          .limit(50) // Add pagination later
+                                          .get();
+            if (postsSnapshot.empty) {
+                container.innerHTML = '<p class="text-center text-muted fst-italic py-3">No replies yet. Be the first to reply!</p>';
+                return;
+            }
+            container.innerHTML = ''; // Clear spinner
+            postsSnapshot.forEach(doc => {
+                const post = { id: doc.id, ...doc.data() };
+                State.currentCommunityPosts.push(post);
+                Community.renderPostItem(post, container);
+            });
+        } catch (error) {
+            console.error(`Error loading posts for thread ${threadId}:`, error);
+            container.innerHTML = Utils.getErrorHTML("Could not load replies.");
+        }
+    },
+
+    renderPostItem: (post, container) => {
+        const postDiv = document.createElement('div');
+        postDiv.className = `community-post-item card mb-3 ${post.isOriginalPost ? 'bg-darker shadow-sm' : 'bg-dark bg-opacity-50'}`; // Differentiate original post
+        postDiv.id = `post-${post.id}`;
+
+        // Basic HTML sanitation for post.content (replace with a proper library if allowing complex HTML)
+        const safeContent = Utils.escapeHtml(post.content).replace(/\n/g, '<br>');
+
+        postDiv.innerHTML = `
+            <div class="card-header bg-transparent border-bottom-0 py-2 px-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="${post.createdBy?.photoURL || 'https://via.placeholder.com/30/secondary/white?text=' + getAppInitials(post.createdBy?.displayName, '')}" alt="${Utils.escapeHtml(post.createdBy?.displayName || 'User')}" class="rounded-circle me-2" width="30" height="30">
+                    <span class="fw-medium text-light small">${Utils.escapeHtml(post.createdBy?.displayName || 'Anonymous')}</span>
+                </div>
+                <small class="text-muted" title="${post.createdAt ? post.createdAt.toDate().toLocaleString() : ''}">
+                    ${post.createdAt ? timeAgo(post.createdAt.toDate()) : 'some time ago'}
+                </small>
+            </div>
+            <div class="card-body py-2 px-3">
+                <p class="card-text post-content">${safeContent}</p>
+            </div>
+            {/* Add actions like reply, edit, delete later */}
+        `;
+        container.appendChild(postDiv);
+    },
+
+    handleAddPostSubmit: async (event) => {
+        event.preventDefault();
+        if (!appAuth.currentUser || !appDb || !State.currentCommunityThreadId) {
+            Utils.showToast("You must be logged in and in a thread to reply.", "warning");
+            return;
+        }
+
+        const content = document.getElementById('newPostContent').value.trim();
+        if (!content) {
+            Utils.showToast("Reply content cannot be empty.", "warning");
+            return;
+        }
+
+        const submitButton = DOM.addPostForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Posting...`;
+
+        try {
+            const user = appAuth.currentUser;
+            const now = firebase.firestore.FieldValue.serverTimestamp();
+
+            const newPostRef = await appDb.collection('community_posts').add({
+                threadId: State.currentCommunityThreadId,
+                content: content,
+                createdAt: now,
+                createdBy: {
+                    userId: user.uid,
+                    displayName: user.displayName || user.email.split('@')[0],
+                    photoURL: user.photoURL || null
+                },
+                isOriginalPost: false
+            });
+
+            // Update thread's postCount and lastReply info
+            const threadRef = appDb.collection('community_threads').doc(State.currentCommunityThreadId);
+            await threadRef.update({
+                postCount: firebase.firestore.FieldValue.increment(1),
+                lastReplyAt: now,
+                lastReplyBy: {
+                    userId: user.uid,
+                    displayName: user.displayName || user.email.split('@')[0]
+                }
+            });
+
+            // Optional: Update user's post count
+            const userDocRef = appDb.collection('users').doc(user.uid);
+            await userDocRef.update({
+                communityPostsCount: firebase.firestore.FieldValue.increment(1)
+            });
+
+            Utils.showToast("Reply posted!", "success");
+            document.getElementById('newPostContent').value = ''; // Clear textarea
+
+            // Optimistically render the new post or reload all posts
+            // For simplicity, reload all for now. For better UX, add to list directly.
+            await Community.loadPostsForThread(State.currentCommunityThreadId, DOM.threadPostsList);
+
+        } catch (error) {
+            console.error("Error posting reply:", error);
+            Utils.showToast(`Failed to post reply: ${error.message}`, "danger");
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = `Post Reply`;
+        }
+    },
+    // More community functions (edit, delete, profiles, categories) would go here...
+};
+
+   // Helper function for time ago (simple version)
+function timeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return Math.floor(seconds) < 5 ? "just now" : Math.floor(seconds) + " seconds ago";
+}
 
         if (!State.horizontalScrollContainers) {
              State.horizontalScrollContainers = [];
