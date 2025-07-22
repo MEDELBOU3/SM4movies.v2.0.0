@@ -1,8 +1,56 @@
-   /* --- CSS Reset & Base Styles --- */
+       /* --- CSS Reset & Base Styles --- */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
+
+   /* Firefox */
+body, * {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #222;
+}
+
+/* Chrome, Edge, Safari */
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: #222;
+  border-radius: 4px;
+}
+
+body::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+  border: 2px solid #222;
+}
+
+body::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #aaa;
+}
+
+body, 
+html, 
+.scrollable, 
+.dropdown-menu, 
+.sidebar, 
+.modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #222;
+}
+
+body::-webkit-scrollbar,
+.scrollable::-webkit-scrollbar,
+.dropdown-menu::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar {
+  width: 8px;
 }
 
 body {
@@ -40,6 +88,13 @@ body {
     --border-light: rgba(var(--primary-accent-rgb), 0.2);
     --warning-color: #facc15;
     --danger-color: #f87171;
+    --color-primary-text: #e5e7eb; /* This is typically for headings, main content */
+    --color-secondary-text: #9ca3af; /* For muted text, smaller info */
+
+    /* Define absolute colors that never change */
+    --color-absolute-white: #ffffff;
+    --color-absolute-black: #000000;
+
     /* Typography & Layout */
     --font-family-base: 'Poppins', sans-serif;
     --radius-sm: 0.375rem;
@@ -139,6 +194,8 @@ body.theme-light {
     --text-light: #111827;
     --text-medium: #374151;
     --text-dark: #1f2937;
+    --color-primary-text: #111827; /* Dark text for light background */
+    --color-secondary-text: #374151; /* Medium dark text for light background */
     --border-color: #e5e7eb;
     --border-light: rgba(59, 130, 246, 0.2);
     --warning-color: #f59e0b;
@@ -246,10 +303,14 @@ body.theme-cyberpunk {
 /* --- Typography --- */
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
-    color: var(--text-medium);
+    color: var(--color-secondary-text);
     letter-spacing: -0.01em;
     margin-bottom: 0.75rem;
     line-height: 1.3;
+}
+
+#text-white {
+    color: var(--color-absolute-white) !important; /* Force to absolute white */
 }
 
 a {
@@ -278,7 +339,7 @@ p {
 }
 
 .custom-color {
-  color: var(--text-light) !important;
+  color: var(--color-primary-text) !important;
 }
 
 .custom-color-st {
@@ -457,13 +518,39 @@ body.theme-light .form-control {
     margin-top: 0.5rem;
 }
 
-/* --- Navbar --- */
+/* --- Navbar --- 
 .navbar {
     background: rgba(var(--bg-primary-rgb), 0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
     padding: 0.75rem 0;
     transition: var(--transition-base);
+}*/
+
+.navbar {
+    background: rgba(var(--bg-primary-rgb), 0.85);
+    backdrop-filter: blur(12px); /* Keeps the blurred background effect */
+    padding: 0.75rem 0;
+    transition: background 0.4s ease-in-out, border-bottom-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out; /* Smooth transitions */
+    position: sticky; /* Already set by sticky-top */
+    top: 0;
+    z-index: 1030; /* Ensure it stays above content */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Subtle shadow even when at top */
+}
+
+/* New class for when scrolled down */
+.navbar.navbar-scrolled {
+    /* Gradient from near-full opacity to full transparency at the bottom */
+    background: linear-gradient(
+        to bottom,
+        rgba(var(--bg-primary-rgb), 0.95) 0%,    /* Start mostly opaque */
+        rgba(var(--bg-primary-rgb), 0.7) 50%,   /* Fade out in the middle */
+        rgba(var(--bg-primary-rgb), 0.0) 100%   /* End fully transparent */
+    );
+    /* Make the bottom border disappear when scrolled */
+    border-bottom-color: transparent;
+    /* Enhance shadow slightly when scrolled for better perceived depth */
+
 }
 
 .navbar-brand {
@@ -472,6 +559,7 @@ body.theme-light .form-control {
     color: var(--text-light) !important;
     letter-spacing: -0.04em;
 }
+
 
 .nav-link {
     color: var(--text-medium);
@@ -492,7 +580,7 @@ body.theme-light .form-control {
     background: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    padding: 0.5rem 0;
+    padding: 0.5rem 0.4rem;
     box-shadow: var(--shadow-md);
     max-height: 70vh;
     overflow-y: auto;
@@ -500,7 +588,7 @@ body.theme-light .form-control {
 
 .dropdown-item {
     color: var(--text-medium);
-    padding: 0.6rem 1.2rem;
+    padding: 0.6rem 1.0rem;
     font-weight: 500;
     transition: background-color 0.15s ease, color 0.15s ease;
     font-size: 0.9rem;
@@ -508,12 +596,15 @@ body.theme-light .form-control {
 
 .dropdown-item:hover, .dropdown-item:focus {
     background: rgba(var(--primary-accent-rgb), 0.15);
+    border-radius: 8px;
     color: var(--text-light);
 }
 
 .dropdown-header {
     padding: 0.6rem 1.2rem;
     font-size: 0.8rem;
+    border-radius: 8px;
+    margin: 4px auto;
     color: var(--text-light);
     background: var(--gradient-primary);
     font-weight: 600;
@@ -540,9 +631,26 @@ body.theme-light .form-control {
     font-size: 0.9rem;
 }
 
-body.theme-light .navbar {
+/*body.theme-light .navbar {
     background: rgba(var(--bg-primary-rgb), 0.95);
     color: var(--text-dark);
+}*/
+
+body.theme-light .navbar {
+    background: rgba(var(--bg-primary-rgb), 0.95); /* Slightly higher opacity for light theme base */
+    border-bottom: 1px solid var(--border-color); /* Light theme border */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Lighter shadow for light theme */
+}
+
+body.theme-light .navbar.navbar-scrolled {
+    background: linear-gradient(
+        to bottom,
+        rgba(var(--bg-primary-rgb), 0.98) 0%, /* Even more opaque start for light theme */
+        rgba(var(--bg-primary-rgb), 0.85) 50%,
+        rgba(var(--bg-primary-rgb), 0.0) 100%
+    );
+    border-bottom-color: transparent;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15); /* Slightly more prominent shadow for light theme */
 }
 
 body.theme-light .nav-link {
@@ -700,6 +808,83 @@ body.theme-light .dropdown-item:focus {
     margin-right: 0.3em !important; /* Ensure consistent spacing */
 }
 
+/* Add this new CSS block */
+.genre-page-header {
+    height: 300px; /* Adjust height as desired */
+    min-height: 200px;
+    position: relative;
+    display: flex;
+    align-items: flex-end; /* Align content to the bottom */
+    padding-bottom: 2rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    margin-bottom: 3rem; /* Space below the header */
+    background-size: cover;
+    background-position: center center;
+    transition: background-image 0.5s ease-in-out; /* Smooth transition for background changes */
+    border-radius: var(--radius-lg); /* Match card/surface rounding */
+    overflow: hidden; /* Ensure content and pseudo-elements stay within bounds */
+    box-shadow: var(--shadow-lg); /* Add a subtle shadow */
+}
+
+/* Overlay for text readability on top of the background image */
+.genre-page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Gradient from almost transparent to darker at the bottom */
+    background: linear-gradient(
+        to top,
+        rgba(var(--bg-primary-rgb), 0.9) 0%,      /* More opaque at the bottom */
+        rgba(var(--bg-primary-rgb), 0.6) 50%,     /* Fades out in the middle */
+        rgba(var(--bg-primary-rgb), 0.3) 80%,
+        transparent 100%                          /* Fully transparent at the top */
+    );
+    z-index: 1; /* Above image, below content */
+}
+
+/* Style for the genre title inside the header */
+.genre-page-header .genre-title-overlay {
+    position: relative; /* Ensure it's above the overlay */
+    z-index: 2;
+    color: var(--text-light); /* Light text color for readability */
+    font-size: clamp(2.5rem, 6vw, 3.5rem); /* Responsive font size */
+    font-weight: 700;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7); /* Strong text shadow for contrast */
+    line-height: 1.1;
+    max-width: 80%; /* Limit width for long titles */
+}
+
+/* Optional: Skeleton style for the genre header while loading */
+.skeleton-genre-header {
+    height: 300px; /* Match the height */
+    margin-bottom: 3rem;
+    border-radius: var(--radius-lg);
+    background-color: rgba(255, 255, 255, 0.08); /* Dark skeleton color */
+    /* Reuse shimmer animation */
+    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.08) 100%);
+    background-size: 1000px 100%;
+    animation: skeleton-shimmer 1.5s infinite linear;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-medium);
+}
+.skeleton-genre-header .skeleton-title-placeholder {
+    height: 2em; /* Approx height of title */
+    width: 60%;
+    max-width: 400px;
+    margin: 0 auto; /* Center the placeholder */
+}
+
+/* Make sure your existing h1 for genre title is hidden when not in this new header */
+#genre-results-title {
+    display: none; /* Hide the old h1 for the title */
+}
+
 .hero-description {
     font-size: 1.1rem;
     line-height: 1.7;
@@ -727,52 +912,6 @@ body.theme-light .dropdown-item:focus {
     flex-direction: column;
 }
 
-/* --- Rank Badge Styling --- */
-.rank-badge {
-    position: absolute;
-    top: 0.6rem; /* Adjust positioning as needed */
-    left: 0.6rem;
-    z-index: 5; /* Above image, potentially below text overlays depending on structure */
-    background: linear-gradient(135deg, rgba(var(--primary-accent-rgb, 80 0 180), 0.85), rgba(var(--secondary-accent-rgb, 0 180 200), 0.75)); /* Use theme gradient */
-    color: #ffffff;
-    font-family: var(--font-family-base);
-    font-size: clamp(0.8rem, 3vw, 1.1rem); /* Responsive font size */
-    font-weight: 700;
-    line-height: 1.2;
-    padding: 0.2em 0.6em; /* Use em for padding relative to font size */
-    border-radius: var(--radius-sm);
-    min-width: 30px; /* Ensure it looks okay for single digit numbers */
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(2px); /* Subtle blur for background */
-    transform: skewX(-5deg); /* Optional: Add a slight slant */
-    transition: transform 0.2s ease-out;
-}
-
-/* Optional: Different positioning for vertical cards if needed */
-.card .rank-badge { /* Targets badges inside vertical cards */
-   top: 0.7rem;
-   left: 0.7rem;
-   /* transform: none; */ /* Remove slant if desired for vertical */
-}
-
-/* Optional: Hover effect on the card containing the badge */
-.h-card:hover .rank-badge,
-.card:hover .rank-badge {
-   transform: scale(1.05) skewX(-5deg); /* Slightly larger on hover */
-   /* Or just transform: scale(1.05); if not using skew */
-}
-
-/* Light theme adjustments if necessary (gradient might need tweaking) */
-body.theme-light .rank-badge {
-    background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
-    color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    text-shadow: none;
-    border: none;
-}
 
 .card:hover {
     transform: translateY(-8px) scale(1.03);
@@ -812,14 +951,16 @@ body.theme-light .rank-badge {
     line-height: 1.4;
     font-weight: 500;
     color: var(--text-light);
-    font-size: 1rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.8rem;
+    display: -webkit-box;       /* Essential for line-clamping */
+    -webkit-line-clamp: 2;      /* <-- This sets the number of lines before truncation */
+    -webkit-box-orient: vertical; /* Essential for line-clamping */
+    white-space: nowrap; /* Prevent text from wrapping to the next line */
+    overflow: hidden;           /* Hides overflowing content */
+    text-overflow: ellipsis;    /* Adds the "..." */
     flex-grow: 1;
 }
+
 
 .card-rating {
     color: var(--warning-color);
@@ -831,6 +972,14 @@ body.theme-light .rank-badge {
     align-items: center;
     gap: 0.3rem;
 }
+
+/* Add a style for the 'NR' state */
+.card-rating.not-rated {
+    color: var(--text-medium); /* Mute the color */
+    font-style: italic; /* Add italic styling */
+    opacity: 0.7; /* Slightly fade it */
+}
+
 
 /* --- Details View --- */
 #details-view {
@@ -1045,6 +1194,7 @@ body.theme-light .rank-badge {
 }
 
 .h-card {
+
     flex: 0 0 auto;
     width: 320px;
     aspect-ratio: 16 / 9;
@@ -1058,8 +1208,8 @@ body.theme-light .rank-badge {
 }
 
 .h-card:hover {
-    transform: scale(1.04);
-    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.4);
+    transform: translateY(-5px) scale(1.03); /* Example lift effect */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     z-index: 10;
 }
 
@@ -1071,8 +1221,41 @@ body.theme-light .rank-badge {
     transition: transform 0.3s ease;
 }
 
-.h-card:hover img.h-card-backdrop {
-    transform: scale(1.05);
+.h-card .ranking-badge {
+    position: absolute;
+    top: 0; /* Align with the top edge */
+    left: 0; /* Align with the left edge */
+    z-index: 10; /* Ensure it's above the image and overlay */
+    background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.9), rgba(var(--bs-danger-rgb), 0.7)); /* Use theme color */
+    color: #fff;
+    padding: 5px 12px 8px 10px; /* Top, Right, Bottom, Left - Create slant */
+    font-weight: 700;
+    font-size: 1.1rem; /* Adjust size as needed */
+    line-height: 1;
+    /* Create a clipped corner effect */
+    clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 80% 100%, 0% 100%);
+    border-bottom-right-radius: 8px; /* Soften the bottom right */
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+    border-left: 2px solid rgba(255,255,255,0.3); /* Subtle left border */
+    border-top: 2px solid rgba(255,255,255,0.3); /* Subtle top border */
+    min-width: 40px; /* Ensure minimum width */
+    text-align: center;
+}
+
+/* Optional: Slightly different style for #1 */
+.h-card .ranking-badge.rank-1 {
+    font-size: 1.3rem;
+    padding: 6px 15px 10px 12px;
+    background: linear-gradient(135deg, rgba(var(--bs-warning-rgb), 0.95), rgba(var(--bs-warning-rgb), 0.75)); /* Gold/Yellow for #1? */
+    color: #000; /* Darker text for contrast on yellow */
+    text-shadow: none;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Ensure horizontal card allows overflow for the badge */
+.h-card {
+  overflow: visible !important; /* Important might be needed to override Bootstrap card styles */
 }
 
 .h-card .h-card-overlay {
@@ -1096,6 +1279,7 @@ body.theme-light .rank-badge {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: color 0.3s ease-in-out;
 }
 
 .h-card .h-card-meta {
@@ -2355,7 +2539,7 @@ body.theme-light .skeleton-h-card-overlay {
     }
     .navbar-nav { align-items: stretch; }
     #tmdb-search-form { width: 100%; margin-right: 0 !important; margin-bottom: 0.5rem; }
-    #spotify-status-nav { margin-left: 0 !important;  margin-right: 10px; width: 100%; justify-content: center; margin-top: 0.5rem !important; }
+    #spotify-status-nav { margin-left: 0 !important; margin-right: 2rem; width: 100%; justify-content: center; margin-top: 0.5rem !important; }
     #spotify-search-form .input-group { flex-direction: column; gap: 0.5rem; }
     #spotify-search-form button { width: 100%; }
     .hero-content { max-width: 95%; padding-left: 2%; margin-top: 5vh; }
@@ -2847,6 +3031,7 @@ body.theme-light .skeleton-h-card-overlay {
     max-width: 75%; /* Prevent extremely wide cards on huge screens */
     scroll-snap-align: start; /* For snap scrolling */
     position: relative; /* For positioning view count */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
     /* Add any specific overrides if needed */
 }
 
@@ -2854,44 +3039,27 @@ body.theme-light .skeleton-h-card-overlay {
 #most-viewed-section .h-card .h-card-overlay {
    /* Maybe make overlay slightly stronger */
    background: linear-gradient(to top, rgba(var(--bg-primary-rgb), 0.95) 25%, rgba(var(--bg-primary-rgb), 0.7) 65%, transparent 100%);
+   position: absolute;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   padding: 1rem; /* Example padding */
+   /* Ensure pointer events pass through overlay to the link */
+   pointer-events: none;
+   /* Add the transition */
+   transition: background 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
-/* --- Ranking Badge Styling --- */
-.h-card .ranking-badge {
-    position: absolute;
-    top: 0; /* Align with the top edge */
-    left: 0; /* Align with the left edge */
-    z-index: 10; /* Ensure it's above the image and overlay */
-    background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.9), rgba(var(--bs-danger-rgb), 0.7)); /* Use theme color */
-    color: #fff;
-    padding: 5px 12px 8px 10px; /* Top, Right, Bottom, Left - Create slant */
-    font-weight: 700;
-    font-size: 1.1rem; /* Adjust size as needed */
-    line-height: 1;
-    /* Create a clipped corner effect */
-    clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 80% 100%, 0% 100%);
-    border-bottom-right-radius: 8px; /* Soften the bottom right */
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
-    border-left: 2px solid rgba(255,255,255,0.3); /* Subtle left border */
-    border-top: 2px solid rgba(255,255,255,0.3); /* Subtle top border */
-    min-width: 40px; /* Ensure minimum width */
-    text-align: center;
+.h-card:hover .h-card-overlay {
+    /* Example: Make the gradient stronger and extend higher */
+    background: linear-gradient(to top, rgba(var(--bg-primary-rgb), 1) 40%, rgba(var(--bg-primary-rgb), 0.85) 80%, transparent 100%);
+    /* Example: Slightly increase opacity if needed */
+    /* opacity: 1; */
 }
 
-/* Optional: Slightly different style for #1 */
-.h-card .ranking-badge.rank-1 {
-    font-size: 1.3rem;
-    padding: 6px 15px 10px 12px;
-    background: linear-gradient(135deg, rgba(var(--bs-warning-rgb), 0.95), rgba(var(--bs-warning-rgb), 0.75)); /* Gold/Yellow for #1? */
-    color: #000; /* Darker text for contrast on yellow */
-    text-shadow: none;
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-/* Ensure horizontal card allows overflow for the badge */
-.h-card {
-  overflow: visible !important; /* Important might be needed to override Bootstrap card styles */
+.h-card:hover .h-card-title {
+    color: var(--primary-accent); /* Highlight title color */
+    transition: color 0.3s ease-in-out;
 }
 
 /* View Count Badge Style (Optional - Only needed if implementing renderMostViewedCards) */
@@ -2931,9 +3099,6 @@ body.theme-light .skeleton-h-card-overlay {
     font-style: italic;
 }
 
-
-
-
 /* Adjustments if the section title takes space */
 #most-viewed-section .section-title {
      margin-bottom: 1.5rem; /* Add space below title */
@@ -2948,65 +3113,169 @@ body.theme-light .skeleton-h-card-overlay {
     display: flex; /* Ensure flex properties are explicitly set */
     align-items: center;
     gap: 0.65rem; /* Slightly adjusted gap */
+    margin-right: 0.5rem;
     padding: 0.25rem 0; /* Add some vertical padding if needed */
+    overflow: hidden; /* Prevent overflow */
+    text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+    white-space: nowrap; /* Prevent text wrapping */
+    transition: var(--transition-base); /* Use global transition */
 }
 
 #app-login-prompt a.btn { /* Target the anchor specifically */
-    display: inline-flex; /* Align icon and potential text */
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.45rem 1.1rem; /* Slightly refined padding */
-    font-size: 0.9rem; /* Slightly smaller font */
-    font-weight: 600; /* Bolder */
-    /* Use theme gradient or primary accent */
-    background: var(--gradient-primary, var(--primary-accent));
-    color: #fff; /* Ensure contrast */
+    padding: 0.45rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: var(--gradient-primary, var(--primary-accent, #0d6efd)); /* Added fallback */
+    color: #fff;
     border: none;
-    border-radius: var(--radius-md); /* Consistent radius */
-    box-shadow: 0 3px 8px -2px rgba(var(--primary-accent-rgb, 0 0 0), 0.3);
-    transition: var(--transition-base); /* Use global transition */
+    border-radius: var(--radius-md, 0.375rem);
+    box-shadow: 0 3px 8px -2px rgba(var(--primary-accent-rgb, 13, 110, 253), 0.3);
+    transition: var(--transition-base, all 0.2s ease-in-out);
     white-space: nowrap;
-    text-decoration: none; /* Ensure no underline */
+    text-decoration: none;
 }
 
 #app-login-prompt a.btn i {
     font-size: 1.1em; /* Adjust icon size relative to button text */
-    /* Add margin if you include text next to the icon */
+    /* margin if we include text next to the icon */
     /* margin-right: 0.4rem; */
 }
 
 #app-login-prompt a.btn:hover {
-    transform: translateY(-2px) scale(1.03); /* Subtle lift */
-    filter: brightness(1.15); /* Brighter */
-    box-shadow: 0 5px 12px -3px rgba(var(--primary-accent-rgb, 0 0 0), 0.4);
-    color: #fff; /* Keep color */
+    transform: translateY(-2px) scale(1.03);
+    filter: brightness(1.15);
+    box-shadow: 0 5px 12px -3px rgba(var(--primary-accent-rgb, 13, 110, 253), 0.4);
+    color: #fff;
+}
+
+/* General Avatar Circle Styles (Same as Landing Page potentially) */
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--bs-secondary, #6c757d); /* Bootstrap secondary or theme variable */
+    color: var(--bs-light, #f8f9fa); /* Bootstrap light or theme variable */
+    display: inline-flex; /* Changed to inline-flex for better alignment in flow */
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 1rem; /* For initials */
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid rgba(var(--bs-light-rgb, 255, 255, 255), 0.25);
+    transition: var(--transition-base, all 0.2s ease-in-out);
+    vertical-align: middle; /* Align better if next to text */
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-avatar span { /* For #app-user-avatar-initials and #dropdown-user-avatar-initials-large */
+    line-height: 1;
+}
+
+#app-user-dropdown-menu {
+    min-width: 250px; /* Slightly more space */
+    border-radius: var(--radius-md, 0.375rem);
+    margin-right: 1.2rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.25); /* More pronounced shadow */
+}
+
+#app-user-dropdown-menu .px-3.py-2.text-center { /* Targeting the specific div */
+    padding-bottom: 0.75rem !important; /* More space after email */
+}
+
+#app-user-dropdown-menu .dropdown-header-custom { /* If you add a custom header div */
+    padding: 0.75rem 1.2rem;
+    text-align: center;
+}
+
+.user-avatar.user-avatar-lg {
+    width: 64px; /* Adjusted size */
+    height: 64px;
+    font-size: 1.75rem; /* Larger initials */
+    border-width: 2px; /* Can be thicker if desired */
+}
+
+.user-avatar-lg { /* For the larger avatar inside the dropdown */
+    width: 72px;
+    height: 72px;
+    font-size: 2rem; /* Larger initials for larger avatar */
+    border-width: 3px;
+    margin-bottom: 0.5rem;
+}
+
+#dropdown-user-name {
+    font-size: 1.05rem; /* Slightly larger name in dropdown */
+    margin-top: 0.25rem;
+    color: var(--bs-dropdown-link-hover-color, var(--bs-light)); /* Ensure good contrast */
+}
+
+#dropdown-user-email {
+    word-break: break-all;
+    font-size: 0.85rem;
+    color: var(--bs-tertiary-color, #adb5bd); /* Softer color for email */
+}
+
+#app-user-dropdown-menu .dropdown-item {
+    padding: 0.5rem 1rem; /* Adjust padding for items */
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+#app-user-dropdown-menu .dropdown-item i.bi { /* Target Bootstrap Icons specifically */
+    margin-right: 0.6rem;
+    opacity: 0.7;
+    font-size: 1.1em; /* Make icons slightly larger than text */
+    width: 22px; /* Ensure consistent icon alignment */
+    text-align: center;
 }
 
 
-/* General Avatar Circle Styles (Same as Landing Page potentially) */
+#app-logout-button-dropdown {
+    font-weight: 500; /* Make it stand out a bit */
+}
+#app-logout-button-dropdown i.bi {
+    color: var(--bs-danger, #dc3545) !important; /* Make logout icon red, !important if needed */
+    opacity: 1;
+}
+#app-logout-button-dropdown:hover i.bi {
+    color: var(--bs-danger-text-emphasis, #a31a26) !important;
+}
 
-.user-avatar {
-    width: 38px; /* Slightly larger */
-    height: 38px;
-    border-radius: 50%;
-    /* Use a theme-aware background, slightly transparent accent */
-    background-color: rgba(var(--primary-accent-rgb, 0 0 0), 0.3);
-    color: var(--text-light); /* Use theme text color */
-    border: 2px solid rgba(var(--primary-accent-rgb, 255 255 255), 0.2); /* Subtle theme border */
-    font-weight: 600;
-    font-size: 0.85rem;
-    overflow: hidden;
-    cursor: pointer;
-    display: inline-flex;
+
+#app-user-dropdown-menu .dropdown-item {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: var(--transition-base);
-    box-shadow: var(--shadow-sm);
+}
+#app-user-dropdown-menu .dropdown-item i {
+    width: 20px; /* Align icons */
+}
+
+#app-user-info-area .nav-link.dropdown-toggle {
+    padding: 0.3rem 0.5rem; /* Reduce padding on the toggle link itself */
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure dropdown toggle arrow is visible and styled */
+#app-user-info-area .nav-link.dropdown-toggle::after {
+    margin-left: 0.4em; /* Space between name/avatar and arrow */
+    vertical-align: 0.15em; /* Align arrow better with text/avatar */
+    color: var(--bs-navbar-color); /* Match navbar text color */
 }
 
 .user-avatar:hover {
-    transform: scale(1.1); /* Scale up */
+    transform: scale(1.08); /* Scale up */
     border-color: rgba(var(--primary-accent-rgb, 255 255 255), 0.6); /* Brighter border */
     box-shadow: 0 0 10px rgba(var(--primary-accent-rgb, 255 255 255), 0.3); /* Subtle glow */
 }
@@ -3024,14 +3293,15 @@ body.theme-light .skeleton-h-card-overlay {
 
 /* Display Name (Bootstrap classes handle most styling) */
 #app-user-display-name {
-    color: var(--text-light); /* Theme text color */
-    font-weight: 500; /* Slightly less bold than avatar initials */
-    font-size: 0.9rem; /* Slightly larger */
+    color: var(--text-light, #f8f9fa);
+    font-weight: 500;
+    font-size: 0.9rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 160px; /* Slightly more width if needed */
-    opacity: 0.9; /* Slightly softer */
+    max-width: 120px; /* Adjust as needed */
+    opacity: 0.95;
+    line-height: 1.2; /* Helps vertical alignment with avatar */
 }
 
 /* Logout Button (Bootstrap handles most) */
@@ -3073,6 +3343,13 @@ body.theme-light .skeleton-h-card-overlay {
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); /* Optional glow effect */
 }
 
+@media (max-width: 991.98px) { /* Bootstrap's lg breakpoint */
+   #app-user-info-area > a#userProfileDropdown.dropdown-toggle {
+        gap: 0; /* No gap if name is hidden */
+        margin-left: 0.5rem; /* Space from other items */
+    }
+}
+
 /* --- Visibility Handled by JS --- */
 /* The d-none class provided by Bootstrap handles showing/hiding */
 /* #app-login-prompt initially visible */
@@ -3109,41 +3386,372 @@ body.theme-light .skeleton-h-card-overlay {
     border: none;
 }
 
-/* --- View Count Styling (For Cards) --- */
-/* --- Rank Badge Styling (Top Left) --- */
-.rank-badge {
+/* --- Container Styling --- */
+/* Applies to the entire section */
+#spotify-soundtrack-section {
+    /* Use surface color with transparency for a layered look */
+    background-color: rgba(var(--surface-rgb), 0.4);
+    /* Slightly softer radius */
+    border-radius: var(--radius-md);
+    /* Standard padding */
+    padding: 1.5rem;
+    /* Use border-light variable for subtle border */
+    border: 1px solid var(--border-light);
+    /* Add subtle shadow for depth */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: background-color 0.3s ease; /* Smooth transition for theme changes */
+}
+
+/* --- Section Title --- */
+#spotify-soundtrack-section .details-section-title {
+    margin-bottom: 1.5rem; /* Space below title */
+    color: var(--text-light); /* Use light text color */
+    font-weight: 600; /* Slightly bolder title */
+    font-size: 1.25rem; /* Adjust size if needed */
+    opacity: 0.95; /* Slight transparency */
+}
+/* Style the Spotify icon in the title */
+#spotify-soundtrack-section .details-section-title i.bi-spotify {
+    color: var(--spotify-green); /* Use defined Spotify green */
+    font-size: 1.1em; /* Slightly larger icon */
+    position: relative;
+    top: -1px; /* Align better vertically */
+}
+
+/* --- Main Content Area (Flex Container) --- */
+/* This holds the album art and tracklist */
+#spotify-soundtrack-content {
+    /* Already uses flex, gap etc. from your JS */
+    /* Add transition for smoother loading state changes */
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* --- Album Info (Left Side) --- */
+.soundtrack-album-info {
+    /* Max width is set inline, ensure it's responsive */
+    max-width: 180px; /* Consider reducing slightly */
+}
+/* Album Image Styling */
+.soundtrack-album-info img {
+    border-radius: var(--radius-sm); /* Softer corners */
+    border: 1px solid rgba(var(--border-color-rgb), 0.3); /* Subtle border */
+    box-shadow: var(--shadow-md); /* Add shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Hover effect */
+}
+.soundtrack-album-info a:hover img {
+    transform: scale(1.05); /* Slight zoom on hover */
+    box-shadow: var(--shadow-lg);
+}
+/* Album Title */
+.soundtrack-album-info h5 {
+    color: var(--text-light); /* Use light text color */
+    font-weight: 500; /* Medium weight */
+    margin-top: 0.75rem; /* Space above title */
+}
+/* Artist Name */
+.soundtrack-album-info p {
+    color: var(--text-medium); /* Use medium text color */
+}
+/* Spotify Button */
+.spotify-btn {
+    background-color: var(--spotify-green);
+    border-color: var(--spotify-green);
+    color: #ffffff; /* Explicit white for contrast */
+    font-size: 0.8rem;
+    padding: 0.3rem 0.7rem;
+    font-weight: 600;
+    border-radius: var(--radius-pill); /* Pill shape */
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease; /* Smooth transition */
+    text-transform: uppercase; /* Uppercase text */
+    letter-spacing: 0.5px; /* Slight letter spacing */
+    line-height: 1.5; /* Ensure icon aligns well */
+    display: inline-flex; /* For icon alignment */
+    align-items: center; /* Center icon and text */
+}
+.spotify-btn i {
+    font-size: 1em; /* Adjust icon size relative to text */
+    position: relative;
+    top: -1px; /* Fine-tune icon vertical alignment */
+}
+.spotify-btn:hover {
+    background-color: #1aa34a; /* Slightly darker green */
+    border-color: #1aa34a;
+    color: #ffffff;
+    transform: scale(1.03); /* Slight grow effect */
+}
+.spotify-btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--spotify-green-rgb), 0.4); /* Focus ring */
+}
+
+/* --- Tracklist (Right Side) --- */
+.soundtrack-tracklist h6 {
+    color: var(--text-medium); /* Use medium text color */
+    font-weight: 600; /* Bolder sub-heading */
+}
+.soundtrack-list {
+    /* Custom scrollbar (using variables now) */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--primary-accent-rgb), 0.6) transparent; /* Use theme accent */
+}
+.soundtrack-list::-webkit-scrollbar {
+    width: 6px;
+}
+.soundtrack-list::-webkit-scrollbar-track {
+    background: transparent; /* Fully transparent track */
+}
+.soundtrack-list::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--primary-accent-rgb), 0.6); /* Use theme accent */
+    border-radius: 3px;
+    border: 1px solid rgba(var(--surface-rgb), 0.5); /* Inner border */
+}
+.soundtrack-list::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.8); /* Darken on hover */
+}
+
+/* Tracklist Item Styling */
+.soundtrack-list .list-group-item {
+    background-color: transparent !important; /* Ensure transparent BG */
+    border-bottom: 1px solid rgba(var(--border-color-rgb), 0.1) !important; /* Subtle border */
+    padding: 0.6rem 0 !important; /* Adjust vertical padding */
+    transition: background-color 0.2s ease; /* Hover background */
+}
+.soundtrack-list .list-group-item:last-child {
+    border-bottom: none !important;
+}
+.soundtrack-list .list-group-item:hover {
+     background-color: rgba(var(--surface-rgb), 0.5) !important; /* Subtle hover BG */
+}
+
+/* Track Name/Artist inside Item */
+.soundtrack-list .track-name {
+    color: var(--text-light); /* Light text for track name */
+}
+.soundtrack-list .artist-name {
+    color: var(--text-medium); /* Medium text for artist */
+}
+.soundtrack-list .smaller {
+  font-size: 0.8em; /* Slightly smaller artist name */
+}
+
+/* Duration Badge */
+.soundtrack-list .badge {
+    background-color: rgba(var(--text-light-rgb, 229, 231, 235), 0.08) !important; /* Use text-light variable for BG */
+    color: var(--text-medium) !important; /* Use medium text color */
+    font-weight: 400; /* Normal weight */
+}
+
+/* Play Preview Button */
+.soundtrack-list .play-preview-btn {
+    /* Basic Style */
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; /* Make it circular */
+    border-color: rgba(var(--text-medium-rgb, 156, 163, 175), 0.5); /* Use text-medium */
+    color: var(--text-medium);
+    transition: all 0.2s ease; /* Smooth transitions */
+}
+/* Hover State */
+.soundtrack-list .play-preview-btn:not(.disabled):hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.2); /* Use theme accent */
+    border-color: var(--primary-accent);
+    color: var(--primary-accent);
+}
+/* Active/Playing State (Requires JS to toggle a class like 'playing') */
+.soundtrack-list .play-preview-btn.playing {
+    background-color: var(--primary-accent);
+    border-color: var(--primary-accent);
+    color: var(--bg-secondary); /* Use dark BG color for icon */
+}
+/* Disabled State */
+.soundtrack-list .play-preview-btn.disabled {
+    opacity: 0.4; /* Reduce opacity */
+    cursor: not-allowed; /* Indicate not clickable */
+}
+
+/* --- Loading/Error State Styling --- */
+#spotify-soundtrack-content .spinner-border {
+    color: var(--primary-accent) !important; /* Use theme accent for spinner */
+}
+#spotify-soundtrack-content .text-muted.small,
+#spotify-soundtrack-content .text-warning.small {
+    color: var(--text-medium) !important; /* Ensure loading/error text uses medium color */
+}
+#spotify-soundtrack-content .text-warning.small i {
+    color: var(--warning-color); /* Use warning color for icon */
+}
+
+
+
+/* Add this to your main CSS file */
+.rating-stars-details .rating-star-details {
+    font-size: 1.9rem; /* Slightly larger for details page */
+    color: #6c757d; /* Muted empty star color */
+    cursor: pointer;
+    margin-right: 6px;
+    transition: color 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.rating-stars-details .rating-star-details:hover,
+.rating-stars-details .rating-star-details.hover { /* 'hover' class for JS control */
+    color: #ffc107; /* Bootstrap warning yellow */
+    transform: scale(1.1);
+}
+
+.rating-stars-details .rating-star-details.bi-star-fill {
+    color: #ffc107;
+}
+
+/* Optional: class for already rated stars */
+.rating-stars-details .rating-star-details.rated.bi-star-fill {
+    color: #ffc107; /* Or a slightly different gold if you prefer */
+}
+
+#user-rating-section-details,
+#community-rating-section-details {
+    padding-top: 15px;
+    margin-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Light border */
+}
+
+#user-rating-text-details {
+    display: block; /* Ensure it takes its own line if needed */
+    min-height: 1.2em; /* Prevent layout jump when text changes */
+}
+
+
+/* Advanced Upcoming Section Header */
+.upcoming-section-header {
+    margin-bottom: 2.5rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-accent);
+    display: inline-block;
+}
+.upcoming-section-header .section-title {
+    margin-bottom: 0; /* Remove default margin */
+}
+
+/* Upcoming Card (Leverages h-card, adds specific elements) */
+.upcoming-card {
+    /* Inherit most from .h-card */
+    position: relative;
+    overflow: hidden; /* Ensure badges/buttons are within bounds */
+}
+
+.upcoming-card .release-date-badge {
     position: absolute;
     top: 0.5rem;
     left: 0.5rem;
-    z-index: 5; /* Ensure it's above the image */
-    background: rgba(var(--bg-primary-rgb), 0.8); /* Dark semi-transparent background */
-    color: var(--text-light);
-    font-family: var(--font-family-headings); /* Use heading font */
-    font-size: clamp(0.8rem, 2.5vw, 1rem); /* Responsive size */
-    font-weight: 700; /* Bold */
-    line-height: 1.2;
-    padding: 0.25em 0.6em;
+    z-index: 5;
+    background-color: rgba(var(--primary-accent-rgb), 0.85);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
     border-radius: var(--radius-sm);
-    min-width: 28px; /* Minimum width */
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Stronger shadow */
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(var(--border-color), 0.5);
     backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.upcoming-card .release-date-badge.released {
+    background-color: rgba(var(--spotify-green-rgb), 0.85); /* Green for released */
+}
+.upcoming-card .release-date-badge.imminent {
+    background-color: rgba(var(--warning-color-rgb), 0.85); /* Yellow for very soon */
+}
+.upcoming-card .release-date-badge i {
+    font-size: 0.8em;
 }
 
-/* Optional: Slight adjustments for horizontal cards if needed */
-.h-card .rank-badge {
-    /* top: 0.6rem; */
-    /* left: 0.6rem; */
-    /* Adjust if needed */
+.upcoming-card .notify-me-btn {
+    position: absolute;
+    bottom: 0.75rem; /* Position above overlay, adjust as needed */
+    right: 0.75rem;
+    z-index: 6; /* Higher than overlay, lower than ranking/watchlist */
+    background: rgba(var(--bg-primary-rgb), 0.7);
+    color: var(--text-light);
+    border: 1px solid rgba(var(--surface-rgb), 0.2);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+    opacity: 0.9;
+}
+.upcoming-card .notify-me-btn:hover {
+    background: rgba(var(--primary-accent-rgb), 0.8);
+    color: #fff;
+    border-color: var(--primary-accent);
+    transform: translateY(-2px) scale(1.02);
+    opacity: 1;
+}
+.upcoming-card .notify-me-btn.subscribed {
+    background: var(--spotify-green); /* Green when subscribed */
+    border-color: var(--spotify-green);
+    color: #fff;
+}
+.upcoming-card .notify-me-btn.subscribed:hover {
+    background: var(--danger-color); /* Red on hover when subscribed (to unsubscribe) */
+    border-color: var(--danger-color);
+}
+.upcoming-card .notify-me-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(var(--bg-primary-rgb), 0.7);
+    border-color: rgba(var(--surface-rgb), 0.2);
+    color: var(--text-medium);
 }
 
-/* Light Theme Adjustment */
-body.theme-light .rank-badge {
-    background: rgba(255, 255, 255, 0.85);
-    color: var(--text-dark);
-    border-color: rgba(0,0,0,0.1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    text-shadow: none;
+
+/* Notifications Page */
+#notifications-view .notification-item {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+#notifications-view .notification-item .item-poster {
+    width: 60px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+#notifications-view .notification-item .item-info {
+    flex-grow: 1;
+}
+#notifications-view .notification-item .item-info h5 {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-bottom: 0.2rem;
+}
+#notifications-view .notification-item .item-info p {
+    font-size: 0.85rem;
+    color: var(--text-medium);
+    margin-bottom: 0;
+}
+#notifications-view .notification-item .item-status-badge {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.3em 0.6em;
+    border-radius: var(--radius-pill);
+}
+#notifications-view .notification-item .action-buttons {
+    flex-shrink: 0;
 }
