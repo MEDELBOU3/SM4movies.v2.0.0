@@ -132,9 +132,17 @@
                                       <div id="dropdown-user-email" class="small text-muted">user@example.com</div>
                                  </div>
                              </li>
-                             <li><hr class="dropdown-divider"></li>
-                             <li><a class="dropdown-item" href="#profile-settings"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
-                             <li><a class="dropdown-item" href="#account-settings"><i class="bi bi-gear-fill me-2"></i>Account Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#profile"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
+                            <li><a class="dropdown-item" href="#account-settings"><i class="bi bi-gear-fill me-2"></i>Account Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#notifications"><i class="bi bi-bell-fill me-2"></i>My Notifications</a></li> <!-- NEW LINE -->
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button type="button" class="dropdown-item text-danger fw-medium" id="app-logout-button-dropdown">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </li>
                              <li><hr class="dropdown-divider"></li>
                              <li>
                                  <button type="button" class="dropdown-item text-danger fw-medium" id="app-logout-button-dropdown">
@@ -202,7 +210,7 @@
                              </div>
                         </section>
 
-                        <section id="continue-watching-section" class="content-section mb-5">
+                         <section id="continue-watching-section" class="content-section mb-5">
                             <h2 class="section-title">Continue Watching</h2>
                             <div class="horizontal-scroll-wrapper">
                                 <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
@@ -224,6 +232,20 @@
                             </div>
                         </section>
 
+                        <!-- NEW: Advanced Upcoming Section -->
+                        <section id="upcoming-section" class="content-section mb-5 d-none">
+                            <div class="upcoming-section-header">
+                               <h2 class="section-title">Highly Anticipated & Upcoming</h2>
+                            </div>
+                            <div class="horizontal-scroll-wrapper">
+                                <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
+                                <div id="upcoming-container" class="horizontal-card-container">
+                                   <!-- Skeletons or initial message will go here -->
+                                   <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+                                </div>
+                                <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
+                            </div>
+                        </section>
                         <!-- Existing Home Sections (Trending, Popular etc.) -->
                         <div id="home-content-sections">
                              <!-- Home sections loaded here -->
@@ -245,7 +267,14 @@
             <section id="genre-results-view" class="view content-wrapper">
                 <div class="container">
                     <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                    <h1 id="genre-results-title" class="mb-4 display-5">Genre</h1>
+                     <div id="genre-header-section" class="genre-page-header">
+                        <!-- Title will be dynamically placed here by JS -->
+                        <h1 class="genre-title-overlay" id="genre-results-title-dynamic"></h1>
+                        <!-- Initial skeleton placeholder for the header -->
+                        <div class="skeleton-genre-header" style="position: absolute; inset: 0;">
+                           <div class="skeleton skeleton-title-placeholder"></div>
+                        </div>
+                    </div>
                     <div id="genre-results-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
                         <!-- Genre results loaded here -->
                         <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
@@ -256,6 +285,108 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Notifications View -->
+<section id="notifications-view" class="view content-wrapper">
+    <div class="container">
+        <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+        <h1 class="display-5 mb-4 text-white">My Notifications</h1>
+
+        <div class="alert alert-info small" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i> This page lists your active notification subscriptions. Actual push notifications rely on browser settings and a backend service.
+        </div>
+
+        <div id="notification-subscriptions-list" class="mt-4">
+            <!-- Notification items will be loaded here -->
+            <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button id="request-notification-permission-btn" class="btn btn-primary btn-lg"><i class="bi bi-bell-fill me-2"></i> Enable Browser Notifications</button>
+            <p id="notification-permission-status" class="text-muted small mt-2">Checking permission...</p>
+        </div>
+    </div>
+</section>
+
+            <!-- PROFILE VIEW -->
+<section id="profile-view" class="view content-wrapper">
+    <div class="container">
+        <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+
+        <h1 class="display-5 mb-4 text-white">My Profile</h1>
+
+        <div id="profile-content" class="row g-4">
+            <!-- User Info & Account Management (Left Column) -->
+            <div class="col-lg-4 col-md-5">
+                <div class="card bg-secondary h-100 p-3">
+                    <div class="card-body text-center">
+                        <!-- User Avatar (Large) -->
+                        <div id="profile-user-avatar" class="user-avatar user-avatar-lg mx-auto mb-3">
+                            <span id="profile-user-avatar-initials"></span>
+                            <img id="profile-user-avatar-image" src="" alt="Profile" class="d-none" />
+                        </div>
+                        <h4 id="profile-display-name" class="text-white mb-1">Loading Name...</h4>
+                        <p id="profile-email" class="text-muted small mb-3">Loading Email...</p>
+
+                        <!-- Update Name Form -->
+                        <form id="update-profile-form" class="mb-4">
+                            <div class="input-group mb-3">
+                                <input type="text" id="profile-name-input" class="form-control" placeholder="New Display Name" aria-label="New Display Name">
+                                <button class="btn btn-primary" type="submit" id="update-name-btn">Update</button>
+                            </div>
+                        </form>
+
+                        <hr class="border-secondary my-4">
+
+                        <!-- Account Actions -->
+                        <h5 class="text-white mb-3">Account Actions</h5>
+                        <button id="reset-password-btn" class="btn btn-outline-info w-100 mb-2"><i class="bi bi-key-fill me-2"></i> Reset Password</button>
+                        <button id="delete-account-btn" class="btn btn-outline-danger w-100"><i class="bi bi-person-x-fill me-2"></i> Delete Account</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Activity & Data Sections (Right Column) -->
+            <div class="col-lg-8 col-md-7">
+                <div class="row g-4">
+                    <!-- Recently Watched (Horizontal Scroll) -->
+                    <div class="col-12">
+                        <h3 class="text-white mb-3">Recently Watched</h3>
+                        <div id="profile-recent-watched-wrapper" class="horizontal-scroll-wrapper" style="min-height: 200px;">
+                            <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
+                            <div id="profile-recent-watched-container" class="horizontal-card-container">
+                                <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+                            </div>
+                            <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Watchlist Summary (Small Grid) -->
+                    <div class="col-12">
+                        <h3 class="text-white mb-3">My Watchlist</h3>
+                        <div id="profile-watchlist-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4">
+                            <div class="col-12 text-muted text-center py-4">(Loading Watchlist...)</div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="#watchlist" class="btn btn-outline-light btn-sm">View All Watchlist <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Favorites Summary (Small Grid) -->
+                    <div class="col-12">
+                        <h3 class="text-white mb-3">My Favorites</h3>
+                        <div id="profile-favorites-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4">
+                            <div class="col-12 text-muted text-center py-4">(Loading Favorites...)</div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="#analytics" class="btn btn-outline-light btn-sm">View Analytics <i class="bi bi-bar-chart-fill ms-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
             <!-- NETWORK RESULTS VIEW -->
             <section id="network-results-view" class="view content-wrapper">
