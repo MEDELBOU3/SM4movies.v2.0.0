@@ -110,6 +110,8 @@
             person: document.getElementById('person-view'),
             watchlist: document.getElementById('watchlist-view'),
             analytics: document.getElementById('analytics-view'),
+            community: document.getElementById('community-view'), // <<< ADD
+            communityThreadDetail: document.getElementById('community-thread-detail-view'), // <<< ADD
         },
         // Navbar
         navbarMenu: document.getElementById('navbarNav'),
@@ -215,6 +217,19 @@
         notificationSubscriptionsList: document.getElementById('notification-subscriptions-list'),
         requestNotificationPermissionBtn: document.getElementById('request-notification-permission-btn'),
         notificationPermissionStatus: document.getElementById('notification-permission-status'),
+
+        //Community
+        
+        community : {
+            userActions: document.getElementById('community-user-actions'),
+            threadsList: document.getElementById('community-threads-list'),
+            createThreadModal: document.getElementById('createThreadModal'),
+            createThreadForm: document.getElementById('create-thread-form'),
+            threadDetailContent: document.getElementById('thread-detail-content'),
+            threadPostsList: document.getElementById('thread-posts-list'),
+            addPostForm: document.getElementById('add-post-form'),
+        },
+
 
     };
         // --- State Variables ---
@@ -453,16 +468,38 @@ const ContinueWatching = {
                 };
             },*/ 
 
-             debounce: (func, delay) => {
-        let timeoutId;
-        return (...args) => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                func.apply(this, args);
-            }, delay);
-        };
-    },
+            debounce: (func, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            },
 
+            formatRelativeTime: (date) => {
+                const now = new Date();
+                const seconds = Math.round((now - date) / 1000);
+    
+                const minutes = Math.round(seconds / 60);
+                const hours = Math.round(minutes / 60);
+    
+                const days = Math.round(hours / 24);
+                const weeks = Math.round(days / 7);
+    
+                const months = Math.round(days / 30.44);
+                const years = Math.round(days / 365.25);
+
+    
+                if (seconds < 60) return `${seconds} second${seconds === 1 ? '' : 's'} ago`;
+                if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+                if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+                if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+                if (weeks < 5) return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
+                if (months < 12) return `${months} month${months === 1 ? '' : 's'} ago`;
+                return `${years} year${years === 1 ? '' : 's'} ago`;
+            },
             // Generate HTML for a loading spinner
             getSpinnerHTML: (text = 'Loading...', large = false) => `
                 <div class="loading-spinner" style="min-height: ${large ? '300px':'150px'};">
@@ -1440,6 +1477,17 @@ const ContinueWatching = {
                          App.resizeVisualizerCanvas(); // Ensure canvas size is correct
                      };
                 }
+                else if (hash.startsWith('#community/thread/')) { // <<< ADD: Route for a specific thread
+                    targetViewElement = DOM.views.communityThreadDetail;
+                    activeNavLinkHref = '#community'; // Keep the main community link active
+                    const threadId = hash.substring('#community/thread/'.length);
+                    runOnViewLoad = () => App.loadThreadDetailPage(threadId);
+
+                } else if (hash === '#community') { // <<< ADD: Route for the main community page
+                    targetViewElement = DOM.views.community;
+                    activeNavLinkHref = '#community';
+                    runOnViewLoad = () => App.loadCommunityPage();
+                }
                 else if (hash === '#watchlist') {
                      targetViewElement = DOM.views.watchlist;
                      activeNavLinkHref = '#watchlist'; // Highlight watchlist nav link
@@ -1857,6 +1905,10 @@ const ContinueWatching = {
              DOM.analyticsNavLink?.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
              document.querySelector('.nav-link[href="#livesports"]')?.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
 
+
+            //Community
+            DOM.community.createThreadForm?.addEventListener('submit', App.handleCreateThreadSubmit);
+            DOM.community.addPostForm?.addEventListener('submit', App.handleAddPostSubmit);
 
             // Watchlist Clear Listener
             DOM.clearWatchlistBtn?.addEventListener('click', App.handleClearWatchlist);
@@ -2579,6 +2631,384 @@ const ContinueWatching = {
                     // without rendering if needed for other features.
                 }
             },
+
+
+
+            // ===================================================================
+// START: NEW COMMUNITY FEATURE FUNCTIONS
+// ===================================================================
+
+/**
+ * Loads the main community page, displaying a list of discussion threads.
+ */
+loadCommunityPage: async () => {
+    if (!DOM.community.threadsList || !DOM.community.userActions) return;
+
+    // Show skeletons while loading
+    DOM.community.threadsList.innerHTML = App.getSkeletonThreadHTML(5);
+    
+    // Handle the "Create Thread" button visibility
+    if (appAuth.currentUser) {
+        DOM.community.userActions.innerHTML = `
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
+                <i class="bi bi-plus-lg me-2"></i>Create New Thread
+            </button>`;
+    } else {
+        DOM.community.userActions.innerHTML = `
+            <a href="index.html" class="btn btn-outline-light">Log in to post</a>`;
+    }
+
+    try {
+        const threadsSnapshot = await appDb.collection("community_threads")
+            .orderBy("lastReplyAt", "desc")
+            .limit(25)
+            .get();
+
+        if (threadsSnapshot.empty) {
+            DOM.community.threadsList.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-chat-quote-fill fs-1 mb-3"></i>
+                    <h4>No discussions yet.</h4>
+                    <p>Be the first to start a conversation!</p>
+                </div>`;
+        } else {
+            const threads = threadsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            App.renderCommunityThreads(threads);
+        }
+    } catch (error) {
+        console.error("Error loading community threads:", error);
+        DOM.community.threadsList.innerHTML = Utils.getErrorHTML("Could not load community discussions.");
+    }
+},
+
+/**
+ * Renders a list of thread items into the community page.
+ */
+renderCommunityThreads: (threads) => {
+    DOM.community.threadsList.innerHTML = ''; // Clear skeletons
+    threads.forEach(thread => {
+        const threadLink = document.createElement('a');
+        threadLink.href = `#community/thread/${thread.id}`;
+        threadLink.className = 'community-thread-item text-decoration-none';
+        
+        const lastReplyTime = thread.lastReplyAt ? Utils.formatRelativeTime(thread.lastReplyAt.toDate()) : 'No replies';
+        const createdBy = thread.createdBy ? Utils.escapeHtml(thread.createdBy.displayName) : 'Anonymous';
+
+        threadLink.innerHTML = `
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-grow-1">
+                    <h5 class="card-title mb-1">${Utils.escapeHtml(thread.title)}</h5>
+                    <p class="card-text small text-muted mb-0">
+                        By ${createdBy} • Last reply ${lastReplyTime}
+                    </p>
+                </div>
+                ${thread.linkedMovieTitle ? `<span class="badge bg-primary bg-opacity-25 text-primary-emphasis flex-shrink-0 p-2 d-none d-sm-inline-block"><i class="bi bi-film me-1"></i> ${Utils.escapeHtml(thread.linkedMovieTitle)}</span>` : ''}
+                <div class="reply-stats">
+                    <div class="fw-bold fs-4 text-light">${thread.replyCount || 0}</div>
+                    <div class="small text-muted">Replies</div>
+                </div>
+            </div>
+        `;
+        DOM.community.threadsList.appendChild(threadLink);
+    });
+},
+
+/**
+ * Handles the submission of the "Create Thread" form.
+ */
+handleCreateThreadSubmit: async (event) => {
+    event.preventDefault();
+    if (!appAuth.currentUser) {
+        Utils.showToast("You must be logged in to create a thread.", "warning");
+        return;
+    }
+
+    const title = document.getElementById('threadTitle').value.trim();
+    const firstPost = document.getElementById('threadFirstPost').value.trim();
+    const movieId = document.getElementById('threadLinkMovieId').value.trim();
+    
+    if (!title || !firstPost) {
+        Utils.showToast("Title and post content are required.", "warning");
+        return;
+    }
+    
+    const button = DOM.community.createThreadForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Creating...`;
+
+    try {
+        const user = appAuth.currentUser;
+        const now = firebase.firestore.FieldValue.serverTimestamp();
+
+        const threadData = {
+            title: title,
+            createdBy: {
+                userId: user.uid,
+                displayName: user.displayName || user.email.split('@')[0],
+            },
+            createdAt: now,
+            lastReplyAt: now, // Initially, the last reply is the creation time
+            replyCount: 0,
+            linkedMovieId: movieId || null,
+            linkedMovieTitle: null // Will be populated if movieId exists
+        };
+        
+        // If a movie ID is linked, fetch its title
+        if (movieId) {
+            const movieDetails = await API.fetchTMDB(`/movie/${movieId}`);
+            if (movieDetails) {
+                threadData.linkedMovieTitle = movieDetails.title;
+            }
+        }
+
+        // Create the thread document
+        const threadRef = await appDb.collection("community_threads").add(threadData);
+        
+        // Create the first post in the thread
+        await appDb.collection("community_posts").add({
+            threadId: threadRef.id,
+            content: firstPost,
+            createdBy: {
+                userId: user.uid,
+                displayName: user.displayName || user.email.split('@')[0],
+            },
+            createdAt: now,
+        });
+
+        Utils.showToast("Thread created successfully!", "success");
+        bootstrap.Modal.getInstance(DOM.community.createThreadModal).hide();
+        DOM.community.createThreadForm.reset();
+        location.hash = `#community/thread/${threadRef.id}`; // Navigate to the new thread
+
+    } catch (error) {
+        console.error("Error creating thread:", error);
+        Utils.showToast("Failed to create thread. Please try again.", "danger");
+    } finally {
+        button.disabled = false;
+        button.innerHTML = `<i class="bi bi-plus-lg me-2"></i>Create Thread`;
+    }
+},
+
+/**
+ * Loads the detail view for a specific thread, including its posts.
+ * @param {string} threadId - The ID of the thread to load.
+ */
+loadThreadDetailPage: async (threadId) => {
+    if (!DOM.community.threadDetailContent || !DOM.community.threadPostsList || !DOM.community.addPostForm) return;
+
+    // Show skeletons
+    DOM.community.threadDetailContent.innerHTML = App.getSkeletonPostHTML();
+    DOM.community.threadPostsList.innerHTML = App.getSkeletonPostHTML(3);
+    Utils.setElementVisibility(DOM.community.addPostForm, false);
+
+    try {
+        // Fetch the main thread and its posts in parallel
+        const [threadDoc, postsSnapshot] = await Promise.all([
+            appDb.collection("community_threads").doc(threadId).get(),
+            appDb.collection("community_posts").where("threadId", "==", threadId).orderBy("createdAt", "asc").get()
+        ]);
+
+        if (!threadDoc.exists) {
+            throw new Error("Discussion thread not found.");
+        }
+
+        const threadData = { id: threadDoc.id, ...threadDoc.data() };
+        const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // The first post is part of the thread detail
+        const firstPost = posts.shift(); 
+        
+        App.renderThreadDetails(threadData, firstPost);
+        App.renderThreadPosts(posts);
+
+        // Show the reply form if the user is logged in
+        if (appAuth.currentUser) {
+            Utils.setElementVisibility(DOM.community.addPostForm, true);
+            // Store threadId on the form for the submit handler
+            DOM.community.addPostForm.dataset.threadId = threadId;
+        }
+
+    } catch (error) {
+        console.error("Error loading thread details:", error);
+        DOM.community.threadDetailContent.innerHTML = Utils.getErrorHTML(error.message);
+        DOM.community.threadPostsList.innerHTML = '';
+    }
+},
+
+/**
+ * Renders the main content of a thread.
+ */
+renderThreadDetails: (thread, firstPost) => {
+    DOM.community.threadDetailContent.innerHTML = `
+        <div class="thread-detail-header">
+            <h1 class="thread-title">${Utils.escapeHtml(thread.title)}</h1>
+            <div class="thread-meta mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span>By ${Utils.escapeHtml(thread.createdBy.displayName)} • Created ${Utils.formatRelativeTime(thread.createdAt.toDate())}</span>
+                ${thread.linkedMovieTitle ? `<a href="#details=movie/${thread.linkedMovieId}" class="badge bg-primary text-decoration-none"><i class="bi bi-film me-1"></i> ${Utils.escapeHtml(thread.linkedMovieTitle)}</a>` : ''}
+            </div>
+        </div>
+        <div class="card bg-dark border-secondary">
+            <div class="card-body">
+                ${App.getPostHTML(firstPost)}
+            </div>
+        </div>
+    `;
+},
+
+/**
+ * Renders a list of reply posts.
+ */
+renderThreadPosts: (posts) => {
+    // Clear skeletons
+    DOM.community.threadPostsList.innerHTML = '';
+    
+    if (posts.length === 0) {
+        DOM.community.threadPostsList.innerHTML = `<p class="text-muted text-center mt-4">No replies yet. Be the first to respond!</p>`;
+        return;
+    }
+
+    const postsContainer = document.createElement('div');
+    postsContainer.className = 'card'; // The container card
+    
+    posts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.className = 'community-post-item';
+        postElement.innerHTML = App.getPostHTML(post);
+        postsContainer.appendChild(postElement);
+    });
+    
+    DOM.community.threadPostsList.appendChild(postsContainer);
+},
+
+/**
+ * Generates the HTML for a single post (used for main post and replies).
+ */
+getPostHTML: (post) => {
+    if (!post) return '<p class="text-muted"><em>This post could not be loaded.</em></p>';
+    const createdBy = post.createdBy ? Utils.escapeHtml(post.createdBy.displayName) : 'Anonymous';
+    const createdAt = post.createdAt ? Utils.formatRelativeTime(post.createdAt.toDate()) : '...';
+    const initials = (createdBy.split(' ').map(n=>n[0]).join('') || 'A').substring(0,2).toUpperCase();
+
+    // Use replace to convert newlines to <br> for proper display
+    const postContentHtml = Utils.escapeHtml(post.content).replace(/\n/g, '<br>');
+
+    return `
+        <div class="post-author-avatar" title="${createdBy}">${initials}</div>
+        <div class="post-content flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="author-name">${createdBy}</span>
+                <span class="post-timestamp">${createdAt}</span>
+            </div>
+            <div class="post-body mt-2">
+                ${postContentHtml}
+            </div>
+        </div>
+    `;
+},
+
+
+/**
+ * Handles the submission of a new reply post.
+ */
+handleAddPostSubmit: async (event) => {
+    event.preventDefault();
+    const threadId = event.target.dataset.threadId;
+    if (!appAuth.currentUser || !threadId) {
+        Utils.showToast("You must be logged in to reply.", "warning");
+        return;
+    }
+
+    const content = document.getElementById('newPostContent').value.trim();
+    if (!content) return;
+
+    const button = DOM.community.addPostForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+
+    try {
+        const user = appAuth.currentUser;
+        const now = firebase.firestore.FieldValue.serverTimestamp();
+
+        // Add the new post document
+        await appDb.collection("community_posts").add({
+            threadId: threadId,
+            content: content,
+            createdBy: {
+                userId: user.uid,
+                displayName: user.displayName || user.email.split('@')[0],
+            },
+            createdAt: now,
+        });
+
+        // Update the thread's reply count and last reply timestamp using a transaction
+        const threadRef = appDb.collection("community_threads").doc(threadId);
+        await appDb.runTransaction(async (transaction) => {
+            transaction.update(threadRef, {
+                replyCount: firebase.firestore.FieldValue.increment(1),
+                lastReplyAt: now,
+            });
+        });
+
+        DOM.community.addPostForm.reset();
+        App.loadThreadDetailPage(threadId); // Reload the whole page to show the new post
+
+    } catch (error) {
+        console.error("Error adding post:", error);
+        Utils.showToast("Failed to add reply. Please try again.", "danger");
+    } finally {
+        button.disabled = false;
+    }
+},
+
+/**
+ * Generates skeleton HTML for the thread list.
+ */
+getSkeletonThreadHTML: (count = 5) => {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="skeleton-thread-item">
+                <div class="flex-grow-1">
+                    <div class="skeleton skeleton-title" style="width: 60%; height: 1.2em; margin-bottom: 0.5rem;"></div>
+                    <div class="skeleton" style="width: 40%; height: 0.8em;"></div>
+                </div>
+                <div class="reply-stats">
+                    <div class="skeleton mx-auto" style="width: 30px; height: 1.5em; margin-bottom: 0.3rem;"></div>
+                    <div class="skeleton mx-auto" style="width: 50px; height: 0.8em;"></div>
+                </div>
+            </div>`;
+    }
+    return html;
+},
+
+/**
+ * Generates skeleton HTML for posts.
+ */
+getSkeletonPostHTML: (count = 1) => {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="community-post-item">
+                <div class="post-author-avatar skeleton"></div>
+                <div class="post-content flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="skeleton" style="width: 120px; height: 1em;"></div>
+                        <div class="skeleton" style="width: 80px; height: 0.8em;"></div>
+                    </div>
+                    <div class="post-body mt-3">
+                        <div class="skeleton mb-2" style="width: 90%; height: 1em;"></div>
+                        <div class="skeleton mb-2" style="width: 100%; height: 1em;"></div>
+                        <div class="skeleton" style="width: 70%; height: 1em;"></div>
+                    </div>
+                </div>
+            </div>`;
+    }
+    // Wrap replies in the card structure
+    return `<div class="card">${html}</div>`;
+},
+
+// ===================================================================
+// END: NEW COMMUNITY FEATURE FUNCTIONS
+// ===================================================================
        
             // --- TMDB Methods ---
             loadTmdbGenres: async () => {
