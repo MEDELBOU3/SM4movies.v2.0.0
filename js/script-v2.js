@@ -1,4 +1,4 @@
-    // --- Configuration ---
+  // --- Configuration ---
         const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
@@ -62,7 +62,7 @@
             UPCOMING_SECTION_ITEMS: 15, // Number of items to show in the Upcoming section
             // VAPID keys for Web Push. YOU MUST GENERATE YOUR OWN FOR PRODUCTION!
             // These are public keys, keep your private key secure on the server.
-            VAPID_PUBLIC_KEY: 'BMi-9g8wY_6hXp7E_L0y5n7F_Q3Y4g0t8c5x9B_3t7f_7o8s_9a0b_1c2d_3e4f_5g6h_7i8j_9k0l_1m2n_3o4p', // REPLACE WITH YOUR ACTUAL KEY
+            VAPID_PUBLIC_KEY: 'BHxnfKBkk1FQKPerLOSdUucEGpZYuonj-pbX7k9ihm3YgxPWjw3iGmy_82BbeogwQ2qAgc1fLmHizfX439Nkk80', // REPLACE WITH YOUR ACTUAL KEY
             // A placeholder URL for your push subscription endpoint (server-side)
             PUSH_SUBSCRIPTION_ENDPOINT: 'YOUR_BACKEND_PUSH_SUBSCRIPTION_URL', // E.g., /api/subscribe_push
             // A placeholder URL for your push notification triggering endpoint (server-side)
@@ -266,12 +266,15 @@
     const Watchlist = {
         STORAGE_KEY: 'auraStreamWatchlist',
         load: () => { try { const d = localStorage.getItem(Watchlist.STORAGE_KEY); State.watchlist = d ? JSON.parse(d) : []; } catch (e) { console.error("Watchlist load failed:", e); State.watchlist = []; localStorage.removeItem(Watchlist.STORAGE_KEY); } },
-        save: () => { try { localStorage.setItem(Watchlist.STORAGE_KEY, JSON.stringify(State.watchlist)); } catch (e) { console.error("Watchlist save failed:", e); /* Maybe show toast */ } },
+        save: () => { try { localStorage.setItem(Watchlist.STORAGE_KEY, JSON.stringify(State.watchlist)); } catch (e) { console.error("Watchlist save failed:", e); } },
         add: (d) => { if (!d?.id || !d?.type || Watchlist.isInWatchlist(d.id, d.type)) return false; const i = { id: d.id, type: d.type, title: d.title || d.name || 'N/A', poster_path: d.poster_path, backdrop_path: d.backdrop_path, vote_average: d.vote_average }; State.watchlist.push(i); Watchlist.save(); Utils.showToast(`${i.title} added to watchlist!`, "success"); return true; },
         remove: (id, t) => { const l = State.watchlist.length; const i = parseInt(id); State.watchlist = State.watchlist.filter(d => !(d.id === i && d.type === t)); if (State.watchlist.length < l) { Watchlist.save(); Utils.showToast("Item removed from watchlist.", "info"); return true; } return false; },
         clear: () => { State.watchlist = []; Watchlist.save(); Utils.showToast("Watchlist cleared.", "info"); },
         isInWatchlist: (id, t) => { const i = parseInt(id); return State.watchlist.some(d => d.id === i && d.type === t); }
     };
+
+ 
+
 
     const ContinueWatching = {
             STORAGE_KEY: 'auraStreamContinueWatching',
@@ -2508,57 +2511,79 @@
             },
 
             // NEW: Handler for Like/Favorite Button Click
-            handleAddOrRemoveFavorite: (button) => {
-        const { itemId, itemType, itemTitle, itemPoster, itemRating, itemGenres } = button.dataset;
-        const idNum = parseInt(itemId);
-        if (!idNum || !itemType) return;
+            handleAddOrRemoveFavorite: async (button) => {
+                const { itemId, itemType, itemTitle, itemPoster, itemRating, itemGenres } = button.dataset;
+                const idNum = parseInt(itemId);
+                if (!idNum || !itemType) return;
 
-        let genreIds = [];
-        try {
-            // Parse genre IDs safely
-            genreIds = JSON.parse(itemGenres || '[]');
-            if (!Array.isArray(genreIds)) genreIds = []; // Ensure it's an array
-        } catch (e) {
-            console.error("Failed to parse genre IDs from button data:", itemGenres, e);
-            genreIds = []; // Default to empty array on error
-        }
+                let genreIds = [];
+                try {
+                    // Parse genre IDs safely
+                    genreIds = JSON.parse(itemGenres || '[]');
+                    if (!Array.isArray(genreIds)) genreIds = []; // Ensure it's an array
+                } catch (e) {
+                    console.error("Failed to parse genre IDs from button data:", itemGenres, e);
+                    genreIds = []; // Default to empty array on error
+                }
 
-        const itemData = {
-            id: idNum,
-            type: itemType,
-            title: itemTitle,
-            poster_path: itemPoster !== 'null' ? itemPoster : null,
-            vote_average: itemRating !== 'null' ? parseFloat(itemRating) : null,
-            genre_ids: genreIds // Pass genre IDs
-        };
+                const itemData = {
+                    id: idNum,
+                    type: itemType,
+                    title: itemTitle,
+                    poster_path: itemPoster !== 'null' ? itemPoster : null,
+                    vote_average: itemRating !== 'null' ? parseFloat(itemRating) : null,
+                    genre_ids: genreIds // Pass genre IDs
+                };
 
-        // Toggle Favorite State
-        if (Favorites.isFavorite(idNum, itemType)) {
-            if (Favorites.remove(idNum, itemType)) {
-                // Update button visually
-                button.classList.remove('is-favorite');
-                button.innerHTML = '<i class="bi bi-heart"></i>'; // Empty heart
-                button.title = "Add to Favorites";
-            }
-        } else {
-            if (Favorites.add(itemData)) {
-                // Update button visually
-                button.classList.add('is-favorite');
-                button.innerHTML = '<i class="bi bi-heart-fill"></i>'; // Filled heart
-                button.title = "Favorited (Click to unfavorite)";
-            }
-        }
+                // V V V MODIFY THE LOGIC TO USE AWAIT V V V
+                button.disabled = true; // Disable button during the async operation
 
-        // --- IMPORTANT: Update Analytics Display ---
-        // Only update if the analytics view exists (or maybe always update in background?)
-        if (DOM.views.analytics && DOM.views.analytics.classList.contains('active')) {
-            Analytics.updateAnalyticsDisplay(); // Update charts if view is active
-        } else {
-            console.log("Favorite changed, analytics view not active.");
-            // Optionally, you could still recalculate data in the background
-            // without rendering if needed for other features.
-        }
-    },
+                if (Favorites.isFavorite(idNum, itemType)) {
+                    const success = await Favorites.remove(idNum, itemType); // Await the result
+                    if (success) {
+                        button.classList.remove('is-favorite');
+                        button.innerHTML = '<i class="bi bi-heart"></i>';
+                        button.title = "Add to Favorites";
+                    }
+                } else {
+                const success = await Favorites.add(itemData); // Await the result
+                if (success) {
+                    button.classList.add('is-favorite');
+                    button.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                    button.title = "Favorited (Click to unfavorite)";
+                }
+                }
+    
+                button.disabled = false; // Re-enable the button
+                // ^ ^ ^ END OF MODIFICATIONS ^ ^ ^
+
+                // Toggle Favorite State
+                /* if (Favorites.isFavorite(idNum, itemType)) {
+                    if (Favorites.remove(idNum, itemType)) {
+                        // Update button visually
+                        button.classList.remove('is-favorite');
+                        button.innerHTML = '<i class="bi bi-heart"></i>'; // Empty heart
+                        button.title = "Add to Favorites";
+                    }
+                } else {
+                    if (Favorites.add(itemData)) {
+                       // Update button visually
+                       button.classList.add('is-favorite');
+                       button.innerHTML = '<i class="bi bi-heart-fill"></i>'; // Filled heart
+                       button.title = "Favorited (Click to unfavorite)";
+                    }
+                }*/
+
+                // --- IMPORTANT: Update Analytics Display ---
+                // Only update if the analytics view exists (or maybe always update in background?)
+                if (DOM.views.analytics && DOM.views.analytics.classList.contains('active')) {
+                    Analytics.updateAnalyticsDisplay(); // Update charts if view is active
+                } else {
+                    console.log("Favorite changed, analytics view not active.");
+                    // Optionally, you could still recalculate data in the background
+                    // without rendering if needed for other features.
+                }
+            },
        
             // --- TMDB Methods ---
             loadTmdbGenres: async () => {
