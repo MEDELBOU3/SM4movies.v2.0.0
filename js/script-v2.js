@@ -1,4 +1,4 @@
-  // --- Configuration ---
+   // --- Configuration ---
         const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
@@ -251,6 +251,7 @@
         watchHistory: [], // For analytics and continue watching seeds
         genreChartInstance: null, // Chart.js instances
         actorChartInstance: null,
+        previousViewHash: null,
         // Helper function to check token validity
         hasValidSpotifyAppToken: () => !!(State.spotifyAppAccessToken && State.spotifyAppTokenExpiresAt && Date.now() < State.spotifyAppTokenExpiresAt),
     };
@@ -276,183 +277,167 @@
  
 
 
-    const ContinueWatching = {
-            STORAGE_KEY: 'auraStreamContinueWatching',
-            MAX_ITEMS: 20, // Max number of items to keep in the list
+    
+    // V V V REPLACE THE ENTIRE OLD ContinueWatching OBJECT WITH THIS V V V
+const ContinueWatching = {
+    _cache: [], // In-memory cache for fast UI rendering.
+    _trackingInterval: null, // Holds the setInterval ID for progress saving.
+    _currentItem: null, // Holds details of the item currently being tracked.
 
-            // Load from localStorage
-            load: () => {
-                try {
-                    const storedList = localStorage.getItem(ContinueWatching.STORAGE_KEY);
-                    State.continueWatching = storedList ? JSON.parse(storedList) : [];
-                    // Ensure it's sorted on load (might not be if saved improperly before)
-                    State.continueWatching.sort((a, b) => b.lastWatchedTimestamp - a.lastWatchedTimestamp);
-                    console.log("Continue Watching loaded:", State.continueWatching.length, "items");
-                } catch (error) {
-                    console.error("Failed to load Continue Watching list:", error);
-                    State.continueWatching = [];
-                    localStorage.removeItem(ContinueWatching.STORAGE_KEY);
-                }
-            },
+    /**
+     * Loads the user's watch history from Firestore into the local cache.
+     * Called on user login.
+     */
+    load: async () => {
+        if (!appAuth?.currentUser || !appDb) {
+            console.warn("[CW] Cannot load from Firestore: User not logged in or DB not ready.");
+            ContinueWatching._cache = [];
+            return;
+        }
+        const userId = appAuth.currentUser.uid;
+        console.log(`[CW] Loading watch history for user: ${userId}`);
+        try {
+            const snapshot = await appDb.collection("users").doc(userId).collection("watchHistory")
+                .orderBy("lastWatchedTimestamp", "desc")
+                .limit(20) // Get the 20 most recently watched items
+                .get();
 
-            // Save to localStorage
-            save: () => {
-                try {
-                    // Ensure list is sorted before saving
-                    State.continueWatching.sort((a, b) => b.lastWatchedTimestamp - a.lastWatchedTimestamp);
-                    // Limit the list size
-                    const limitedList = State.continueWatching.slice(0, ContinueWatching.MAX_ITEMS);
-                    localStorage.setItem(ContinueWatching.STORAGE_KEY, JSON.stringify(limitedList));
-                } catch (error) {
-                    console.error("Failed to save Continue Watching list:", error);
-                    // Don't show toast here, might be too frequent
-                }
-            },
+            ContinueWatching._cache = snapshot.docs.map(doc => {
+                const data = doc.data();
+                // Convert Firestore timestamp to JS milliseconds
+                data.lastWatchedTimestamp = data.lastWatchedTimestamp?.toDate().getTime();
+                return data;
+            });
+            console.log(`[CW] Loaded ${ContinueWatching._cache.length} items from Firestore.`);
+        } catch (error) {
+            console.error("Error loading watch history from Firestore:", error);
+            ContinueWatching._cache = [];
+            Utils.showToast("Could not load your watch history.", "danger");
+        }
+    },
+    
+    /**
+     * Clears the local cache and stops any tracking. Called on logout.
+     */
+    clear: () => {
+        ContinueWatching.stopTracking();
+        ContinueWatching._cache = [];
+        console.log("[CW] Local cache cleared on logout.");
+    },
 
-            // Update or Add an item (moves to top)
-            // itemDetails should include: id, type, title, poster_path, backdrop_path
-            // tvDetails should include: seasonNumber, episodeNumber, episodeTitle (if type is 'tv')
-            // progressPercent: A dummy value (e.g., 15) or calculated if possible
-            /*updateItem: (itemDetails, tvDetails = {}, progressPercent = 15) => { // Add default dummy progress
-                if (!itemDetails || !itemDetails.id || !itemDetails.type) return;
+    /**
+     * Starts tracking viewing progress for a specific item.
+     * Called when the player view is loaded.
+     * @param {object} itemDetails - Full TMDB object for the movie/show.
+     * @param {object} tvDetails - Contains seasonNumber and episodeNumber for TV shows.
+     */
+    startTracking: (itemDetails, tvDetails) => {
+        ContinueWatching.stopTracking(); // Stop any previous tracking first.
 
-                const itemId = parseInt(itemDetails.id);
-                const itemType = itemDetails.type;
-                const now = Date.now();
+        if (!appAuth?.currentUser) {
+            console.log("[CW] User not logged in. Skipping progress tracking.");
+            return;
+        }
 
-                // Remove existing entry if present
-                State.continueWatching = State.continueWatching.filter(item =>
-                    !(item.id === itemId && item.type === itemType &&
-                      (itemType === 'movie' || (item.seasonNumber === tvDetails.seasonNumber && item.episodeNumber === tvDetails.episodeNumber)))
-                );
+        const duration = itemDetails.runtime || itemDetails.episode_run_time?.[0];
+        if (!duration) {
+            console.warn("[CW] Cannot track progress: item duration is unknown.", itemDetails);
+            return;
+        }
 
-                // Create new entry data
-                const newItem = {
-                    id: itemId,
-                    type: itemType,
-                    lastWatchedTimestamp: now,
-                    title: itemDetails.title || itemDetails.name || 'Unknown Title',
-                    poster_path: itemDetails.poster_path || null,
-                    backdrop_path: itemDetails.backdrop_path || null,
-                    vote_average: itemDetails.vote_average || null,
-                    progressPercent: progressPercent, // Store the dummy progress
-                     // TV Specific details
-                    seasonNumber: itemType === 'tv' ? tvDetails.seasonNumber : null,
-                    episodeNumber: itemType === 'tv' ? tvDetails.episodeNumber : null,
-                    episodeTitle: itemType === 'tv' ? tvDetails.episodeTitle : null,
-                };
-
-                // Add to the beginning of the array
-                State.continueWatching.unshift(newItem);
-
-                // Limit size and save
-                ContinueWatching.save();
-                console.log("Updated Continue Watching:", newItem.title, tvDetails.episodeTitle || '');
-
-                // Refresh the home section if currently visible (optional)
-                if(location.hash === '#home' || location.hash === '') {
-                    App.loadContinueWatchingSection(); // Reload the specific section
-                }
-            },
-
-            // Get the current list (already sorted by load/save)
-            getList: () => {
-                return State.continueWatching;
-            },
-
-             // Remove an item explicitly (optional)
-             remove: (id, type, seasonNumber = null, episodeNumber = null) => {
-                 const itemId = parseInt(id);
-                 const initialLength = State.continueWatching.length;
-
-                 State.continueWatching = State.continueWatching.filter(item =>
-                     !(item.id === itemId && item.type === type &&
-                       (type === 'movie' || (item.seasonNumber === seasonNumber && item.episodeNumber === episodeNumber)))
-                 );
-
-                 if (State.continueWatching.length < initialLength) {
-                     ContinueWatching.save();
-                     console.log("Removed from Continue Watching:", id, type, seasonNumber, episodeNumber);
-                     // Optionally refresh the list display
-                     if(location.hash === '#home' || location.hash === '') {
-                        App.loadContinueWatchingSection();
-                    }
-                     return true;
-                 }
-                 return false;
-             },*/
-
-               updateItem: (itemDetails, tvDetails = {}, progressPercent = config.DEFAULT_WATCH_PROGRESS_PERCENT) => {
-        if (!itemDetails || !itemDetails.id || !itemDetails.type) return;
-
-        const itemId = parseInt(itemDetails.id);
-        const itemType = itemDetails.type;
-        const now = Date.now();
-
-        // Construct unique ID for continue watching list (combines movie/tv + episode)
-        let continueWatchingItemId = itemType === 'movie' ? `movie-${itemId}` : `tv-${itemId}-s${tvDetails.seasonNumber || 'null'}-e${tvDetails.episodeNumber || 'null'}`;
-
-
-        // Remove existing entry if present
-        State.continueWatching = State.continueWatching.filter(item =>
-            item.continueWatchingId !== continueWatchingItemId
-        );
-
-        // Create new entry data
-        const newItem = {
-            continueWatchingId: continueWatchingItemId, // Use this for efficient filtering
-            id: itemId,
-            type: itemType,
-            lastWatchedTimestamp: now, // Local timestamp
-            title: itemDetails.title || itemDetails.name || 'Unknown Title',
-            poster_path: itemDetails.poster_path || null,
-            backdrop_path: itemDetails.backdrop_path || null,
-            vote_average: itemDetails.vote_average || null,
-            progressPercent: progressPercent, // Use the provided progress
-
-            seasonNumber: itemType === 'tv' ? tvDetails.seasonNumber : null,
-            episodeNumber: itemType === 'tv' ? tvDetails.episodeNumber : null,
-            episodeTitle: itemType === 'tv' ? tvDetails.episodeTitle : null,
-            totalDurationMinutes: itemDetails.type === 'movie' ? itemDetails.runtime : itemDetails.episode_run_time?.[0] || null, // Capture duration for display
+        ContinueWatching._currentItem = {
+            id: itemDetails.id,
+            type: itemDetails.title ? 'movie' : 'tv',
+            title: itemDetails.title || itemDetails.name,
+            poster_path: itemDetails.poster_path,
+            backdrop_path: itemDetails.backdrop_path,
+            vote_average: itemDetails.vote_average,
+            totalDurationMinutes: duration,
+            seasonNumber: tvDetails?.seasonNumber || null,
+            episodeNumber: tvDetails?.episodeNumber || null,
+            episodeTitle: tvDetails?.episodeTitle || null,
+            startTime: Date.now(), // Record when tracking started
         };
+        
+        console.log("[CW] Started tracking:", ContinueWatching._currentItem.title);
+        
+        // Save progress every 30 seconds
+        ContinueWatching._trackingInterval = setInterval(ContinueWatching._saveProgress, 30000);
+    },
 
-        // Add to the beginning of the array
-        State.continueWatching.unshift(newItem);
-
-        // Limit size (optional, Firebase will be the source of truth)
-        State.continueWatching = State.continueWatching.slice(0, config.CONTINUE_WATCHING_MAX_ITEMS || 20);
-
-        console.log("Updated in-memory Continue Watching:", newItem.title, newItem.episodeTitle || '');
-
-        // Refresh the home section if currently visible (optional)
-        if(location.hash === '#home' || location.hash === '') {
-            // No need to fetch from Firebase here, the list is already updated in memory
-            // App.loadContinueWatchingSection will render it.
-            App.loadContinueWatchingSection(document.getElementById('continue-watching-section'));
+    /**
+     * Stops the progress tracking timer, performs a final save, and clears the current item.
+     * Called when the user navigates away from the player.
+     */
+    stopTracking: () => {
+        if (ContinueWatching._trackingInterval) {
+            clearInterval(ContinueWatching._trackingInterval);
+            ContinueWatching._trackingInterval = null;
+        }
+        if (ContinueWatching._currentItem) {
+            console.log("[CW] Stopping tracking. Performing final save for:", ContinueWatching._currentItem.title);
+            ContinueWatching._saveProgress(); // Perform one final save.
+            ContinueWatching._currentItem = null;
         }
     },
 
-      // This function will fetch from Firebase or return the current in-memory list.
-    getList: () => {
-        return State.continueWatching; // This will be populated by App.loadContinueWatchingData
-    },
+    /**
+     * Internal function to calculate progress and save it to Firestore.
+     */
+    _saveProgress: async () => {
+        const item = ContinueWatching._currentItem;
+        if (!item || !appAuth?.currentUser || !appDb) return;
 
-    // A simple remove method for local list (Firebase will also need removal logic if needed)
-    remove: (continueWatchingId) => {
-        const initialLength = State.continueWatching.length;
-        State.continueWatching = State.continueWatching.filter(item => item.continueWatchingId !== continueWatchingId);
-        if (State.continueWatching.length < initialLength) {
-            console.log("Removed from in-memory Continue Watching:", continueWatchingId);
-            if(location.hash === '#home' || location.hash === '') {
-                App.loadContinueWatchingSection(document.getElementById('continue-watching-section'));
+        const userId = appAuth.currentUser.uid;
+        
+        // Create a unique ID for the document (e.g., "tv-1399-s1-e5")
+        const docId = item.type === 'movie'
+            ? `movie-${item.id}`
+            : `tv-${item.id}-s${item.seasonNumber}-e${item.episodeNumber}`;
+
+        const elapsedSeconds = (Date.now() - item.startTime) / 1000;
+        // For this demo, we'll assume progress is linear from when they start.
+        // A more complex system might try to get progress from a video element if it were not an iframe.
+        let progressPercent = Math.round((elapsedSeconds / (item.totalDurationMinutes * 60)) * 100);
+        progressPercent = Math.min(Math.max(progressPercent, 0), 100); // Clamp between 0-100
+
+        const dataToSave = {
+            ...item, // includes id, type, title, poster, etc.
+            lastWatchedTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            progressPercent: progressPercent,
+        };
+        delete dataToSave.startTime; // We don't need to store this part in Firestore.
+
+        try {
+            const docRef = appDb.collection("users").doc(userId).collection("watchHistory").doc(docId);
+            await docRef.set(dataToSave, { merge: true });
+
+            console.log(`[CW] Saved progress for ${docId}: ${progressPercent}%`);
+
+            // Update the in-memory cache for immediate UI updates
+            const cacheIndex = ContinueWatching._cache.findIndex(i => i.docId === docId);
+            const cacheItem = { ...dataToSave, docId, lastWatchedTimestamp: Date.now() };
+            if (cacheIndex > -1) {
+                ContinueWatching._cache[cacheIndex] = cacheItem;
+            } else {
+                ContinueWatching._cache.unshift(cacheItem);
             }
-            // Add Firebase deletion here later if you want manual removal from DB
-            return true;
-        }
-        return false;
-    }
+            // Re-sort and trim the cache
+            ContinueWatching._cache.sort((a, b) => b.lastWatchedTimestamp - a.lastWatchedTimestamp);
+            ContinueWatching._cache = ContinueWatching._cache.slice(0, 20);
 
-        };
+        } catch (error) {
+            console.error(`[CW] Failed to save progress for ${docId}:`, error);
+        }
+    },
+
+    /**
+     * Gets the current list from the in-memory cache.
+     */
+    getCache: () => {
+        return ContinueWatching._cache;
+    }
+};
 
 
         // --- Utilities ---
@@ -1271,8 +1256,14 @@
                  hash = hash || location.hash || '#home'; // Default to #home
                  if (hash === '#') hash = '#home'; // Handle empty hash
 
-                 // Stop visualizer if running
-                 Visualizer.stop();
+                // <<< FIX: STOP TRACKING WHEN LEAVING THE PLAYER VIEW
+                if (State.previousViewHash && State.previousViewHash.startsWith('#player=')) {
+                    console.log("[Router] Navigating away from player, stopping progress tracking.");
+                    ContinueWatching.stopTracking();
+                }
+                // >>> END FIX
+                // Stop visualizer if running
+                Visualizer.stop();
 
                  // Hide all views and deactivate nav links
                  Object.values(DOM.views).forEach(view => { if(view) { view.classList.remove('active'); view.style.display = 'none';} });
@@ -1523,6 +1514,8 @@
                  if (hash !== '#home' && hash !== '#music' && !hash.startsWith('#player=')) {
                      window.scrollTo(0, 0);
                  }
+
+                 State.previousViewHash = hash;
              },
 
              // Listener for hash changes
@@ -3772,121 +3765,70 @@
             button.disabled = false;
         }
     },
-            // --- NEW: Function to specifically load and render Continue Watching ---
-               /**
-     * Renders the "Continue Watching" section with user's watch history.
-     * @param {HTMLElement} sectionDiv - The container <section> element for "Continue Watching".
-     * @param {Array} continueWatchingList - An array of watch history items (fetched from Firebase).
-     */
-    loadContinueWatchingSection: (sectionDiv, continueWatchingList) => {
-        // Ensure the sectionDiv exists, if not, there's nothing to render into.
-        if (!sectionDiv) return;
+        
 
-        // Query for inner elements within this specific sectionDiv
-        const resultsContainer = sectionDiv.querySelector('.horizontal-card-container');
-        const prevBtn = sectionDiv.querySelector('.h-scroll-btn.prev');
-        const nextBtn = sectionDiv.querySelector('.h-scroll-btn.next');
+    // V V V REPLACE the entire `loadContinueWatchingSection` function with this one V V V
+loadContinueWatchingSection: (sectionDiv) => {
+    if (!sectionDiv) return;
 
-        // Critical: Ensure these inner containers exist before proceeding.
-        if (!resultsContainer || !prevBtn || !nextBtn) {
-            console.error("loadContinueWatchingSection: Missing inner elements (container, prev/next buttons) within sectionDiv.");
-            Utils.setElementVisibility(sectionDiv, false); // Hide the section if it's malformed
-            return;
+    const resultsContainer = sectionDiv.querySelector('.continue-watching-container');
+    const prevBtn = sectionDiv.querySelector('.h-scroll-btn.prev');
+    const nextBtn = sectionDiv.querySelector('.h-scroll-btn.next');
+    if (!resultsContainer || !prevBtn || !nextBtn) return;
+
+    const continueWatchingList = ContinueWatching.getCache(); // Use the cache
+
+    if (continueWatchingList.length === 0) {
+        Utils.setElementVisibility(sectionDiv, false); // Hide the whole section if empty
+        return;
+    }
+
+    Utils.setElementVisibility(sectionDiv, true); // Ensure section is visible
+    resultsContainer.innerHTML = ''; // Clear any skeletons or old content
+
+    continueWatchingList.forEach(item => {
+        const title = Utils.escapeHtml(item.title);
+        const imagePath = item.backdrop_path || item.poster_path;
+        const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+        const progressPercent = item.progressPercent || 0;
+
+        let cardHref = `#player=${item.type}/${item.id}`;
+        if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
+            cardHref += `/${item.seasonNumber}/${item.episodeNumber}`;
         }
+        
+        const cardLink = document.createElement('a');
+        cardLink.href = cardHref;
+        cardLink.className = 'h-card';
+        cardLink.title = title + (item.episodeTitle ? ` - ${Utils.escapeHtml(item.episodeTitle)}` : '');
 
-        // Always ensure the section itself is visible before attempting to populate it.
-        // It might have been hidden previously if the list was empty on a prior load.
-        Utils.setElementVisibility(sectionDiv, true);
+        const imageHtml = imageUrl
+            ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+            : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
 
-        // --- Handle Empty List Scenario ---
-        if (continueWatchingList.length === 0) {
-            // Clear any previous cards/skeletons and display a friendly message.
-            resultsContainer.innerHTML = `
-                <div class="col-12 py-4 text-center text-muted" style="width: 100%;">
-                    <i class="bi bi-bookmark-plus-fill fs-2 mb-2"></i>
-                    <p class="mb-0">Your continue watching list is empty.</p>
-                    <p class="mb-0">Start watching a movie or TV show to see it here!</p>
-                </div>`;
-            // Hide scroll buttons as there's no content to scroll.
-            Utils.setElementVisibility(prevBtn, false);
-            Utils.setElementVisibility(nextBtn, false);
-            return; // Exit the function as there's nothing more to render.
-        }
-
-        // --- Handle Non-Empty List Scenario ---
-        // Clear any placeholder messages or skeletons that might be present from a previous state.
-        resultsContainer.innerHTML = '';
-
-        // Iterate over each item in the continueWatchingList and create its card.
-        continueWatchingList.forEach(item => {
-            const title = Utils.escapeHtml(item.title); // Escape HTML for safety
-            // Prefer backdrop for horizontal cards, fallback to poster if backdrop is missing.
-            const imagePath = item.backdrop_path || item.poster_path;
-            const imageUrl = imagePath ? `${config.BACKDROP_BASE_URL}${imagePath}` : null;
-
-            // Construct the navigation link for the card.
-            // If it's a TV show with season/episode, include them in the URL.
-            let cardHref = `#player=${item.type}/${item.id}`;
-            if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
-                cardHref += `/${item.seasonNumber}/${item.episodeNumber}`;
-            }
-
-            // Create the anchor element that represents the clickable card.
-            const cardLink = document.createElement('a');
-            cardLink.href = cardHref;
-            cardLink.className = 'h-card'; // Apply the h-card styling.
-            // Set the title attribute for hover tooltips.
-            cardLink.title = title + (item.episodeTitle ? ` - ${Utils.escapeHtml(item.episodeTitle)}` : '');
-
-            // Determine content for the image area (actual image or placeholder icon).
-            const imageHtml = imageUrl
-                ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
-                : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
-
-            // Format the last watched timestamp for display.
-            const lastWatchedDate = item.lastWatchedTimestamp ? new Date(item.lastWatchedTimestamp) : null;
-            const lastWatchedDisplay = lastWatchedDate ? `Last watched: ${lastWatchedDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : '';
-
-            // Get the progress percentage for the progress bar.
-            const progressPercent = item.progressPercent || 0;
-
-            // Construct the HTML for the card's overlay content (title, meta, progress bar).
-            const overlayHtml = `
-                <div class="h-card-overlay">
-                    <h3 class="h-card-title">${title}</h3>
-                    ${item.type === 'tv' && item.episodeTitle ? `<span class="h-card-episode-title">S${item.seasonNumber} E${item.episodeNumber} - ${Utils.escapeHtml(item.episodeTitle)}</span>` : ''}
-                    <p class="h-card-meta small opacity-80">
-                        ${item.vote_average && parseFloat(item.vote_average) > 0 ? `<span class="me-2"><i class="bi bi-star-fill text-warning"></i> ${item.vote_average.toFixed(1)}</span>` : ''}
-                        <span>${lastWatchedDisplay}</span>
-                    </p>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: ${progressPercent}%;"></div>
-                    </div>
+        const overlayHtml = `
+            <div class="h-card-overlay">
+                <h3 class="h-card-title">${title}</h3>
+                ${item.type === 'tv' && item.episodeTitle ? `<span class="h-card-episode-title">S${item.seasonNumber} E${item.episodeNumber} - ${Utils.escapeHtml(item.episodeTitle)}</span>` : ''}
+                <div class="progress-bar-container mt-2">
+                    <div class="progress-bar-fill" style="width: ${progressPercent}%;" title="${progressPercent}% Watched"></div>
                 </div>
-            `;
+            </div>
+        `;
+        
+        cardLink.innerHTML = imageHtml + overlayHtml;
+        resultsContainer.appendChild(cardLink);
+    });
 
-            // Combine image and overlay HTML and append to the card link.
-            cardLink.innerHTML = imageHtml + overlayHtml;
-            // Append the fully constructed card to the results container.
-            resultsContainer.appendChild(cardLink);
-        });
-
-        // --- Setup Horizontal Scrolling (even if only one item, buttons will be disabled if not needed) ---
-        // Update the state of the scroll buttons (prev/next) based on current scroll position and content width.
-        App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
-
-        // Add this resultsContainer to the list of tracked horizontal scroll containers if it's not already there.
-        // This ensures event listeners are only added once and are handled during window resize.
-        if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
-            State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
-            // Add a debounced scroll event listener for the container itself.
-            resultsContainer.addEventListener('scroll', Utils.debounce(() => { App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);}, 100), { passive: true });
-            // Add click listeners for the previous and next scroll buttons.
-            prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
-            nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
-        }
-    },
-
+    // Setup horizontal scrolling
+    App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
+    if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
+        State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
+        resultsContainer.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn), 100));
+        prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
+        nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
+    }
+},
     
             /*loadContinueWatchingSection: (sectionDiv) => {
                 if (!sectionDiv) {
@@ -4415,23 +4357,27 @@
                 itemData: null 
             }; // Store context
 
-             try {
-            // Fetch with append_to_response to get runtime for movies, episode_run_time for TV
-            const itemData = await API.fetchTMDB(`/${type}/${id}`, { append_to_response: 'videos' }); // 'videos' is useful for future "Next Episode" or duration
-            if (!itemData) throw new Error("Media item not found.");
+            try {
+                // Fetch with append_to_response to get runtime for movies, episode_run_time for TV
+                const itemData = await API.fetchTMDB(`/${type}/${id}`, { append_to_response: 'videos,credits' });
+                if (!itemData) throw new Error("Media item not found.");
 
-            // Store the full itemData for use by recordUserWatchActivity
-            State.moviePlayerContext.itemData = itemData; // <<< STORE FULL itemData
+                // Store the full itemData for use by recordUserWatchActivity
+                State.moviePlayerContext.itemData = itemData; // <<< STORE FULL itemData
 
-            const title = Utils.escapeHtml(itemData.title || itemData.name || 'Media Item');
-            DOM.playerTitleEl.textContent = title;
+                const title = Utils.escapeHtml(itemData.title || itemData.name || 'Media Item');
+                DOM.playerTitleEl.textContent = title;
 
-            App.renderStreamingSourceButtons();
+                App.renderStreamingSourceButtons();
+
+                let tvDetails = {};
 
             if (type === 'tv') {
                 const targetSeasonNum = season || (itemData.last_episode_to_air?.season_number || 1);
                 const seasonDetails = await API.fetchTMDB(`/tv/${id}/season/${targetSeasonNum}`);
-                if (!seasonDetails || !seasonDetails.episodes) throw new Error("Season data not found.");
+                    
+                //if (!seasonDetails || !seasonDetails.episodes) throw new Error("Season data not found.");
+                if (!seasonDetails?.episodes) throw new Error("Season data not found.");
 
                 // If no specific episode, try to find the last watched one for that season from Firebase, or default to 1
                 if (!episode && appAuth.currentUser && appDb) {
@@ -4453,9 +4399,15 @@
                     }
                 }
 
+                   const currentEpisodeDetails = seasonDetails.episodes.find(ep => ep.episode_number === State.moviePlayerContext.currentEpisode);
+                    tvDetails = {
+                        seasonNumber: targetSeasonNum,
+                        episodeNumber: State.moviePlayerContext.currentEpisode,
+                        episodeTitle: currentEpisodeDetails?.name || `Episode ${State.moviePlayerContext.currentEpisode}`
+                    };
+                    App.renderEpisodeSelectors(itemData, seasonDetails);
+                    Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, true);
 
-                App.renderEpisodeSelectors(itemData, seasonDetails);
-                Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, true);
             } else { // For movies
                 const firstButton = DOM.playerSourceBtnsContainer.querySelector('button');
                 if (firstButton) {
@@ -4464,6 +4416,10 @@
                     DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">No streaming sources available.</span>`;
                 }
             }
+
+                // V V V THIS IS THE NEW LINE TO START TRACKING V V V
+                ContinueWatching.startTracking(itemData, tvDetails);
+                // ^ ^ ^ THIS IS THE NEW LINE TO START TRACKING ^ ^ ^
 
         } catch (error) {
             console.error("Failed to load player context:", error);
