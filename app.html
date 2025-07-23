@@ -527,33 +527,88 @@
                     </div>
                 </div>
             </section>
-
-             <section id="community-view" class="view-section py-4" style="display: none;">
+             <!-- ====================================================== -->
+<!-- COMMUNITY VIEW (THREAD LIST) -->
+<!-- ====================================================== -->
+<section id="community-view" class="view content-wrapper"> <!-- MODIFIED: class changed -->
     <div class="container">
-        <div id="community-header" class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="text-white">AuraStream Community</h1>
-            <!-- User info/actions will be populated by JS if logged in -->
-            <div id="community-user-actions">
-                <!-- e.g., Create New Thread Button -->
-            </div>
+        <div id="community-header" class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h1 class="text-white mb-0">AuraStream Community</h1>
+            <!-- User actions (like "Create Thread" button) will be added here by JS -->
+            <div id="community-user-actions"></div>
+        </div>
+        
+        <!-- List of threads will be rendered here -->
+        <div id="community-threads-list" class="d-flex flex-column gap-3">
+            <!-- Skeletons will be shown here while loading -->
         </div>
 
-        <!-- Optional: Category Filter/Navigation -->
-        <!-- <div id="community-categories-nav" class="mb-3"></div> -->
-
-        <div id="community-threads-list" class="mb-4">
-            <!-- Threads will be loaded here -->
-            <!-- Example Thread Item (rendered by JS) -->
-            <!--
-            <div class="community-thread-item card card-body bg-darker mb-2">
-                <h5 class="card-title"><a href="#community/thread/threadId123">Thread Title</a></h5>
-                <p class="card-text small text-muted">
-                    Started by UserXYZ on Jan 1, 2025 - 5 replies
-                    <span class="badge bg-secondary">Movie: Inception</span>
-                </p>
+        <!-- MODAL for creating a new thread -->
+        <div class="modal fade" id="createThreadModal" tabindex="-1" aria-labelledby="createThreadModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-secondary text-light border-secondary">
+                    <div class="modal-header border-bottom border-secondary">
+                        <h5 class="modal-title" id="createThreadModalLabel">Create New Discussion</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Form for creating a thread -->
+                        <form id="create-thread-form">
+                            <div class="mb-3">
+                                <label for="threadTitle" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="threadTitle" required maxlength="150" placeholder="A captivating title for your discussion...">
+                            </div>
+                            <div class="mb-3">
+                                <label for="threadFirstPost" class="form-label">Your Post</label>
+                                <textarea class="form-control" id="threadFirstPost" rows="5" required maxlength="5000" placeholder="Share your thoughts..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="threadLinkMovieId" class="form-label">Link to a Movie (Optional)</label>
+                                <input type="text" class="form-control" id="threadLinkMovieId" placeholder="Enter a TMDB Movie ID (e.g., 157336 for Interstellar)">
+                                <div class="form-text">This will add a badge to your thread.</div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>Create Thread</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            -->
         </div>
+    </div>
+</section>
+
+<!-- ====================================================== -->
+<!-- COMMUNITY THREAD DETAIL VIEW -->
+<!-- ====================================================== -->
+<section id="community-thread-detail-view" class="view content-wrapper"> <!-- MODIFIED: class changed -->
+    <div class="container">
+        <button class="btn btn-outline-light btn-sm mb-4 back-button" onclick="Utils.goBackOrHome()"><i class="bi bi-arrow-left me-1"></i> Back to Community</button>
+        
+        <!-- Main thread content will be rendered here -->
+        <div id="thread-detail-content" class="mb-5">
+            <!-- Skeleton for the main post -->
+        </div>
+
+        <h3 class="text-white mb-3">Replies</h3>
+        <!-- List of replies will be rendered here -->
+        <div id="thread-posts-list" class="d-flex flex-column gap-3">
+            <!-- Skeletons for replies -->
+        </div>
+
+        <!-- Form for adding a new reply -->
+        <form id="add-post-form" class="mt-5 d-none">
+            <h4 class="text-white">Add Your Reply</h4>
+            <div class="mb-3">
+                <textarea class="form-control" id="newPostContent" rows="4" required placeholder="Write your reply..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-send-fill me-2"></i>Post Reply</button>
+        </form>
+    </div>
+</section>
+
+
+        
 
         <!-- Modal for Creating New Thread (Bootstrap) -->
         <div class="modal fade" id="createThreadModal" tabindex="-1" aria-labelledby="createThreadModalLabel" aria-hidden="true">
@@ -586,26 +641,6 @@
         </div>
     </div>
 </section>
-
-<section id="community-thread-detail-view" class="view-section py-4" style="display: none;">
-    <div class="container">
-        <button class="btn btn-outline-light btn-sm mb-3" onclick="location.hash='#community'"><i class="bi bi-arrow-left"></i> Back to Community</button>
-        <div id="thread-detail-content" class="mb-4">
-        </div>
-        <h3 class="text-white mb-3">Replies</h3>
-        <div id="thread-posts-list">
-       
-        </div>
-        <form id="add-post-form" class="mt-4" style="display:none;"> 
-            <h4 class="text-white">Add Your Reply</h4>
-            <div class="mb-3">
-                <textarea class="form-control form-control-dark" id="newPostContent" rows="4" required placeholder="Write your reply..."></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Post Reply</button>
-        </form>
-    </div>
-</section>
-
         </div> <!-- End View Container -->
     </main>
 
