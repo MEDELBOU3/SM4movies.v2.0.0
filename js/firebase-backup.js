@@ -214,6 +214,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     appLogoutButtonDropdown.setAttribute('data-listener-attached', 'true');
                 }
 
+                await Favorites.load();
+
                 // --- NEW: Load user's notification subscriptions on login (before App.handleAuthReady) ---
                 if (typeof State !== 'undefined' && typeof appDb !== 'undefined') {
                     try {
@@ -252,9 +254,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof State !== 'undefined') State.activeNotificationSubscriptions = []; // <<< NEW
 
                 const currentPagePath = window.location.pathname;
-                const isAppPage = currentPagePath.includes('app.html') || currentPagePath.includes('app2.html') || currentPagePath.includes('sm4movies.html'); // <<< Check for your main app page
+                const isAppPage = currentPagePath.includes('app.html') || currentPagePath.includes('app.html') || currentPagePath.includes('sm4movies.html'); // <<< Check for your main app page
                 const isIndexPage = currentPagePath.endsWith('/') || currentPagePath.endsWith('index.html');
 
+                // V V V ADD THIS LINE V V V
+                Favorites.clear(); // Clear the local favorites cache on logout
+                // ^ ^ ^ ADD THIS LINE ^ ^ ^
                 if (isAppPage && !isIndexPage) {
                     console.warn("[Auth State] User is logged out on app page. Redirecting to landing page (index.html)...");
                     window.location.replace('index.html');
