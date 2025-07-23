@@ -1698,15 +1698,17 @@
                console.log("🚀 App Init Starting..."); // Use an emoji for fun!
                 // --- NEW: Register Service Worker for Push Notifications ---
                 if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.register('service-worker.js')
+                    // V V V CHANGE THIS LINE V V V
+                    navigator.serviceWorker.register('service-worker.js') // REMOVE the leading slash "/"
+                    // ^ ^ ^ CHANGE THIS LINE ^ ^ ^
                     .then(registration => {
                         console.log('Service Worker registered with scope:', registration.scope);
                     })
                     .catch(error => {
-                       console.error('Service Worker registration failed:', error);
-                       Utils.showToast("Notifications may not work. Service Worker failed to register.", "danger");
+                        console.error('Service Worker registration failed:', error);
+                        Utils.showToast("Notifications may not work. Service Worker failed to register.", "danger");
                     });
-                } else {
+                }  else {
                    console.warn("Service Worker not supported by this browser. Push notifications will be disabled.");
                    Utils.showToast("Your browser does not support notifications.", "warning");
                    // Disable notification features if SW not supported
@@ -6660,4 +6662,4 @@
          }
 
         // --- Start the Application ---
-        document.addEventListener('DOMContentLoaded', App.init);
+        //document.addEventListener('DOMContentLoaded', App.init);
