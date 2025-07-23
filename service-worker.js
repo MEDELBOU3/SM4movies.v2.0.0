@@ -1,5 +1,58 @@
 // service-worker.js
+// service-worker.js
 
+// Listener for the 'push' event, which is triggered when the server sends a notification.
+self.addEventListener('push', event => {
+  console.log('[Service Worker] Push Received.');
+
+  // The data sent from your server. We'll assume it's a JSON string.
+  const pushData = event.data.json();
+  console.log('[Service Worker] Push data: ', pushData);
+
+  const title = pushData.title || 'AuraStream Notification';
+  const options = {
+    body: pushData.body || 'A new update is available!',
+    icon: pushData.icon || '/images/icon-192x192.png', // Path to a default notification icon
+    badge: pushData.badge || '/images/badge-72x72.png', // Path to a smaller badge icon
+    data: {
+      url: pushData.url || '/' // URL to open when the notification is clicked
+    }
+  };
+
+  // The waitUntil() method ensures the service worker doesn't terminate
+  // before the notification has been displayed.
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Listener for the 'notificationclick' event.
+self.addEventListener('notificationclick', event => {
+  console.log('[Service Worker] Notification click Received.');
+
+  // Close the notification pop-up.
+  event.notification.close();
+
+  const urlToOpen = event.notification.data.url || '/';
+
+  // The waitUntil() method here ensures that the browser doesn't terminate the
+  // service worker before the new window/tab has been displayed.
+  event.waitUntil(
+    clients.matchAll({
+      type: "window"
+    }).then(clientList => {
+      // If a window for the app is already open, focus it.
+      for (const client of clientList) {
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise, open a new window.
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
+/*
 // Versioning the service worker cache (important for updates)
 const CACHE_NAME = 'auraStream-v1';
 // List files to pre-cache (optional, but good for offline experience)
@@ -125,3 +178,4 @@ self.addEventListener('notificationclick', (event) => {
         })
     );
 });
+*/
