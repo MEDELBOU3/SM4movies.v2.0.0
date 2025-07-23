@@ -2043,6 +2043,197 @@ body.theme-light .skeleton-h-card-overlay {
     pointer-events: none;
 }
 
+/* ====================================================== */
+/* COMMUNITY FEATURE STYLES */
+/* ====================================================== */
+
+/* --- General View & Header --- */
+#community-view h1, #community-thread-detail-view h1 {
+    border-bottom: 2px solid var(--primary-accent);
+    display: inline-block;
+    padding-bottom: 0.5rem;
+}
+
+#community-user-actions .btn {
+    font-weight: 600;
+}
+
+/* --- Thread List Item --- */
+.community-thread-item {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+}
+
+.community-thread-item:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 8px 25px rgba(var(--primary-accent-rgb), 0.1);
+    border-color: var(--primary-accent);
+    z-index: 10;
+}
+
+.community-thread-item .card-title {
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: color 0.2s ease;
+}
+
+.community-thread-item:hover .card-title {
+    color: var(--primary-accent);
+}
+
+.community-thread-item .card-text {
+    color: var(--text-medium);
+}
+
+.community-thread-item .badge {
+    font-weight: 500;
+}
+
+.community-thread-item .reply-stats {
+    border-left: 1px solid var(--border-color);
+    padding-left: 1rem;
+    text-align: center;
+    flex-shrink: 0;
+    width: 90px;
+}
+
+/* --- Thread Detail View --- */
+.thread-detail-header {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.thread-detail-header .thread-title {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    color: var(--text-light);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.thread-detail-header .thread-meta {
+    color: var(--text-medium);
+    font-size: 0.9rem;
+}
+
+.thread-detail-header .badge {
+    font-size: 0.9rem;
+}
+
+/* --- Post Item Styling (Applies to first post and replies) --- */
+.community-post-item {
+    background: transparent; /* Replies are inside a card, so they are transparent */
+    padding: 1.5rem 0;
+    display: flex;
+    gap: 1rem;
+}
+
+.community-post-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post-author-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--surface-color);
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    border: 2px solid var(--border-color);
+}
+
+.post-content .author-name {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.post-content .post-timestamp {
+    color: var(--text-medium);
+    font-size: 0.85em;
+}
+
+.post-content .post-body {
+    color: var(--text-medium);
+    line-height: 1.7;
+    margin-top: 0.75rem;
+    word-wrap: break-word; /* Ensure long words/links wrap */
+}
+
+.post-content .post-body p {
+    margin-bottom: 1em;
+}
+
+.post-content .post-body p:last-child {
+    margin-bottom: 0;
+}
+
+/* Card container for replies */
+#thread-posts-list .card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 0 1.5rem; /* Padding is on the card, not the items */
+}
+
+/* --- Reply Form --- */
+#add-post-form {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* --- Modal Styling --- */
+#createThreadModal .modal-content {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    border-radius: var(--radius-lg);
+}
+
+#createThreadModal .modal-header,
+#createThreadModal .modal-footer {
+    border-color: var(--border-color);
+}
+
+#createThreadModal .form-control {
+    background-color: var(--surface-color);
+}
+
+/* --- Skeleton Styles for Community --- */
+.skeleton-thread-item {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.skeleton-post-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skeleton-post-item:last-child {
+    border-bottom: none;
+}
+
 .live-sport-card {
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     border: 1px solid transparent; /* Base border for smooth hover transition */
