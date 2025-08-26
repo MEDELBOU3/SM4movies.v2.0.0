@@ -10,10 +10,25 @@
             GEMINI_API_KEY: 'AIzaSyC581OIEWWS2Op7wUPtIVRGCSe0hr9btAg', // YOUR ACTUAL KEY HERE
             GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash', 
             STREAMING_PROVIDERS: [ // Providers for the player view iframe
-                 { name: 'VidSrc.to', urlFormat: (id, type, season, episode) => `https://vidsrc.to/embed/${type}/${id}${type==='tv'&&season?`/${season}-${episode||1}`:''}` },
-                 { name: 'SuperEmbed', urlFormat: (id, type, season, episode) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type==='tv'&&season?`&s=${season}&e=${episode||1}`:''}` },
-                 // Add more player sources if desired, e.g., 2embed.cc
-                 // { name: '2Embed', urlFormat: (id, type, season, episode) => `https://www.2embed.cc/embed${type==='tv'?'tv':' películas'}/${id}${type==='tv'&&season?`?s=${season}&e=${episode||1}`:''}` }
+                { name: 'VidSrc.to', urlFormat: (id, type, season, episode) => `https://vidsrc.to/embed/${type}/${id}${type==='tv'&&season?`/${season}-${episode||1}`:''}` },
+                { name: 'SuperEmbed', urlFormat: (id, type, season, episode) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type==='tv'&&season?`&s=${season}&e=${episode||1}`:''}` },
+                // Add more player sources if desired, e.g., 2embed.cc
+                { name: '2Embed', urlFormat: (id, type, season, episode) => `https://www.2embed.cc/embed${type==='tv'?'tv':' películas'}/${id}${type==='tv'&&season?`?s=${season}&e=${episode||1}`:''}` },
+                { 
+                    name: 'Vidrock', 
+                    urlFormat: (id, type, season, episode) => {
+                    if (type === 'movie') {
+                       // Movie embed (TMDB ID by default)
+                       return `https://vidrock.net/movie/${id}`;
+                    } else if (type === 'tv' && season) {
+                        // TV embed (needs season + episode)
+                        return `https://vidrock.net/tv/${id}/${season}/${episode || 1}`;
+                    } else {
+                        return null; // Invalid context
+                    }
+                  }
+                }
+
             ],
             HOME_SECTIONS: [
                 { // <<< NEW SECTION >>>
@@ -110,8 +125,6 @@
             person: document.getElementById('person-view'),
             watchlist: document.getElementById('watchlist-view'),
             analytics: document.getElementById('analytics-view'),
-            community: document.getElementById('community-view'), // <<< ADD
-            communityThreadDetail: document.getElementById('community-thread-detail-view'), // <<< ADD
         },
         // Navbar
         navbarMenu: document.getElementById('navbarNav'),
@@ -217,19 +230,6 @@
         notificationSubscriptionsList: document.getElementById('notification-subscriptions-list'),
         requestNotificationPermissionBtn: document.getElementById('request-notification-permission-btn'),
         notificationPermissionStatus: document.getElementById('notification-permission-status'),
-
-        //Community
-        
-        community : {
-            userActions: document.getElementById('community-user-actions'),
-            threadsList: document.getElementById('community-threads-list'),
-            createThreadModal: document.getElementById('createThreadModal'),
-            createThreadForm: document.getElementById('create-thread-form'),
-            threadDetailContent: document.getElementById('thread-detail-content'),
-            threadPostsList: document.getElementById('thread-posts-list'),
-            addPostForm: document.getElementById('add-post-form'),
-        },
-
 
     };
         // --- State Variables ---
@@ -478,28 +478,31 @@ const ContinueWatching = {
                 };
             },
 
-            formatRelativeTime: (date) => {
-                const now = new Date();
-                const seconds = Math.round((now - date) / 1000);
-    
-                const minutes = Math.round(seconds / 60);
-                const hours = Math.round(minutes / 60);
-    
-                const days = Math.round(hours / 24);
-                const weeks = Math.round(days / 7);
-    
-                const months = Math.round(days / 30.44);
-                const years = Math.round(days / 365.25);
+            formatCurrency: (number) => {
+    if (typeof number !== 'number' || number <= 0) {
+        return 'N/A';
+    }
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(number);
+},
 
-    
-                if (seconds < 60) return `${seconds} second${seconds === 1 ? '' : 's'} ago`;
-                if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-                if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-                if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
-                if (weeks < 5) return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
-                if (months < 12) return `${months} month${months === 1 ? '' : 's'} ago`;
-                return `${years} year${years === 1 ? '' : 's'} ago`;
-            },
+// Gets the full name of a language from its ISO 639-1 code.
+getLanguageName: (code) => {
+    if (!code) return 'N/A';
+    try {
+        // Use Intl.DisplayNames to get the full language name.
+        const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
+        return languageNames.of(code);
+    } catch (e) {
+        console.warn(`Could not find language name for code: ${code}`);
+        return code.toUpperCase(); // Fallback to the code itself if lookup fails
+    }
+},
+
             // Generate HTML for a loading spinner
             getSpinnerHTML: (text = 'Loading...', large = false) => `
                 <div class="loading-spinner" style="min-height: ${large ? '300px':'150px'};">
@@ -545,6 +548,22 @@ const ContinueWatching = {
                 return cardsHtml;
             },
 
+            formatRelativeTime: (date) => {
+    const now = new Date();
+    const seconds = Math.round((now - date) / 1000);
+    const minutes = Math.round(seconds / 60);
+    const hours = Math.round(minutes / 60);
+    const days = Math.round(hours / 24);
+    const months = Math.round(days / 30.44);
+    const years = Math.round(days / 365.25);
+
+    if (seconds < 60) return `just now`;
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
+    return `${years} year${years > 1 ? 's' : ''} ago`;
+},
             // Generates HTML for Live Score skeleton cards
             getSkeletonLiveScoreCardHTML: (count = 4) => {
                 let cardsHtml = '';
@@ -1477,17 +1496,6 @@ const ContinueWatching = {
                          App.resizeVisualizerCanvas(); // Ensure canvas size is correct
                      };
                 }
-                else if (hash.startsWith('#community/thread/')) { // <<< ADD: Route for a specific thread
-                    targetViewElement = DOM.views.communityThreadDetail;
-                    activeNavLinkHref = '#community'; // Keep the main community link active
-                    const threadId = hash.substring('#community/thread/'.length);
-                    runOnViewLoad = () => App.loadThreadDetailPage(threadId);
-
-                } else if (hash === '#community') { // <<< ADD: Route for the main community page
-                    targetViewElement = DOM.views.community;
-                    activeNavLinkHref = '#community';
-                    runOnViewLoad = () => App.loadCommunityPage();
-                }
                 else if (hash === '#watchlist') {
                      targetViewElement = DOM.views.watchlist;
                      activeNavLinkHref = '#watchlist'; // Highlight watchlist nav link
@@ -1778,6 +1786,7 @@ const ContinueWatching = {
                 if (DOM.connectionExplorerModal) {
                   console.log("  Initializing Connection Modal & listeners...");
                   bsInstances.connectionModal = new bootstrap.Modal(DOM.connectionExplorerModal);
+
                   DOM.connectionExplorerModal.addEventListener('shown.bs.modal', () => {
                      if (State.currentExplorerItem && State.isGraphLoading) {
                          console.log("[Modal Event] 'shown' triggered, loading graph for:", State.currentExplorerItem);
@@ -1905,10 +1914,6 @@ const ContinueWatching = {
              DOM.analyticsNavLink?.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
              document.querySelector('.nav-link[href="#livesports"]')?.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
 
-
-            //Community
-            DOM.community.createThreadForm?.addEventListener('submit', App.handleCreateThreadSubmit);
-            DOM.community.addPostForm?.addEventListener('submit', App.handleAddPostSubmit);
 
             // Watchlist Clear Listener
             DOM.clearWatchlistBtn?.addEventListener('click', App.handleClearWatchlist);
@@ -2631,384 +2636,6 @@ const ContinueWatching = {
                     // without rendering if needed for other features.
                 }
             },
-
-
-
-            // ===================================================================
-// START: NEW COMMUNITY FEATURE FUNCTIONS
-// ===================================================================
-
-/**
- * Loads the main community page, displaying a list of discussion threads.
- */
-loadCommunityPage: async () => {
-    if (!DOM.community.threadsList || !DOM.community.userActions) return;
-
-    // Show skeletons while loading
-    DOM.community.threadsList.innerHTML = App.getSkeletonThreadHTML(5);
-    
-    // Handle the "Create Thread" button visibility
-    if (appAuth.currentUser) {
-        DOM.community.userActions.innerHTML = `
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
-                <i class="bi bi-plus-lg me-2"></i>Create New Thread
-            </button>`;
-    } else {
-        DOM.community.userActions.innerHTML = `
-            <a href="index.html" class="btn btn-outline-light">Log in to post</a>`;
-    }
-
-    try {
-        const threadsSnapshot = await appDb.collection("community_threads")
-            .orderBy("lastReplyAt", "desc")
-            .limit(25)
-            .get();
-
-        if (threadsSnapshot.empty) {
-            DOM.community.threadsList.innerHTML = `
-                <div class="text-center py-5 text-muted">
-                    <i class="bi bi-chat-quote-fill fs-1 mb-3"></i>
-                    <h4>No discussions yet.</h4>
-                    <p>Be the first to start a conversation!</p>
-                </div>`;
-        } else {
-            const threads = threadsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            App.renderCommunityThreads(threads);
-        }
-    } catch (error) {
-        console.error("Error loading community threads:", error);
-        DOM.community.threadsList.innerHTML = Utils.getErrorHTML("Could not load community discussions.");
-    }
-},
-
-/**
- * Renders a list of thread items into the community page.
- */
-renderCommunityThreads: (threads) => {
-    DOM.community.threadsList.innerHTML = ''; // Clear skeletons
-    threads.forEach(thread => {
-        const threadLink = document.createElement('a');
-        threadLink.href = `#community/thread/${thread.id}`;
-        threadLink.className = 'community-thread-item text-decoration-none';
-        
-        const lastReplyTime = thread.lastReplyAt ? Utils.formatRelativeTime(thread.lastReplyAt.toDate()) : 'No replies';
-        const createdBy = thread.createdBy ? Utils.escapeHtml(thread.createdBy.displayName) : 'Anonymous';
-
-        threadLink.innerHTML = `
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="flex-grow-1">
-                    <h5 class="card-title mb-1">${Utils.escapeHtml(thread.title)}</h5>
-                    <p class="card-text small text-muted mb-0">
-                        By ${createdBy} • Last reply ${lastReplyTime}
-                    </p>
-                </div>
-                ${thread.linkedMovieTitle ? `<span class="badge bg-primary bg-opacity-25 text-primary-emphasis flex-shrink-0 p-2 d-none d-sm-inline-block"><i class="bi bi-film me-1"></i> ${Utils.escapeHtml(thread.linkedMovieTitle)}</span>` : ''}
-                <div class="reply-stats">
-                    <div class="fw-bold fs-4 text-light">${thread.replyCount || 0}</div>
-                    <div class="small text-muted">Replies</div>
-                </div>
-            </div>
-        `;
-        DOM.community.threadsList.appendChild(threadLink);
-    });
-},
-
-/**
- * Handles the submission of the "Create Thread" form.
- */
-handleCreateThreadSubmit: async (event) => {
-    event.preventDefault();
-    if (!appAuth.currentUser) {
-        Utils.showToast("You must be logged in to create a thread.", "warning");
-        return;
-    }
-
-    const title = document.getElementById('threadTitle').value.trim();
-    const firstPost = document.getElementById('threadFirstPost').value.trim();
-    const movieId = document.getElementById('threadLinkMovieId').value.trim();
-    
-    if (!title || !firstPost) {
-        Utils.showToast("Title and post content are required.", "warning");
-        return;
-    }
-    
-    const button = DOM.community.createThreadForm.querySelector('button[type="submit"]');
-    button.disabled = true;
-    button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Creating...`;
-
-    try {
-        const user = appAuth.currentUser;
-        const now = firebase.firestore.FieldValue.serverTimestamp();
-
-        const threadData = {
-            title: title,
-            createdBy: {
-                userId: user.uid,
-                displayName: user.displayName || user.email.split('@')[0],
-            },
-            createdAt: now,
-            lastReplyAt: now, // Initially, the last reply is the creation time
-            replyCount: 0,
-            linkedMovieId: movieId || null,
-            linkedMovieTitle: null // Will be populated if movieId exists
-        };
-        
-        // If a movie ID is linked, fetch its title
-        if (movieId) {
-            const movieDetails = await API.fetchTMDB(`/movie/${movieId}`);
-            if (movieDetails) {
-                threadData.linkedMovieTitle = movieDetails.title;
-            }
-        }
-
-        // Create the thread document
-        const threadRef = await appDb.collection("community_threads").add(threadData);
-        
-        // Create the first post in the thread
-        await appDb.collection("community_posts").add({
-            threadId: threadRef.id,
-            content: firstPost,
-            createdBy: {
-                userId: user.uid,
-                displayName: user.displayName || user.email.split('@')[0],
-            },
-            createdAt: now,
-        });
-
-        Utils.showToast("Thread created successfully!", "success");
-        bootstrap.Modal.getInstance(DOM.community.createThreadModal).hide();
-        DOM.community.createThreadForm.reset();
-        location.hash = `#community/thread/${threadRef.id}`; // Navigate to the new thread
-
-    } catch (error) {
-        console.error("Error creating thread:", error);
-        Utils.showToast("Failed to create thread. Please try again.", "danger");
-    } finally {
-        button.disabled = false;
-        button.innerHTML = `<i class="bi bi-plus-lg me-2"></i>Create Thread`;
-    }
-},
-
-/**
- * Loads the detail view for a specific thread, including its posts.
- * @param {string} threadId - The ID of the thread to load.
- */
-loadThreadDetailPage: async (threadId) => {
-    if (!DOM.community.threadDetailContent || !DOM.community.threadPostsList || !DOM.community.addPostForm) return;
-
-    // Show skeletons
-    DOM.community.threadDetailContent.innerHTML = App.getSkeletonPostHTML();
-    DOM.community.threadPostsList.innerHTML = App.getSkeletonPostHTML(3);
-    Utils.setElementVisibility(DOM.community.addPostForm, false);
-
-    try {
-        // Fetch the main thread and its posts in parallel
-        const [threadDoc, postsSnapshot] = await Promise.all([
-            appDb.collection("community_threads").doc(threadId).get(),
-            appDb.collection("community_posts").where("threadId", "==", threadId).orderBy("createdAt", "asc").get()
-        ]);
-
-        if (!threadDoc.exists) {
-            throw new Error("Discussion thread not found.");
-        }
-
-        const threadData = { id: threadDoc.id, ...threadDoc.data() };
-        const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        // The first post is part of the thread detail
-        const firstPost = posts.shift(); 
-        
-        App.renderThreadDetails(threadData, firstPost);
-        App.renderThreadPosts(posts);
-
-        // Show the reply form if the user is logged in
-        if (appAuth.currentUser) {
-            Utils.setElementVisibility(DOM.community.addPostForm, true);
-            // Store threadId on the form for the submit handler
-            DOM.community.addPostForm.dataset.threadId = threadId;
-        }
-
-    } catch (error) {
-        console.error("Error loading thread details:", error);
-        DOM.community.threadDetailContent.innerHTML = Utils.getErrorHTML(error.message);
-        DOM.community.threadPostsList.innerHTML = '';
-    }
-},
-
-/**
- * Renders the main content of a thread.
- */
-renderThreadDetails: (thread, firstPost) => {
-    DOM.community.threadDetailContent.innerHTML = `
-        <div class="thread-detail-header">
-            <h1 class="thread-title">${Utils.escapeHtml(thread.title)}</h1>
-            <div class="thread-meta mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <span>By ${Utils.escapeHtml(thread.createdBy.displayName)} • Created ${Utils.formatRelativeTime(thread.createdAt.toDate())}</span>
-                ${thread.linkedMovieTitle ? `<a href="#details=movie/${thread.linkedMovieId}" class="badge bg-primary text-decoration-none"><i class="bi bi-film me-1"></i> ${Utils.escapeHtml(thread.linkedMovieTitle)}</a>` : ''}
-            </div>
-        </div>
-        <div class="card bg-dark border-secondary">
-            <div class="card-body">
-                ${App.getPostHTML(firstPost)}
-            </div>
-        </div>
-    `;
-},
-
-/**
- * Renders a list of reply posts.
- */
-renderThreadPosts: (posts) => {
-    // Clear skeletons
-    DOM.community.threadPostsList.innerHTML = '';
-    
-    if (posts.length === 0) {
-        DOM.community.threadPostsList.innerHTML = `<p class="text-muted text-center mt-4">No replies yet. Be the first to respond!</p>`;
-        return;
-    }
-
-    const postsContainer = document.createElement('div');
-    postsContainer.className = 'card'; // The container card
-    
-    posts.forEach(post => {
-        const postElement = document.createElement('div');
-        postElement.className = 'community-post-item';
-        postElement.innerHTML = App.getPostHTML(post);
-        postsContainer.appendChild(postElement);
-    });
-    
-    DOM.community.threadPostsList.appendChild(postsContainer);
-},
-
-/**
- * Generates the HTML for a single post (used for main post and replies).
- */
-getPostHTML: (post) => {
-    if (!post) return '<p class="text-muted"><em>This post could not be loaded.</em></p>';
-    const createdBy = post.createdBy ? Utils.escapeHtml(post.createdBy.displayName) : 'Anonymous';
-    const createdAt = post.createdAt ? Utils.formatRelativeTime(post.createdAt.toDate()) : '...';
-    const initials = (createdBy.split(' ').map(n=>n[0]).join('') || 'A').substring(0,2).toUpperCase();
-
-    // Use replace to convert newlines to <br> for proper display
-    const postContentHtml = Utils.escapeHtml(post.content).replace(/\n/g, '<br>');
-
-    return `
-        <div class="post-author-avatar" title="${createdBy}">${initials}</div>
-        <div class="post-content flex-grow-1">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="author-name">${createdBy}</span>
-                <span class="post-timestamp">${createdAt}</span>
-            </div>
-            <div class="post-body mt-2">
-                ${postContentHtml}
-            </div>
-        </div>
-    `;
-},
-
-
-/**
- * Handles the submission of a new reply post.
- */
-handleAddPostSubmit: async (event) => {
-    event.preventDefault();
-    const threadId = event.target.dataset.threadId;
-    if (!appAuth.currentUser || !threadId) {
-        Utils.showToast("You must be logged in to reply.", "warning");
-        return;
-    }
-
-    const content = document.getElementById('newPostContent').value.trim();
-    if (!content) return;
-
-    const button = DOM.community.addPostForm.querySelector('button[type="submit"]');
-    button.disabled = true;
-
-    try {
-        const user = appAuth.currentUser;
-        const now = firebase.firestore.FieldValue.serverTimestamp();
-
-        // Add the new post document
-        await appDb.collection("community_posts").add({
-            threadId: threadId,
-            content: content,
-            createdBy: {
-                userId: user.uid,
-                displayName: user.displayName || user.email.split('@')[0],
-            },
-            createdAt: now,
-        });
-
-        // Update the thread's reply count and last reply timestamp using a transaction
-        const threadRef = appDb.collection("community_threads").doc(threadId);
-        await appDb.runTransaction(async (transaction) => {
-            transaction.update(threadRef, {
-                replyCount: firebase.firestore.FieldValue.increment(1),
-                lastReplyAt: now,
-            });
-        });
-
-        DOM.community.addPostForm.reset();
-        App.loadThreadDetailPage(threadId); // Reload the whole page to show the new post
-
-    } catch (error) {
-        console.error("Error adding post:", error);
-        Utils.showToast("Failed to add reply. Please try again.", "danger");
-    } finally {
-        button.disabled = false;
-    }
-},
-
-/**
- * Generates skeleton HTML for the thread list.
- */
-getSkeletonThreadHTML: (count = 5) => {
-    let html = '';
-    for (let i = 0; i < count; i++) {
-        html += `
-            <div class="skeleton-thread-item">
-                <div class="flex-grow-1">
-                    <div class="skeleton skeleton-title" style="width: 60%; height: 1.2em; margin-bottom: 0.5rem;"></div>
-                    <div class="skeleton" style="width: 40%; height: 0.8em;"></div>
-                </div>
-                <div class="reply-stats">
-                    <div class="skeleton mx-auto" style="width: 30px; height: 1.5em; margin-bottom: 0.3rem;"></div>
-                    <div class="skeleton mx-auto" style="width: 50px; height: 0.8em;"></div>
-                </div>
-            </div>`;
-    }
-    return html;
-},
-
-/**
- * Generates skeleton HTML for posts.
- */
-getSkeletonPostHTML: (count = 1) => {
-    let html = '';
-    for (let i = 0; i < count; i++) {
-        html += `
-            <div class="community-post-item">
-                <div class="post-author-avatar skeleton"></div>
-                <div class="post-content flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="skeleton" style="width: 120px; height: 1em;"></div>
-                        <div class="skeleton" style="width: 80px; height: 0.8em;"></div>
-                    </div>
-                    <div class="post-body mt-3">
-                        <div class="skeleton mb-2" style="width: 90%; height: 1em;"></div>
-                        <div class="skeleton mb-2" style="width: 100%; height: 1em;"></div>
-                        <div class="skeleton" style="width: 70%; height: 1em;"></div>
-                    </div>
-                </div>
-            </div>`;
-    }
-    // Wrap replies in the card structure
-    return `<div class="card">${html}</div>`;
-},
-
-// ===================================================================
-// END: NEW COMMUNITY FEATURE FUNCTIONS
-// ===================================================================
        
             // --- TMDB Methods ---
             loadTmdbGenres: async () => {
@@ -3454,232 +3081,168 @@ getSkeletonPostHTML: (count = 1) => {
         console.log("[Home Sections] Finished processing all section configurations.");
     },*/// End loadHomeSections
              
-   /**
- * Loads and renders all configured sections for the home page.
- * Manages static sections (Continue Watching, Most Viewed) and dynamically creates others.
- * Handles loading states with skeletons and provides robust error handling.
- * @param {Array} preFetchedContinueWatchingList - The user's watch history, pre-fetched on login.
- */
-loadHomeSections: async (preFetchedContinueWatchingList = []) => {
-    console.log("[Home Sections] Starting to build home page...");
-    const mainContainer = DOM.homeContentSectionsContainer;
-    if (!mainContainer) {
-        console.error("[Home Sections] CRITICAL: Main container (#home-content-sections) not found!");
-        return;
-    }
-
-    // --- 1. PREPARATION ---
-    // Clear only dynamically generated sections from previous loads, preserving static ones.
-    mainContainer.querySelectorAll('section.dynamic-section').forEach(el => el.remove());
-    State.horizontalScrollContainers = []; // Reset scroll container tracking.
-
-    // Check for global data availability (non-blocking).
-    const globalViewsExist = await (async () => {
-        if (!appDb) return false;
-        try {
-            const snapshot = await appDb.collection("viewCounts").limit(1).get();
-            return !snapshot.empty;
-        } catch (e) {
-            console.error("[Home Sections] Firestore check for 'viewCounts' failed:", e);
-            return false;
-        }
-    })();
-
-    // --- 2. LOOP THROUGH SECTION CONFIGURATIONS ---
-    for (const sectionConfig of config.HOME_SECTIONS) {
-        // <<< FIX: Skip sections with invalid configuration to prevent errors.
-        if (!sectionConfig.id && !sectionConfig.endpoint) {
-            console.warn(`[Home Sections] Skipping section "${sectionConfig.title}" due to invalid configuration (missing 'id' or 'endpoint').`);
-            continue;
+        loadHomeSections: async (preFetchedContinueWatchingList = []) => {
+        console.log("[Home Sections] Starting home sections load...");
+        const mainContainer = DOM.homeContentSectionsContainer;
+        if (!mainContainer) {
+            console.error("[Home Sections] Main container (#home-content-sections) not found!");
+            return;
         }
 
-        let sectionElement, contentContainer, prevBtn, nextBtn;
-        let shouldRenderContent = false; // Flag to determine if we should fetch data for this section.
-        const isHorizontal = sectionConfig.display_style?.startsWith('horizontal');
+        // Clear any previous dynamic content that might have been loaded here,
+        // but preserve static sections if they are present.
+        // This line might need adjustment if you have other static sections
+        // that are children of mainContainer besides the ones we're managing.
+        // For now, let's assume we clean up dynamically added ones but preserve the ones above.
+        // A safer approach might be to specifically remove old dynamic children,
+        // rather than blindly clearing mainContainer.innerHTML if it contains static children.
+        // For simplicity for now, we'll let the individual section logic handle their innerHTML.
+        // mainContainer.innerHTML = Utils.getSpinnerHTML("Loading content sections...", true); // This line is likely problematic if you have static children now. Remove or adjust.
 
-        // --- A) Handle STATIC sections (already in HTML) ---
-        if (sectionConfig.id === 'continue-watching' || sectionConfig.id === 'most-viewed') {
-            sectionElement = document.getElementById(`${sectionConfig.id}-section`);
-            if (!sectionElement) {
-                console.warn(`[Home Sections] Static section #${sectionConfig.id}-section not found in HTML.`);
-                continue;
+        State.horizontalScrollContainers = []; // Reset scroll container tracking
+        await new Promise(resolve => setTimeout(resolve, 50));
+        // mainContainer.innerHTML = ''; // DO NOT clear mainContainer here if it contains static HTML
+
+        const continueWatchingList = preFetchedContinueWatchingList;
+
+        // Ensure the 'Most Viewed' section is initially hidden or shown based on global data
+        const mostViewedCheckPromise = (async () => {
+            if (typeof appDb === 'undefined' || !appDb) return false;
+            try {
+                const querySnapshot = await appDb.collection("viewCounts").limit(1).get();
+                return !querySnapshot.empty;
+            } catch (e) {
+                console.error("[Home Sections] Firestore check for 'viewCounts' failed:", e);
+                return false;
             }
-            contentContainer = sectionElement.querySelector('.horizontal-card-container');
-            prevBtn = sectionElement.querySelector('.h-scroll-btn.prev');
-            nextBtn = sectionElement.querySelector('.h-scroll-btn.next');
+        })();
+        const globalViewsExist = await mostViewedCheckPromise;
+ 
+        App.loadUpcomingSection(); 
 
-            // Determine visibility based on data availability.
-            const hasData = (sectionConfig.id === 'continue-watching' && preFetchedContinueWatchingList.length > 0) ||
-                            (sectionConfig.id === 'most-viewed' && globalViewsExist);
+        for (const sectionConfig of config.HOME_SECTIONS) {
+            console.log(`[Home Sections] Processing config: "${sectionConfig.title}" (ID: ${sectionConfig.id || 'N/A'})`);
 
-            Utils.setElementVisibility(sectionElement, hasData);
-            if (hasData) {
-                shouldRenderContent = true;
-                contentContainer.innerHTML = Utils.getSkeletonHorizontalCardHTML(5); // Show skeletons.
-            }
+            let sectionElement = null; // Renamed from sectionDiv to sectionElement
+            let contentContainer = null;
+            let prevBtn = null;
+            let nextBtn = null;
+            let shouldRenderContent = false; // Flag to indicate if this section's content needs populating
 
-        // --- B) Handle DYNAMIC sections (created on the fly) ---
-        } else if (sectionConfig.endpoint) {
-            shouldRenderContent = true;
-            sectionElement = document.createElement('section');
-            sectionElement.className = 'content-section mb-5 dynamic-section'; // Add class for easy cleanup.
+            // --- Determine the target element and its content container ---
+            if (sectionConfig.id === 'continue-watching') {
+                sectionElement = document.getElementById('continue-watching-section'); // FIND THE STATIC ELEMENT
+                if (!sectionElement) { console.warn("[Home Sections] Static #continue-watching-section not found."); continue; }
+                contentContainer = sectionElement.querySelector('.continue-watching-container');
+                prevBtn = sectionElement.querySelector('.h-scroll-btn.prev');
+                nextBtn = sectionElement.querySelector('.h-scroll-btn.next');
 
-            const skeletonHtml = isHorizontal ? Utils.getSkeletonHorizontalCardHTML(5) : Utils.getSkeletonCardHTML(6);
-            const containerClass = isHorizontal ? 'horizontal-card-container' : 'row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6';
-
-            sectionElement.innerHTML = `
-                <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
-                <div class="${isHorizontal ? 'horizontal-scroll-wrapper' : ''}">
-                    ${isHorizontal ? `<button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>` : ''}
-                    <div class="${containerClass}">${skeletonHtml}</div>
-                    ${isHorizontal ? `<button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>` : ''}
-                </div>`;
-            mainContainer.appendChild(sectionElement);
-
-            contentContainer = sectionElement.querySelector(`.${containerClass.split(' ')[0]}`);
-            prevBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.prev') : null;
-            nextBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.next') : null;
-        }
-
-        // --- 3. ASYNCHRONOUS DATA FETCHING FOR THE SECTION ---
-        if (shouldRenderContent && contentContainer) {
-            // Use an IIFE (Immediately Invoked Function Expression) to capture the current loop's variables.
-            (async (config, element, container, pBtn, nBtn) => {
-                try {
-                    console.log(`[Home Sections Load] Starting async load for "${config.title}"`);
-                    let itemsToRender = [];
-                    let hasResults = false;
-
-                    // Fetch data based on section type.
-                    if (config.id === 'continue-watching') {
-                        itemsToRender = preFetchedContinueWatchingList; // Use pre-fetched data.
-                    } else if (config.id === 'most-viewed') {
-                        // This now calls a function that returns the items instead of rendering directly.
-                        itemsToRender = await App.fetchMostViewedItems(config); 
-                    } else {
-                        const data = await API.fetchTMDB(config.endpoint, { page: 1 });
-                        itemsToRender = data?.results || [];
-                    }
-                    
-                    hasResults = itemsToRender.length > 0;
-
-                    // Render the fetched content.
-                    if (hasResults) {
-                        const limitedItems = itemsToRender.slice(0, isHorizontal ? 20 : 12);
-                        if (config.id === 'continue-watching') {
-                            App.renderContinueWatchingCards(limitedItems, container); // Use a dedicated renderer.
-                        } else if (isHorizontal) {
-                            App.renderHorizontalCards(limitedItems, container, config.type || null, config.show_trailer_button || false);
-                        } else {
-                            App.renderTmdbCards(limitedItems, container, config.type || null, false);
-                        }
-                    } else {
-                        container.innerHTML = `<p class="text-muted px-3 ${isHorizontal ? '' : 'col-12'}">No content found for this section.</p>`;
-                    }
-
-                    // Setup horizontal scrolling after content is rendered.
-                    if (isHorizontal) {
-                        App.setupHorizontalScroll(container, pBtn, nBtn);
-                    }
-
-                // <<< FIX: This improved catch block prevents stuck spinners.
-                } catch (error) {
-                    console.error(`[Home Sections Load] Error loading data for "${config.title}":`, error);
-                    if (container) {
-                        container.innerHTML = Utils.getErrorHTML(`Could not load this section.`);
-                    }
-                    if (isHorizontal) {
-                        if (pBtn) Utils.setElementVisibility(pBtn, false);
-                        if (nBtn) Utils.setElementVisibility(nBtn, false);
-                    }
+                if (continueWatchingList.length > 0) {
+                    Utils.setElementVisibility(sectionElement, true); // Ensure section is visible
+                    shouldRenderContent = true;
+                } else {
+                    Utils.setElementVisibility(sectionElement, false); // Hide if no content
                 }
-            })(sectionConfig, sectionElement, contentContainer, prevBtn, nextBtn);
+            } else if (sectionConfig.id === 'most-viewed') {
+                sectionElement = document.getElementById('most-viewed-section'); // FIND THE STATIC ELEMENT
+                if (!sectionElement) { console.warn("[Home Sections] Static #most-viewed-section not found."); continue; }
+                contentContainer = sectionElement.querySelector('.most-viewed-container');
+                prevBtn = sectionElement.querySelector('.h-scroll-btn.prev');
+                nextBtn = sectionElement.querySelector('.h-scroll-btn.next');
+
+                if (globalViewsExist) {
+                    Utils.setElementVisibility(sectionElement, true); // Ensure section is visible
+                    shouldRenderContent = true;
+                } else {
+                    Utils.setElementVisibility(sectionElement, false); // Hide if no global views
+                }
+            } else if (sectionConfig.endpoint) {
+                // Dynamically create and append other sections as before
+                sectionElement = document.createElement('section');
+                sectionElement.className = 'content-section mb-5';
+                const isHorizontal = sectionConfig.display_style?.startsWith('horizontal');
+                let skeletonHtml = isHorizontal ? Utils.getSkeletonHorizontalCardHTML(5) : Utils.getSkeletonCardHTML(6);
+                let containerClass = isHorizontal ? 'horizontal-card-container' : `row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6`;
+
+                sectionElement.innerHTML = `
+                    <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
+                    <div class="${isHorizontal ? 'horizontal-scroll-wrapper' : ''}">
+                        ${isHorizontal ? `<button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>` : ''}
+                        <div class="${containerClass}">${skeletonHtml}</div>
+                        ${isHorizontal ? `<button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>` : ''}
+                    </div>`;
+                mainContainer.appendChild(sectionElement); // Append dynamic sections
+                contentContainer = sectionElement.querySelector(`.${containerClass.split(' ')[0]}`); // Get content container
+                prevBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.prev') : null;
+                nextBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.next') : null;
+                shouldRenderContent = true; // Always try to render content for dynamic sections
+            } else {
+                console.warn(`[Home Sections] Skipping section "${sectionConfig.title}" due to invalid configuration.`);
+                continue; // Skip this iteration
+            }
+
+            // If we found/created a section and it should have content:
+            if (shouldRenderContent && sectionElement && contentContainer) {
+                // Add skeletons to the contentContainer immediately (unless it's already a placeholder)
+                // For static sections, if they have an initial placeholder, we'll keep that
+                if (contentContainer.innerHTML.includes('initial-placeholder')) {
+                    // Placeholder already exists, leave it for now until actual content is ready.
+                } else if (!contentContainer.querySelector('.spinner-border')) {
+                    // Only add skeleton if it's not already spinning/loading
+                    let skeletonHtml = (sectionConfig.display_style?.startsWith('horizontal')) ? Utils.getSkeletonHorizontalCardHTML(5) : Utils.getSkeletonCardHTML(6);
+                    contentContainer.innerHTML = skeletonHtml;
+                }
+
+
+                // --- Trigger Asynchronous Data Loading for This Section ---
+                (async (currentSectionElement, currentConfig, currentContentContainer, currentPrevBtn, currentNextBtn) => {
+                    try {
+                        console.log(`[Home Sections Load] Starting async load for "${currentConfig.title}"`);
+                        if (currentConfig.id === 'continue-watching') {
+                            App.loadContinueWatchingSection(currentSectionElement, continueWatchingList); // Pass list
+                        } else if (currentConfig.id === 'most-viewed') {
+                            await App.loadMostViewedSection(currentSectionElement, currentConfig);
+                        } else if (currentConfig.endpoint) {
+                            const data = await API.fetchTMDB(currentConfig.endpoint, { page: 1 });
+                            if (data?.results && data.results.length > 0) {
+                                const itemsToRender = data.results.slice(0, currentConfig.display_style?.startsWith('horizontal') ? 20 : 12);
+                                if (currentConfig.display_style?.startsWith('horizontal')) {
+                                    App.renderHorizontalCards(itemsToRender, currentContentContainer, currentConfig.type || null, currentConfig.show_trailer_button || false);
+                                } else {
+                                    App.renderTmdbCards(itemsToRender, currentContentContainer, currentConfig.type || null, false);
+                                }
+                            } else {
+                                console.log(`[Home Sections Load] No results from API for "${currentConfig.title}".`);
+                                currentContentContainer.innerHTML = `<p class="text-muted px-3 ${currentConfig.display_style?.startsWith('horizontal') ? '' : 'col-12'}">No content found for this section.</p>`;
+                            }
+                        }
+
+                        // Setup/Update horizontal scroll AFTER rendering content
+                        if (currentConfig.display_style?.startsWith('horizontal') && currentContentContainer && currentPrevBtn && currentNextBtn) {
+                            if (!State.horizontalScrollContainers.some(c => c.container === currentContentContainer)) {
+                                State.horizontalScrollContainers.push({ container: currentContentContainer, prevBtn: currentPrevBtn, nextBtn: currentNextBtn });
+                                currentContentContainer.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(currentContentContainer, currentPrevBtn, currentNextBtn), 100), { passive: true });
+                                currentPrevBtn.addEventListener('click', () => App.handleHScrollPrev(currentContentContainer));
+                                currentNextBtn.addEventListener('click', () => App.handleHScrollNext(currentContentContainer));
+                                console.log(`[Home Sections Load] Added scroll listeners for "${currentConfig.title}"`);
+                            }
+                            App.updateHScrollButtons(currentContentContainer, currentPrevBtn, currentNextBtn);
+                        }
+
+                    } catch (error) {
+                        console.error(`[Home Sections Load] Error loading data for "${currentConfig.title}":`, error);
+                        if (currentContentContainer) {
+                            currentContentContainer.innerHTML = Utils.getErrorHTML(`Could not load "${currentConfig.title}".`);
+                        }
+                        if (currentConfig.display_style?.startsWith('horizontal') && currentContentContainer && currentPrevBtn && currentNextBtn) {
+                             App.updateHScrollButtons(currentContentContainer, currentPrevBtn, currentNextBtn);
+                        }
+                    }
+                })(sectionElement, sectionConfig, contentContainer, prevBtn, nextBtn);
+            }
         }
-    }
-    console.log("[Home Sections] Finished processing all section configurations.");
-},
-
-// ADD this new function inside the App object
-fetchMostViewedItems: async (sectionConfig) => {
-    const maxItems = sectionConfig.max_items || 15;
-    if (!appDb) {
-        throw new Error("Database service is unavailable.");
-    }
-
-    const querySnapshot = await appDb.collection("viewCounts")
-        .orderBy("viewCount", "desc")
-        .limit(maxItems)
-        .get();
-
-    if (querySnapshot.empty) {
-        return []; // Return empty array if no data
-    }
-
-    const topItemsData = querySnapshot.docs.map(doc => doc.data());
-
-    const itemDetailPromises = topItemsData.map(viewData =>
-        API.fetchTMDB(`/${viewData.type}/${viewData.tmdbId}`).catch(err => {
-            console.warn(`[Most Viewed] Failed to fetch TMDB details for ${viewData.type}-${viewData.tmdbId}`, err);
-            return null;
-        })
-    );
-    
-    return (await Promise.all(itemDetailPromises)).filter(item => item !== null);
-},
-
-
-// ADD this new function inside the App object
-renderContinueWatchingCards: (items, containerElement) => {
-    containerElement.innerHTML = ''; // Always clear first
-    items.forEach(item => {
-        const title = Utils.escapeHtml(item.title);
-        const imagePath = item.backdrop_path || item.poster_path;
-        const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
-
-        let cardHref = `#player=${item.type}/${item.id}`;
-        if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
-            cardHref += `/${item.seasonNumber}/${item.episodeNumber}`;
-        }
-        
-        const cardLink = document.createElement('a');
-        cardLink.href = cardHref;
-        cardLink.className = 'h-card';
-        cardLink.title = title + (item.episodeTitle ? ` - ${Utils.escapeHtml(item.episodeTitle)}` : '');
-
-        const imageHtml = imageUrl
-            ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
-            : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
-
-        const overlayHtml = `
-            <div class="h-card-overlay">
-                <h3 class="h-card-title">${title}</h3>
-                ${item.type === 'tv' && item.episodeTitle ? `<span class="h-card-episode-title">S${item.seasonNumber} E${item.episodeNumber} - ${Utils.escapeHtml(item.episodeTitle)}</span>` : ''}
-                <div class="progress-bar-container mt-2">
-                    <div class="progress-bar-fill" style="width: ${item.progressPercent || 0}%;" title="${item.progressPercent || 0}% Watched"></div>
-                </div>
-            </div>`;
-        
-        cardLink.innerHTML = imageHtml + overlayHtml;
-        containerElement.appendChild(cardLink);
-    });
-},
-
-// ADD this new function inside the App object
-setupHorizontalScroll: (container, prevBtn, nextBtn) => {
-    if (!container || !prevBtn || !nextBtn) return;
-    
-    // Update button state immediately after rendering.
-    App.updateHScrollButtons(container, prevBtn, nextBtn);
-    
-    // Add to state tracking if not already present to avoid duplicate listeners.
-    if (!State.horizontalScrollContainers.some(c => c.container === container)) {
-        State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
-        container.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(container, prevBtn, nextBtn), 100), { passive: true });
-        prevBtn.addEventListener('click', () => App.handleHScrollPrev(container));
-        nextBtn.addEventListener('click', () => App.handleHScrollNext(container));
-    }
-},
-
+        console.log("[Home Sections] Finished processing all section configurations.");
+    },
     loadMostViewedSection: async (sectionDiv, sectionConfig) => {
     const container = sectionDiv.querySelector('.most-viewed-container');
     const isHorizontal = container?.classList.contains('horizontal-card-container');
@@ -3753,8 +3316,9 @@ setupHorizontalScroll: (container, prevBtn, nextBtn) => {
         // --- Render using appropriate function (replace skeletons) ---
          console.log(`[Most Viewed Load] Rendering ${itemsToRender.length} items.`);
          if (isHorizontal) {
-             App.renderHorizontalCards(itemsToRender, container, null, false); // Pass items, container
-             // Setup scroll for THIS specific section
+            //App.renderHorizontalCards(itemsToRender, container, null, false); // Pass items, container
+             App.renderHorizontalCards(itemsToRender, container, null, false, true); 
+            // Setup scroll for THIS specific section
              if (container && prevBtn && nextBtn) {
                   if (!State.horizontalScrollContainers.some(c => c.container === container)) {
                       State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
@@ -4448,7 +4012,7 @@ loadContinueWatchingSection: (sectionDiv) => {
            
 
             // --- NEW Rendering Function for Horizontal Cards ---
-            renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false) => {
+            /*renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false) => {
                  if (!containerElement) return;
                  containerElement.innerHTML = ''; // Clear spinner/previous
 
@@ -4517,7 +4081,7 @@ loadContinueWatchingSection: (sectionDiv) => {
                                  data-item-poster="${item.poster_path || null}"
                                  data-item-backdrop="${item.backdrop_path || null}"
                                  data-item-rating="${item.vote_average || null}"
-                                 style="/* Adjust positioning if needed for h-card */ top: 0.6rem; right: 0.6rem;"
+                                 style="top: 0.6rem; right: 0.6rem;"
                                  >
                              <i class="bi ${isInList ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
                          </button>
@@ -4548,7 +4112,116 @@ loadContinueWatchingSection: (sectionDiv) => {
 
                     containerElement.appendChild(cardLink);
                 });
-            },
+            },*/
+
+            // --- REPLACE your old renderHorizontalCards function with this one ---
+
+renderHorizontalCards: (items, containerElement, defaultType = null, showTrailerButton = false, showViewCount = false) => { // <<< ADDED showViewCount
+    if (!containerElement) return;
+    containerElement.innerHTML = ''; // Clear spinner/previous
+
+    if (!items || items.length === 0) {
+        containerElement.innerHTML = `<p class="text-muted px-3" style="width: 100%;">No items found.</p>`;
+        return;
+    }
+
+    items.forEach(item => {
+        // Determine type (movie/tv)
+        let itemType = item.media_type || defaultType;
+        if (!itemType) {
+            if (item.title) itemType = 'movie';
+            else if (item.name) itemType = 'tv';
+            else return; // Skip if unknown
+        }
+        if (itemType === 'person' || !item.id) return; // Skip people or items without ID
+
+        const title = Utils.escapeHtml(item.title || item.name || 'N/A');
+        const imagePath = item.backdrop_path || item.poster_path;
+        const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+        const year = (item.release_date || item.first_air_date || '').substring(0, 4);
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
+
+        const cardLink = document.createElement('a');
+        cardLink.href = `#details=${itemType}/${item.id}`;
+        cardLink.className = 'h-card';
+        cardLink.title = title;
+
+        const imageHtml = imageUrl
+            ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+            : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
+
+        const overlayHtml = `
+            <div class="h-card-overlay">
+                <h3 class="h-card-title">${title}</h3>
+                 <p class="h-card-meta small opacity-80">
+                    ${year ? `<span>${year}</span>` : ''}
+                    ${rating && parseFloat(rating) > 0 ? `<span class="ms-2"><i class="bi bi-star-fill text-warning"></i> ${rating}</span>` : ''}
+                 </p>
+            </div>
+        `;
+
+        const trailerButtonHtml = showTrailerButton
+            ? `<button class="h-card-play-trailer-btn" aria-label="Play Trailer for ${title}" data-item-id="${item.id}" data-item-type="${itemType}">
+                  <i class="bi bi-play-fill"></i>
+              </button>`
+            : '';
+        
+        const isInList = Watchlist.isInWatchlist(item.id, itemType);
+        const watchlistBtnHtml = `
+             <button class="btn watchlist-btn ${isInList ? 'in-watchlist' : ''}"
+                     title="${isInList ? 'In Watchlist (Click to remove)' : 'Add to Watchlist'}"
+                     aria-label="${isInList ? 'Remove from Watchlist' : 'Add to Watchlist'}"
+                     data-item-id="${item.id}"
+                     data-item-type="${itemType}"
+                     data-item-title="${Utils.escapeHtml(item.title || item.name || '')}"
+                     data-item-poster="${item.poster_path || null}"
+                     data-item-backdrop="${item.backdrop_path || null}"
+                     data-item-rating="${item.vote_average || null}"
+                     style="top: 0.6rem; right: 0.6rem;">
+                 <i class="bi ${isInList ? 'bi-bookmark-check-fill' : 'bi-bookmark-plus'}"></i>
+             </button>
+        `;
+
+        // --- NEW LOGIC TO DISPLAY VIEW COUNT ---
+        let viewCountHtml = '';
+        if (showViewCount && item.viewCount !== undefined) {
+            const formattedCount = new Intl.NumberFormat().format(item.viewCount);
+            viewCountHtml = `
+                <div class="h-card-view-count" title="${formattedCount} views">
+                    <i class="bi bi-eye-fill"></i>
+                    <span>${formattedCount}</span>
+                </div>
+            `;
+        }
+        // --- END OF NEW LOGIC ---
+
+        // <<< COMBINE ALL HTML PARTS HERE, INCLUDING THE NEW viewCountHtml >>>
+        cardLink.innerHTML = imageHtml + overlayHtml + trailerButtonHtml + watchlistBtnHtml + viewCountHtml;
+
+
+        // Add click listener for trailer button IF it exists
+        const trailerButton = cardLink.querySelector('.h-card-play-trailer-btn');
+        if (trailerButton) {
+            trailerButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                App.handlePlayTrailerClick(e.currentTarget);
+            });
+        }
+
+        // Add click listener for watchlist button
+        const addedWatchlistButton = cardLink.querySelector('.watchlist-btn');
+        if (addedWatchlistButton) {
+            addedWatchlistButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                App.handleAddOrRemoveWatchlist(e.currentTarget);
+            });
+        }
+
+        containerElement.appendChild(cardLink);
+    });
+},
 
              // --- NEW: Handler for Trailer Button Click ---
              handlePlayTrailerClick: async (button) => {
@@ -5772,6 +5445,13 @@ loadContinueWatchingSection: (sectionDiv) => {
         console.log("[Modal Prep] Showing Bootstrap modal.");
         bsInstances.connectionModal.show();
         // >>> Data loading now happens in the 'shown.bs.modal' event handler <<<
+        document.getElementById('connectionExplorerModal')
+        .addEventListener('shown.bs.modal', () => {
+            if (State.currentExplorerItem) {
+                App.loadAndDisplayConnections(State.currentExplorerItem);
+            }
+        });
+
     },
 
 
@@ -5852,6 +5532,10 @@ loadContinueWatchingSection: (sectionDiv) => {
         let centralNodeImage = null;
         if (type === 'person') centralNodeImage = itemData.profile_path ? `${config.PROFILE_BASE_URL.replace('h632','w185')}${itemData.profile_path}` : null;
         else centralNodeImage = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : null;
+
+        if (!graphData || graphData.nodes.length <= 1) {
+    throw new Error("No significant connections found to visualize.");
+}
 
         nodes.add({
             id: centralNodeId,
@@ -6048,7 +5732,7 @@ loadContinueWatchingSection: (sectionDiv) => {
         const rect = container.getBoundingClientRect();
         console.log(`[Graph Init] Container Dimensions: Width=${rect.width}, Height=${rect.height}`);
         if (rect.width <= 0 || rect.height <= 0) {
-             console.warn("[Graph Init] Container has zero dimensions! Vis.js rendering may fail or be incorrect.");
+            console.warn("[Graph Init] Container has zero dimensions! Vis.js rendering may fail or be incorrect.");
         }
 
         if (!DOM.connectionGraphContainer) {
@@ -6262,7 +5946,7 @@ loadContinueWatchingSection: (sectionDiv) => {
              },
 
              // Renders the details page content
-             renderDetailsPage: (itemData) => {
+             /*renderDetailsPage: (itemData) => {
                  if (!DOM.detailsWrapper) return;
                  DOM.detailsWrapper.innerHTML = ''; // Clear previous
 
@@ -6336,6 +6020,14 @@ loadContinueWatchingSection: (sectionDiv) => {
                                     </button>
                                     <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
                                 </div>
+                                <div class="user-rating mt-3">
+                                    <label class="text-white me-2">Your Rating:</label>
+                                    <select id="user-rating-select" class="form-select form-select-sm d-inline-block w-auto">
+                                        <option value="">--</option>
+                                        ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}">${n}</option>`).join('')}
+                                    </select>
+                                    <button id="save-rating-btn" class="btn btn-sm btn-outline-warning ms-2">Rate</button>
+                                </div>
                                  <div class="details-actions mt-4">
                                      <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
                                       <!-- Add Trailer Button if videos exist -->
@@ -6379,13 +6071,13 @@ loadContinueWatchingSection: (sectionDiv) => {
                                     }
 
                                     .img-fallback-icon-init {
-                                        font-size: 8rem;  /* Adjust size of the fallback icon */
-                                        color: #ccc;  /* You can adjust the color to match your design */
+                                        font-size: 8rem;  
+                                        color: #ccc;  
                                         display: inline-block;
-                                        width: 120px;  /* Match the size of your images */
-                                        height: 180px; /* Match the size of your images */
+                                        width: 120px;  
+                                        height: 180px; 
                                         text-align: center;
-                                        line-height: 180px;  /* Center the icon vertically */
+                                        line-height: 180px; 
                                     }
 
                                 </style>
@@ -6459,6 +6151,47 @@ loadContinueWatchingSection: (sectionDiv) => {
                    actionsContainer.appendChild(connectionButton); // Append the button
                 }
 
+                const ratingSelect = DOM.detailsWrapper.querySelector('#user-rating-select');
+                const saveRatingBtn = DOM.detailsWrapper.querySelector('#save-rating-btn');
+
+                if (ratingSelect && saveRatingBtn) {
+                    saveRatingBtn.addEventListener('click', async () => {
+                    const value = parseInt(ratingSelect.value);
+                    if (!value) {
+                        Utils.showToast("Please select a rating first.", "warning");
+                        return;
+                    }
+
+                    if (!appAuth?.currentUser || !appDb) {
+                        Utils.showToast("You must be logged in to rate.", "info");
+                        return;
+                    }
+
+                    const userId = appAuth.currentUser.uid;
+                    const type = itemData.title ? 'movie' : 'tv';
+                    const docId = `${type}-${itemData.id}`;
+
+                    try {
+                        await appDb.collection("ratings")
+                        .doc(userId)
+                        .collection("userRatings")
+                        .doc(docId)
+                        .set({
+                            type,
+                            tmdbId: itemData.id,
+                            title: itemData.title || itemData.name,
+                            rating: value,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                        Utils.showToast(`Rated ${value}/10 successfully!`, "success");
+                    } catch (err) {
+                        console.error("Error saving rating:", err);
+                        Utils.showToast("Failed to save rating.", "danger");
+                    }
+                });
+            }
+
 
                 // --- NEW: Add AI Button Listener ---
                 DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn');
@@ -6476,8 +6209,416 @@ loadContinueWatchingSection: (sectionDiv) => {
                 }
 
                  App.initializeTooltips(DOM.detailsWrapper); // Activate tooltips within details view
-             },
+             },*/
 
+      // --- REPLACE your old renderDetailsPage function with this one ---
+  renderDetailsPage: (itemData) => {
+    if (!DOM.detailsWrapper) return;
+    DOM.detailsWrapper.innerHTML = ''; // Clear previous
+
+    const type = itemData.title ? 'movie' : 'tv';
+    const displayTitle = Utils.escapeHtml(itemData.title || itemData.name || 'N/A');
+    const backdropUrl = itemData.backdrop_path ? `${config.BACKDROP_BASE_URL}${itemData.backdrop_path}` : '';
+    const posterUrl = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : '';
+    const rating = itemData.vote_average ? itemData.vote_average.toFixed(1) : null;
+    const year = (itemData.release_date || itemData.first_air_date || '').substring(0, 4);
+    const formattedRuntime = type === 'movie' && itemData.runtime ? Utils.formatRuntime(itemData.runtime) : null;
+    const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
+    const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
+    const connectionButtonHtml = `<button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2" data-item-id="${itemData.id}" data-item-type="${type}" data-item-title="${displayTitle}"><i class="bi bi-diagram-3-fill me-1"></i> Show Connections</button>`;
+    const credits = itemData.credits;
+    const director = credits?.crew?.find(p => p.job === 'Director')?.name;
+    const creators = type === 'tv' ? credits?.crew?.filter(p => p.department === 'Writing' && (p.job === 'Creator' || p.job === 'Writer')).map(c => Utils.escapeHtml(c.name)).slice(0, 3).join(', ') : '';
+    const castList = credits?.cast?.slice(0, 12) || [];
+    const similarList = itemData.similar?.results?.slice(0, 12) || [];
+    const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
+    const actionsContainerSelector = '.details-actions';
+
+    // --- PART 1: Build the HTML string, following your original structure ---
+    let detailsHtml = `
+        <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
+        <div class="container details-content-overlay">
+            <button onclick="Utils.goBackOrHome();" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+            <div class="details-header row mb-5 align-items-center">
+                <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
+                    ${posterUrl ? `<img src="${posterUrl}" alt="${displayTitle} Poster" class="img-fluid shadow-lg" style="border-radius: var(--radius-lg); border: 3px solid rgba(255,255,255,0.1);" loading="lazy">` : `<div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center mx-auto" style="width:100%; aspect-ratio:2/3; max-width:280px;">No Poster</div>`}
+                </div>
+                <div class="details-info col-lg-9 col-md-8">
+                    <h1 class="text-white mb-2 custom-color">${displayTitle}</h1>
+                    <div class="details-meta mb-3 d-flex align-items-center flex-wrap">
+                        ${rating && parseFloat(rating) > 0 ? `<span class="d-flex align-items-center me-3"><i class="bi bi-star-fill text-warning me-1"></i> ${rating}/10</span>` : ''}
+                        ${year ? `<span class="d-flex align-items-center me-3"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
+                        ${formattedRuntime ? `<span class="d-flex align-items-center me-3"><i class="bi bi-clock me-1"></i> ${formattedRuntime}</span>` : ''}
+                        ${numberOfSeasons ? `<span class="d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${numberOfSeasons} Season${numberOfSeasons > 1 ? 's' : ''}</span>` : ''}
+                    </div>
+                    <div class="genres mb-3">${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}</div>
+                    ${displayOverview !== 'No overview available.' ? `<h4 id="text-white" class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
+                    ${director ? `<p class="small mb-1"><strong class="text-white-50">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
+                    ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
+                    <div class="details-section mt-4">
+                        <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
+                        <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;"><p class="text-muted small mb-0">Click the button to generate AI-powered insights.</p></div>
+                        <button id="get-ai-insight-btn" class="btn btn-sm btn-outline-info" data-item-id="${itemData.id}" data-item-type="${type}" data-item-title="${displayTitle}" data-item-year="${year}"><i class="bi bi-magic me-1"></i> Get AI Insight</button>
+                    </div>
+                    <div class="user-rating mt-3" id="user-rating-container">
+                        <label class="text-white me-2">Your Rating:</label>
+                        <select id="user-rating-select" class="form-select form-select-sm d-inline-block w-auto"><option value="">--</option>${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}">${n}</option>`).join('')}</select>
+                        <button id="save-rating-btn" class="btn btn-sm btn-outline-warning ms-2">Rate</button>
+                    </div>
+                    <div class="details-actions mt-4">
+                        <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
+                        ${itemData.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ? `<button class="btn btn-outline-secondary btn-lg" onclick="App.playTrailer('${itemData.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}')"><i class="bi bi-film me-2"></i> Play Trailer</button>` : ''}
+                    </div>
+                </div>
+            </div>
+    `;
+
+
+
+    if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
+        const validSeasons = itemData.seasons.filter(s => s.season_number > 0 || itemData.seasons.length === 1);
+        if (validSeasons.length > 0) {
+            detailsHtml += App.renderTVSeasonsSection(itemData.id, validSeasons);
+        }
+    }
+
+    // --- NEW: REVIEWS SECTION ADDED HERE ---
+    detailsHtml += `
+        <div class="details-section mt-5">
+            <h2 class="details-section-title">Reviews <span id="review-count-badge" class="review-count-badge">...</span></h2>
+            <div id="review-form-container" class="mb-4"></div>
+            <div id="reviews-list"></div>
+        </div>
+    `;
+
+    if (castList.length > 0) {
+        detailsHtml += `
+            <div class="details-section mt-5">
+                <h2 class="details-section-title">Cast</h2>
+                <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
+                    ${castList.map(member => {
+                        const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A';
+                        return `<div class="col mb-3"><a href="#person=${member.id}" class="cast-member-link"><i class="bi bi-person-circle img-fallback-icon-init d-none"></i><img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy" onerror="this.previousElementSibling.classList.remove('d-none'); this.classList.add('d-none');"><div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div><div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div></a></div>`;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    if (similarList.length > 0) {
+        detailsHtml += `
+            <div class="details-section mt-5">
+                <h2 class="details-section-title">You Might Also Like</h2>
+                <div id="similar-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                    ${Utils.getSpinnerHTML("Loading recommendations...")}
+                </div>
+            </div>
+        `;
+    }
+
+    if (usSubProviders.length > 0) {
+        detailsHtml += `
+            <div class="details-section mt-5">
+                <h2 class="details-section-title">Stream on (US Subscriptions)</h2>
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                    ${usSubProviders.map(p => `<a href="#network=${p.provider_id}" title="Browse ${Utils.escapeHtml(p.provider_name)}"><img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;" loading="lazy"></a>`).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    detailsHtml += `</div>`; // Close main container
+    DOM.detailsWrapper.innerHTML = detailsHtml;
+
+    // --- PART 3: POST-RENDER ACTIONS (Attach listeners and populate dynamic content) ---
+    
+    // **Render similar cards**
+    if (similarList.length > 0) {
+        const similarGrid = document.getElementById('similar-grid');
+        if (similarGrid) App.renderTmdbCards(similarList, similarGrid, type, false);
+    }
+    
+    // **Initialize season tabs**
+    if (type === 'tv' && itemData.seasons?.filter(s => s.season_number > 0 || itemData.seasons.length === 1).length > 0) {
+        App.addSeasonTabListeners(itemData.id);
+        const firstTab = DOM.detailsWrapper.querySelector('.nav-pills .nav-link:not(.disabled)');
+        firstTab?.click();
+    }
+    
+    // **KICK OFF THE REVIEWS SECTION**
+    App.setupReviewsSection(itemData);
+
+    // **Attach Listeners for Connection Button**
+    const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
+    if (actionsContainer) {
+       const btnDiv = document.createElement('div');
+       btnDiv.innerHTML = connectionButtonHtml.trim();
+       const connectionButton = btnDiv.firstChild;
+       connectionButton.addEventListener('click', App.handleShowConnectionsClick);
+       actionsContainer.appendChild(connectionButton);
+    }
+
+    // **Attach Listeners for RATING**
+    const ratingContainer = DOM.detailsWrapper.querySelector('#user-rating-container');
+    const ratingSelect = ratingContainer.querySelector('#user-rating-select');
+    const saveRatingBtn = ratingContainer.querySelector('#save-rating-btn');
+    
+    if (appAuth.currentUser && appDb) {
+        // User is logged in
+        saveRatingBtn.addEventListener('click', async () => {
+            const value = parseInt(ratingSelect.value);
+            if (!value) { Utils.showToast("Please select a rating first.", "warning"); return; }
+            const userId = appAuth.currentUser.uid;
+            const docId = `${type}-${itemData.id}`;
+            try {
+                await appDb.collection("ratings").doc(userId).collection("userRatings").doc(docId).set({ 
+                    type,
+                    tmdbId: itemData.id,
+                    title: itemData.title || itemData.name,
+                    rating: value,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                Utils.showToast(`Rated ${value}/10 successfully!`, "success");
+                Gamification.checkForAchievements('rating_saved', { type, tmdbId: itemData.id });
+            } catch (err) { console.error("Error saving rating:", err); Utils.showToast("Failed to save rating.", "danger"); }
+        });
+
+        // Fetch and display their saved rating
+        const userId = appAuth.currentUser.uid;
+        const docId = `${type}-${itemData.id}`;
+        appDb.collection("ratings").doc(userId).collection("userRatings").doc(docId).get()
+            .then(doc => {
+                if (doc.exists) {
+                    ratingSelect.value = doc.data().rating;
+                }
+            }).catch(err => console.error("Error fetching user rating:", err));
+    } else {
+        // User is a guest
+        ratingSelect.disabled = true;
+        saveRatingBtn.disabled = true;
+        ratingContainer.setAttribute('data-bs-toggle', 'tooltip');
+        ratingContainer.setAttribute('data-bs-placement', 'top');
+        ratingContainer.setAttribute('title', 'You must be logged in to rate titles');
+    }
+
+    // **Attach Listeners for AI Insight Button**
+    DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn');
+    if (DOM.detailsAiInsightBtn) {
+        DOM.detailsAiInsightBtn.addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            App.handleGetAiInsight(btn.dataset.itemType, btn.dataset.itemId, btn.dataset.itemTitle, btn.dataset.itemYear);
+        });
+    }
+
+    App.initializeTooltips(DOM.detailsWrapper);
+},
+
+
+
+
+     setupReviewsSection: (itemData) => {
+    const itemType = itemData.title ? 'movie' : 'tv';
+    const itemId = itemData.id;
+
+    const reviewFormContainer = DOM.detailsWrapper.querySelector('#review-form-container');
+    if (!reviewFormContainer) return;
+
+    if (appAuth.currentUser) {
+        reviewFormContainer.innerHTML = `
+            <h3 class="details-section-title">Leave a Review</h3>
+            <form id="review-form">
+                <div class="mb-3">
+                    <textarea id="review-textarea" class="form-control" placeholder="Share your thoughts..." required minlength="10"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+            </form>
+        `;
+        const reviewForm = DOM.detailsWrapper.querySelector('#review-form');
+        reviewForm.addEventListener('submit', (e) => App.handleSubmitReview(e, itemType, itemId));
+    } else {
+        reviewFormContainer.innerHTML = `
+            <div class="text-center p-4 border border-secondary border-opacity-25 rounded-3">
+                <p class="mb-2">You must be logged in to leave a review.</p>
+                <button id="login-for-review-btn" class="btn btn-outline-primary">Login / Sign Up</button>
+            </div>
+        `;
+    }
+    App.loadAndRenderReviews(itemType, itemId);
+},
+
+loadAndRenderReviews: async (itemType, itemId) => {
+    const reviewsList = DOM.detailsWrapper.querySelector('#reviews-list');
+    const reviewCountBadge = DOM.detailsWrapper.querySelector('#review-count-badge');
+    if (!reviewsList || !reviewCountBadge) return;
+
+    reviewsList.innerHTML = Utils.getSpinnerHTML("Loading reviews...");
+    reviewCountBadge.textContent = '...';
+
+    try {
+        const reviewsRef = firebase.firestore().collection('item_ratings').doc(`${itemType}_${itemId}`).collection('reviews').orderBy('timestamp', 'desc');
+        const querySnapshot = await reviewsRef.get();
+
+        reviewCountBadge.textContent = querySnapshot.size;
+
+        if (querySnapshot.empty) {
+            reviewsList.innerHTML = `<p class="text-muted text-center py-4">Be the first to leave a review!</p>`;
+            return;
+        }
+
+        reviewsList.innerHTML = '';
+        querySnapshot.forEach(doc => {
+            const reviewCard = App.renderReviewCard(doc.id, doc.data(), itemType, itemId);
+            if (reviewCard) {
+                reviewsList.appendChild(reviewCard);
+            }
+        });
+    } catch (error) {
+        console.error("Error loading reviews:", error);
+        reviewsList.innerHTML = Utils.getErrorHTML("Could not load reviews at this time.");
+        reviewCountBadge.textContent = 'E';
+    }
+},
+
+renderReviewCard: (reviewId, reviewData, itemType, itemId) => {
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    card.id = `review-${reviewId}`;
+
+    const userAvatar = reviewData.photoURL || 'https://via.placeholder.com/45/FFFFFF/000000?text=?';
+    const username = Utils.escapeHtml(reviewData.username || 'Anonymous');
+    const timestamp = reviewData.timestamp ? Utils.formatRelativeTime(reviewData.timestamp.toDate()) : 'a while ago';
+    const reviewText = Utils.escapeHtml(reviewData.text);
+
+    let deleteButtonHtml = '';
+    if (appAuth.currentUser && appAuth.currentUser.uid === reviewData.userId) {
+        deleteButtonHtml = `
+            <button class="review-delete-btn" title="Delete your review" data-review-id="${reviewId}">
+                <i class="bi bi-trash3-fill"></i>
+            </button>
+        `;
+    }
+
+    card.innerHTML = `
+        <div class="review-avatar flex-shrink-0">
+            <img src="${userAvatar}" alt="${username}'s avatar">
+        </div>
+        <div class="review-content">
+            <div class="review-header">
+                <span class="review-username">${username}</span>
+                <span class="review-timestamp">${timestamp}</span>
+            </div>
+            <p class="review-text">${reviewText}</p>
+        </div>
+        ${deleteButtonHtml}
+    `;
+
+    const deleteBtn = card.querySelector('.review-delete-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => App.handleDeleteReview(itemType, itemId, reviewId));
+    }
+    return card;
+},
+
+handleSubmitReview: async (event, itemType, itemId) => {
+    event.preventDefault();
+    if (!appAuth.currentUser) {
+        Utils.showToast("You must be logged in to submit a review.", "warning");
+        return;
+    }
+
+    const form = event.target;
+    const textarea = form.querySelector('#review-textarea');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const text = textarea.value.trim();
+
+    if (text.length < 10) {
+        Utils.showToast("Review must be at least 10 characters long.", "warning");
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Submitting...`;
+
+    const { uid, displayName, photoURL } = appAuth.currentUser;
+    const reviewData = {
+        userId: uid,
+        username: displayName,
+        photoURL: photoURL,
+        text: text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+        const reviewsRef = firebase.firestore().collection('item_ratings').doc(`${itemType}_${itemId}`).collection('reviews');
+        await reviewsRef.add(reviewData);
+
+        Utils.showToast("Your review has been published!", "success");
+        textarea.value = '';
+        App.loadAndRenderReviews(itemType, itemId);
+        Gamification.checkForAchievements('review_submitted', { type: itemType, tmdbId: itemId });
+    } catch (error) {
+        console.error("Error submitting review:", error);
+        Utils.showToast("Failed to submit your review. Please try again.", "danger");
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `Submit Review`;
+    }
+},
+
+handleDeleteReview: async (itemType, itemId, reviewId) => {
+    if (!appAuth.currentUser) return;
+    
+    if (confirm("Are you sure you want to permanently delete your review?")) {
+        try {
+            const reviewRef = firebase.firestore().collection('item_ratings').doc(`${itemType}_${itemId}`).collection('reviews').doc(reviewId);
+            await reviewRef.delete();
+
+            document.getElementById(`review-${reviewId}`)?.remove();
+
+            const reviewCountBadge = DOM.detailsWrapper.querySelector('#review-count-badge');
+            if (reviewCountBadge) {
+                const currentCount = parseInt(reviewCountBadge.textContent) || 0;
+                reviewCountBadge.textContent = Math.max(0, currentCount - 1);
+            }
+            
+            Utils.showToast("Your review has been deleted.", "info");
+
+        } catch (error) {
+            console.error("Error deleting review:", error);
+            Utils.showToast("Could not delete your review. Please try again.", "danger");
+        }
+    }
+},
+
+renderAchievements: async () => {
+    if (!appAuth.currentUser) return;
+    const grid = document.getElementById('achievements-grid');
+    if (!grid) return;
+
+    grid.innerHTML = Utils.getSpinnerHTML("Loading achievements...");
+
+    try {
+        const unlockedAchievements = await Gamification.getUnlockedAchievements(appAuth.currentUser.uid);
+        let html = '';
+
+        for (const badgeId in config.ACHIEVEMENTS) {
+            const achievement = config.ACHIEVEMENTS[badgeId];
+            const isUnlocked = unlockedAchievements.has(badgeId);
+            
+            html += `
+                <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}" title="${isUnlocked ? 'Unlocked!' : achievement.description}">
+                    <span class="icon">${achievement.icon}</span>
+                    <h5 class="title">${achievement.title}</h5>
+                    <p class="description">${achievement.description}</p>
+                </div>
+            `;
+        }
+        grid.innerHTML = html;
+    } catch (error) {
+        console.error("Failed to render achievements:", error);
+        grid.innerHTML = Utils.getErrorHTML("Could not load achievements.");
+    }
+},
             // Renders the Season Tabs and Episode Panes structure
             renderTVSeasonsSection: (tvId, seasons) => {
                  if (!seasons || seasons.length === 0) return '';
@@ -7106,6 +7247,167 @@ loadContinueWatchingSection: (sectionDiv) => {
         };
 
    
+        const Gamification = {
+    /**
+     * The main function to check for new achievements after an action.
+     * @param {string} actionType - The type of action performed (e.g., 'rating_saved', 'review_submitted').
+     * @param {object} data - Contextual data about the action (e.g., the movie/show object).
+     */
+    async checkForAchievements(actionType, data = {}) {
+        if (!appAuth.currentUser || !appDb) return; // Must be logged in
+
+        const userId = appAuth.currentUser.uid;
+        console.log(`[Gamification] Checking achievements for user ${userId} after action: ${actionType}`);
+
+        // 1. Get the user's currently unlocked achievements
+        const unlockedAchievements = await this.getUnlockedAchievements(userId);
+
+        // 2. Get the user's relevant stats
+        const userStats = await this.getUserStats(userId);
+
+        // 3. Loop through all possible achievements
+        for (const badgeId in config.ACHIEVEMENTS) {
+            // Skip if already unlocked
+            if (unlockedAchievements.has(badgeId)) continue;
+
+            const achievement = config.ACHIEVEMENTS[badgeId];
+            const criteria = achievement.criteria;
+            let isEarned = false;
+
+            // 4. Check criteria against user stats
+            switch (criteria.type) {
+                case 'ratings':
+                    const ratingCount = criteria.subType === 'movie' ? userStats.movieRatings.size : userStats.tvRatings.size;
+                    if (ratingCount >= criteria.count) isEarned = true;
+                    break;
+                case 'reviews':
+                    if (userStats.reviews.size >= criteria.count) isEarned = true;
+                    break;
+                case 'genres':
+                    if (userStats.ratedGenres.size >= criteria.count) isEarned = true;
+                    break;
+                case 'decades':
+                    if (criteria.decades.every(decade => userStats.ratedDecades.has(decade))) isEarned = true;
+                    break;
+                case 'director':
+                    if (userStats.ratedDirectors.some(count => count >= criteria.count)) isEarned = true;
+                    break;
+            }
+
+            // 5. If earned, unlock it!
+            if (isEarned) {
+                await this.unlockAchievement(userId, badgeId, achievement);
+            }
+        }
+    },
+
+    /**
+     * Fetches a Set of unlocked achievement IDs for a user.
+     * @param {string} userId
+     * @returns {Promise<Set<string>>}
+     */
+    async getUnlockedAchievements(userId) {
+        const snapshot = await appDb.collection('users').doc(userId).collection('achievements').get();
+        return new Set(snapshot.docs.map(doc => doc.id));
+    },
+
+    /**
+     * Gathers all necessary statistics for a user to check against achievements.
+     * @param {string} userId
+     * @returns {Promise<object>}
+     */
+    async getUserStats(userId) {
+        const stats = {
+            movieRatings: new Set(),
+            tvRatings: new Set(),
+            reviews: new Set(),
+            ratedGenres: new Set(),
+            ratedDecades: new Set(),
+            ratedDirectors: [],
+        };
+        const ratingsSnapshot = await appDb.collection('ratings').doc(userId).collection('userRatings').get();
+        const reviewsSnapshot = await appDb.collectionGroup('reviews').where('userId', '==', userId).get();
+
+        const directorMap = new Map();
+
+        // Need to fetch details for rated items to get genres, decades, directors
+        const itemDetailPromises = ratingsSnapshot.docs.map(doc => {
+            const { tmdbId, type } = doc.data();
+            return API.fetchTMDB(`/${type}/${tmdbId}`, { append_to_response: 'credits' }).catch(() => null);
+        });
+        
+        const detailedItems = (await Promise.all(itemDetailPromises)).filter(Boolean);
+
+        detailedItems.forEach(item => {
+            if (item.title) { // It's a movie
+                stats.movieRatings.add(item.id);
+                const year = item.release_date ? parseInt(item.release_date.substring(0, 4)) : 0;
+                if (year >= 1980 && year < 1990) stats.ratedDecades.add('1980');
+                if (year >= 1990 && year < 2000) stats.ratedDecades.add('1990');
+                if (year >= 2000 && year < 2010) stats.ratedDecades.add('2000');
+                if (year >= 2010 && year < 2020) stats.ratedDecades.add('2010');
+                
+                const director = item.credits?.crew?.find(p => p.job === 'Director');
+                if (director) {
+                    directorMap.set(director.id, (directorMap.get(director.id) || 0) + 1);
+                }
+            } else { // It's a TV show
+                stats.tvRatings.add(item.id);
+            }
+            item.genres?.forEach(genre => stats.ratedGenres.add(genre.id));
+        });
+
+        stats.ratedDirectors = Array.from(directorMap.values());
+        reviewsSnapshot.docs.forEach(doc => stats.reviews.add(doc.id));
+
+        return stats;
+    },
+
+    /**
+     * Saves the achievement to Firestore and shows a notification.
+     * @param {string} userId
+     * @param {string} badgeId
+     * @param {object} achievement
+     */
+    async unlockAchievement(userId, badgeId, achievement) {
+        console.log(`[Gamification] Unlocking achievement '${badgeId}' for user ${userId}!`);
+        await appDb.collection('users').doc(userId).collection('achievements').doc(badgeId).set({
+            unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            title: achievement.title
+        });
+        this.showAchievementToast(achievement);
+    },
+
+    /**
+     * Displays the "Achievement Unlocked!" toast.
+     * @param {object} achievement
+     */
+    showAchievementToast(achievement) {
+        const toastId = 'toast-ach-' + Date.now();
+        const toastWrapper = document.createElement('div');
+        toastWrapper.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:2050;';
+        toastWrapper.innerHTML = `
+            <div id="${toastId}" class="toast achievement-toast fade" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="toast-header">
+                <i class="bi bi-award-fill"></i>
+                <strong class="me-auto">Achievement Unlocked!</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+              <div class="toast-body d-flex align-items-center">
+                <span class="fs-1 me-3">${achievement.icon}</span>
+                <div>
+                    <h6 class="mb-0 fw-bold">${achievement.title}</h6>
+                    <small>${achievement.description}</small>
+                </div>
+              </div>
+            </div>`;
+        document.body.appendChild(toastWrapper);
+        const toastEl = document.getElementById(toastId);
+        const toastInstance = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 8000 });
+        toastInstance.show();
+        toastEl.addEventListener('hidden.bs.toast', () => toastWrapper.remove());
+    }
+};
 
         if (!State.horizontalScrollContainers) {
              State.horizontalScrollContainers = [];
@@ -7113,3 +7415,9 @@ loadContinueWatchingSection: (sectionDiv) => {
 
         // --- Start the Application ---
         //document.addEventListener('DOMContentLoaded', App.init);
+firebaseReadyPromise.then(({ appAuth, appDb }) => {
+    console.log("[Main App] Firebase is ready. Initializing App...");
+    App.init(appAuth, appDb); // Pass the instances to the main app
+}).catch(error => {
+    console.error("[Main App] Could not initialize because Firebase failed.", error);
+});
