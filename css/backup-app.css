@@ -1,4 +1,4 @@
-       /* --- CSS Reset & Base Styles --- */
+         /* --- CSS Reset & Base Styles --- */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -355,11 +355,12 @@ p {
 }
 
 .loading-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 4rem 1rem;
-    min-height: 200px;
+    display: none;
+    text-align: center;
+    padding: 1rem;
+}
+.loading-spinner.active {
+    display: block;
 }
 
 .spinner-border-lg {
@@ -3945,4 +3946,187 @@ body.theme-light .skeleton-h-card-overlay {
 }
 #notifications-view .notification-item .action-buttons {
     flex-shrink: 0;
+}
+
+
+.h-card-view-count {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem; /* Position on the left */
+    z-index: 4;
+    background: rgba(10, 12, 16, 0.8);
+    backdrop-filter: blur(5px);
+    color: var(--text-secondary);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.review-count-badge {
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.8em;
+    padding: 0.2em 0.5em;
+    margin-left: 0.5rem;
+    border-radius: 5px;
+}
+
+/* Review Submission Form */
+#review-form textarea {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    min-height: 100px;
+    resize: vertical;
+}
+#review-form textarea:focus {
+    background-color: var(--bg-primary);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 10px var(--shadow-color);
+    outline: none;
+}
+#review-form button {
+    background: var(--brand-primary);
+    border: none;
+    font-weight: 600;
+}
+#review-form button:disabled {
+    background: var(--bg-secondary);
+    opacity: 0.7;
+}
+
+/* Container for the list of reviews */
+#reviews-list {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Individual Review Card */
+.review-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    display: flex;
+    gap: 1rem;
+    position: relative;
+}
+
+.review-avatar img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.review-content { flex-grow: 1; }
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+.review-username { font-weight: 600; color: var(--text-primary); }
+.review-timestamp { font-size: 0.85rem; color: var(--text-secondary); }
+.review-text { color: var(--text-secondary); white-space: pre-wrap; }
+
+.review-delete-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+.review-delete-btn:hover {
+    opacity: 1;
+    color: #ff4d4d; /* A danger red color */
+}
+
+
+/* --- ADD THIS CSS TO YOUR STYLE BLOCK --- */
+
+/* Achievements Section on Dashboard */
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+}
+
+.achievement-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.achievement-card .icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+    color: var(--brand-primary);
+}
+
+.achievement-card .title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.achievement-card .description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    min-height: 50px; /* Ensures consistent card height */
+}
+
+/* Style for Unlocked Achievements */
+.achievement-card.unlocked {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 15px var(--shadow-color);
+    transform: scale(1.03);
+}
+
+.achievement-card.unlocked .icon {
+    text-shadow: 0 0 10px var(--shadow-color);
+}
+
+/* Style for Locked Achievements */
+.achievement-card.locked {
+    filter: grayscale(80%);
+    opacity: 0.6;
+}
+.achievement-card.locked .icon {
+    color: var(--text-secondary);
+}
+
+/* Achievement Unlocked Toast Notification */
+.toast.achievement-toast {
+    background: linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));
+    color: white;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+.toast.achievement-toast .toast-header {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-weight: bold;
+}
+.toast.achievement-toast .toast-header .bi-award-fill {
+    margin-right: 0.5rem;
+}
+.toast.achievement-toast .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
 }
