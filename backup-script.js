@@ -1,4 +1,5 @@
- // --- Configuration ---
+
+                  // --- Configuration ---
         const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
@@ -16,18 +17,17 @@
                  // { name: '2Embed', urlFormat: (id, type, season, episode) => `https://www.2embed.cc/embed${type==='tv'?'tv':' películas'}/${id}${type==='tv'&&season?`?s=${season}&e=${episode||1}`:''}` }
             ],
             HOME_SECTIONS: [
-                {
-                    title: "Continue Watching",
-                    id: 'continue-watching', // Special ID to identify it
-                    display_style: 'horizontal_backdrop'
-                     // No 'endpoint' or 'type' needed here
-                },
                 { // <<< NEW SECTION >>>
                     title: "Popular on AuraStream", // Or "Your Most Viewed"
                     id: 'most-viewed', // Special ID
                     display_style: 'horizontal_poster', // Or vertical 'default'
                     max_items: 15 // How many top items to show
                 },
+                {
+                    title: "Continue Watching",
+                    id: 'continue-watching', // Special ID to identify it
+                    display_style: 'horizontal_backdrop'
+                }, 
                 {
                     title: "Latest Trailers",
                     endpoint: "/movie/now_playing", // Fetch movies likely to have trailers
@@ -58,6 +58,16 @@
                 },
                 { title: "Upcoming Movies", endpoint: "/movie/upcoming", type:'movie' },
             ],
+
+            //Notification
+            UPCOMING_SECTION_ITEMS: 15, // Number of items to show in the Upcoming section
+            // VAPID keys for Web Push. YOU MUST GENERATE YOUR OWN FOR PRODUCTION!
+            // These are public keys, keep your private key secure on the server.
+            VAPID_PUBLIC_KEY: 'BHxnfKBkk1FQKPerLOSdUucEGpZYuonj-pbX7k9ihm3YgxPWjw3iGmy_82BbeogwQ2qAgc1fLmHizfX439Nkk80', // REPLACE WITH YOUR ACTUAL KEY
+            // A placeholder URL for your push subscription endpoint (server-side)
+            PUSH_SUBSCRIPTION_ENDPOINT: 'YOUR_BACKEND_PUSH_SUBSCRIPTION_URL', // E.g., /api/subscribe_push
+            // A placeholder URL for your push notification triggering endpoint (server-side)
+            PUSH_TRIGGER_ENDPOINT: 'YOUR_BACKEND_TRIGGER_NOTIFICATION_URL', // E.g., /api/trigger_notification
             
             SPORTRADAR_BASE_URL: 'https://api.sportradar.com/soccer/trial/v4/en', // Adjust if needed (e.g., /soccer/production/v4/en or api.sportradar.us)
             SPORTRADAR_API_KEY: 'VEv4okaElakk1DyeLIAWsojBisfHllWzPRx3ARjI',
@@ -101,6 +111,8 @@
             person: document.getElementById('person-view'),
             watchlist: document.getElementById('watchlist-view'),
             analytics: document.getElementById('analytics-view'),
+            community: document.getElementById('community-view'), // <<< ADD
+            communityThreadDetail: document.getElementById('community-thread-detail-view'), // <<< ADD
         },
         // Navbar
         navbarMenu: document.getElementById('navbarNav'),
@@ -126,6 +138,8 @@
         genreResultsTitle: document.getElementById('genre-results-title'),
         loadMoreGenreBtn: document.getElementById('load-more-genre-btn'),
         genreLoadingSpinner: document.getElementById('genre-loading-more-spinner'),
+        genreHeaderSection : document.getElementById('genre-header-section'), // New DOM element
+        genreResultsTitleDynamic : document.getElementById('genre-results-title-dynamic'), // New title target
         // Network Results View
         networkResultsGrid: document.getElementById('network-results-grid'),
         networkResultsTitle: document.getElementById('network-results-title'),
@@ -178,6 +192,46 @@
         globalLoader: document.getElementById('global-loader') || document.body, // Fallback to body for class toggle
         globalErrorDisplay: document.getElementById('global-error-display'),
         globalErrorMessage: document.getElementById('global-error-message'),
+        //Profile
+        profileView: document.getElementById('profile-view'),
+        profileUserAvatar: document.getElementById('profile-user-avatar'),
+        profileUserAvatarInitials: document.getElementById('profile-user-avatar-initials'),
+        profileUserAvatarImage: document.getElementById('profile-user-avatar-image'),
+        profileDisplayName: document.getElementById('profile-display-name'),
+        profileEmail: document.getElementById('profile-email'),
+        updateProfileForm: document.getElementById('update-profile-form'),
+        profileNameInput: document.getElementById('profile-name-input'),
+        updateNameBtn: document.getElementById('update-name-btn'),
+        resetPasswordBtn: document.getElementById('reset-password-btn'),
+        deleteAccountBtn: document.getElementById('delete-account-btn'),
+        profileRecentWatchedWrapper: document.getElementById('profile-recent-watched-wrapper'),
+        profileRecentWatchedContainer: document.getElementById('profile-recent-watched-container'),
+        profileWatchlistGrid: document.getElementById('profile-watchlist-grid'),
+        profileFavoritesGrid: document.getElementById('profile-favorites-grid'),
+
+        // Upcoming Section Elements
+        upcomingSection: document.getElementById('upcoming-section'),
+        upcomingContainer: document.getElementById('upcoming-container'),
+
+        // Notifications Page Elements
+        notificationsView: document.getElementById('notifications-view'),
+        notificationSubscriptionsList: document.getElementById('notification-subscriptions-list'),
+        requestNotificationPermissionBtn: document.getElementById('request-notification-permission-btn'),
+        notificationPermissionStatus: document.getElementById('notification-permission-status'),
+
+        //Community
+        
+        community : {
+            userActions: document.getElementById('community-user-actions'),
+            threadsList: document.getElementById('community-threads-list'),
+            createThreadModal: document.getElementById('createThreadModal'),
+            createThreadForm: document.getElementById('create-thread-form'),
+            threadDetailContent: document.getElementById('thread-detail-content'),
+            threadPostsList: document.getElementById('thread-posts-list'),
+            addPostForm: document.getElementById('add-post-form'),
+        },
+
+
     };
         // --- State Variables ---
         const State = {
@@ -189,6 +243,7 @@
         allTvGenres: [],
         watchlist: [],
         continueWatching: [],
+        activeNotificationSubscriptions: [],
         favorites: [], // Assuming AuraStream has a separate favorites list
         horizontalScrollContainers: [],
         tmdbSearchTimeout: null,
@@ -212,6 +267,7 @@
         watchHistory: [], // For analytics and continue watching seeds
         genreChartInstance: null, // Chart.js instances
         actorChartInstance: null,
+        previousViewHash: null,
         // Helper function to check token validity
         hasValidSpotifyAppToken: () => !!(State.spotifyAppAccessToken && State.spotifyAppTokenExpiresAt && Date.now() < State.spotifyAppTokenExpiresAt),
     };
@@ -227,125 +283,192 @@
     const Watchlist = {
         STORAGE_KEY: 'auraStreamWatchlist',
         load: () => { try { const d = localStorage.getItem(Watchlist.STORAGE_KEY); State.watchlist = d ? JSON.parse(d) : []; } catch (e) { console.error("Watchlist load failed:", e); State.watchlist = []; localStorage.removeItem(Watchlist.STORAGE_KEY); } },
-        save: () => { try { localStorage.setItem(Watchlist.STORAGE_KEY, JSON.stringify(State.watchlist)); } catch (e) { console.error("Watchlist save failed:", e); /* Maybe show toast */ } },
+        save: () => { try { localStorage.setItem(Watchlist.STORAGE_KEY, JSON.stringify(State.watchlist)); } catch (e) { console.error("Watchlist save failed:", e); } },
         add: (d) => { if (!d?.id || !d?.type || Watchlist.isInWatchlist(d.id, d.type)) return false; const i = { id: d.id, type: d.type, title: d.title || d.name || 'N/A', poster_path: d.poster_path, backdrop_path: d.backdrop_path, vote_average: d.vote_average }; State.watchlist.push(i); Watchlist.save(); Utils.showToast(`${i.title} added to watchlist!`, "success"); return true; },
         remove: (id, t) => { const l = State.watchlist.length; const i = parseInt(id); State.watchlist = State.watchlist.filter(d => !(d.id === i && d.type === t)); if (State.watchlist.length < l) { Watchlist.save(); Utils.showToast("Item removed from watchlist.", "info"); return true; } return false; },
         clear: () => { State.watchlist = []; Watchlist.save(); Utils.showToast("Watchlist cleared.", "info"); },
         isInWatchlist: (id, t) => { const i = parseInt(id); return State.watchlist.some(d => d.id === i && d.type === t); }
     };
 
-    const ContinueWatching = {
-            STORAGE_KEY: 'auraStreamContinueWatching',
-            MAX_ITEMS: 20, // Max number of items to keep in the list
+ 
 
-            // Load from localStorage
-            load: () => {
-                try {
-                    const storedList = localStorage.getItem(ContinueWatching.STORAGE_KEY);
-                    State.continueWatching = storedList ? JSON.parse(storedList) : [];
-                    // Ensure it's sorted on load (might not be if saved improperly before)
-                    State.continueWatching.sort((a, b) => b.lastWatchedTimestamp - a.lastWatchedTimestamp);
-                    console.log("Continue Watching loaded:", State.continueWatching.length, "items");
-                } catch (error) {
-                    console.error("Failed to load Continue Watching list:", error);
-                    State.continueWatching = [];
-                    localStorage.removeItem(ContinueWatching.STORAGE_KEY);
-                }
-            },
 
-            // Save to localStorage
-            save: () => {
-                try {
-                    // Ensure list is sorted before saving
-                    State.continueWatching.sort((a, b) => b.lastWatchedTimestamp - a.lastWatchedTimestamp);
-                    // Limit the list size
-                    const limitedList = State.continueWatching.slice(0, ContinueWatching.MAX_ITEMS);
-                    localStorage.setItem(ContinueWatching.STORAGE_KEY, JSON.stringify(limitedList));
-                } catch (error) {
-                    console.error("Failed to save Continue Watching list:", error);
-                    // Don't show toast here, might be too frequent
-                }
-            },
+    
+    // V V V REPLACE THE ENTIRE OLD ContinueWatching OBJECT WITH THIS V V V
+const ContinueWatching = {
+    _cache: [], // In-memory cache for fast UI rendering.
+    _trackingInterval: null, // Holds the setInterval ID for progress saving.
+    _currentItem: null, // Holds details of the item currently being tracked.
 
-            // Update or Add an item (moves to top)
-            // itemDetails should include: id, type, title, poster_path, backdrop_path
-            // tvDetails should include: seasonNumber, episodeNumber, episodeTitle (if type is 'tv')
-            // progressPercent: A dummy value (e.g., 15) or calculated if possible
-            updateItem: (itemDetails, tvDetails = {}, progressPercent = 15) => { // Add default dummy progress
-                if (!itemDetails || !itemDetails.id || !itemDetails.type) return;
+    /**
+     * Loads the user's watch history from Firestore into the local cache.
+     * Called on user login.
+     */
+    load: async () => {
+        if (!appAuth?.currentUser || !appDb) {
+            console.warn("[CW] Cannot load from Firestore: User not logged in or DB not ready.");
+            ContinueWatching._cache = [];
+            return;
+        }
+        const userId = appAuth.currentUser.uid;
+        console.log(`[CW] Loading watch history for user: ${userId}`);
+        try {
+            const snapshot = await appDb.collection("users").doc(userId).collection("watchHistory")
+                .orderBy("lastWatchedTimestamp", "desc")
+                .limit(20) // Get the 20 most recently watched items
+                .get();
 
-                const itemId = parseInt(itemDetails.id);
-                const itemType = itemDetails.type;
-                const now = Date.now();
+            ContinueWatching._cache = snapshot.docs.map(doc => {
+                const data = doc.data();
+                // Convert Firestore timestamp to JS milliseconds
+                data.lastWatchedTimestamp = data.lastWatchedTimestamp?.toDate().getTime();
+                return data;
+            });
+            console.log(`[CW] Loaded ${ContinueWatching._cache.length} items from Firestore.`);
+        } catch (error) {
+            console.error("Error loading watch history from Firestore:", error);
+            ContinueWatching._cache = [];
+            Utils.showToast("Could not load your watch history.", "danger");
+        }
+    },
+    
+    /**
+     * Clears the local cache and stops any tracking. Called on logout.
+     */
+    clear: () => {
+        ContinueWatching.stopTracking();
+        ContinueWatching._cache = [];
+        console.log("[CW] Local cache cleared on logout.");
+    },
 
-                // Remove existing entry if present
-                State.continueWatching = State.continueWatching.filter(item =>
-                    !(item.id === itemId && item.type === itemType &&
-                      (itemType === 'movie' || (item.seasonNumber === tvDetails.seasonNumber && item.episodeNumber === tvDetails.episodeNumber)))
-                );
+    /**
+     * Starts tracking viewing progress for a specific item.
+     * Called when the player view is loaded.
+     * @param {object} itemDetails - Full TMDB object for the movie/show.
+     * @param {object} tvDetails - Contains seasonNumber and episodeNumber for TV shows.
+     */
+    startTracking: (itemDetails, tvDetails) => {
+        ContinueWatching.stopTracking(); // Stop any previous tracking first.
 
-                // Create new entry data
-                const newItem = {
-                    id: itemId,
-                    type: itemType,
-                    lastWatchedTimestamp: now,
-                    title: itemDetails.title || itemDetails.name || 'Unknown Title',
-                    poster_path: itemDetails.poster_path || null,
-                    backdrop_path: itemDetails.backdrop_path || null,
-                    vote_average: itemDetails.vote_average || null,
-                    progressPercent: progressPercent, // Store the dummy progress
-                     // TV Specific details
-                    seasonNumber: itemType === 'tv' ? tvDetails.seasonNumber : null,
-                    episodeNumber: itemType === 'tv' ? tvDetails.episodeNumber : null,
-                    episodeTitle: itemType === 'tv' ? tvDetails.episodeTitle : null,
-                };
+        if (!appAuth?.currentUser) {
+            console.log("[CW] User not logged in. Skipping progress tracking.");
+            return;
+        }
 
-                // Add to the beginning of the array
-                State.continueWatching.unshift(newItem);
+        const duration = itemDetails.runtime || itemDetails.episode_run_time?.[0];
+        if (!duration) {
+            console.warn("[CW] Cannot track progress: item duration is unknown.", itemDetails);
+            return;
+        }
 
-                // Limit size and save
-                ContinueWatching.save();
-                console.log("Updated Continue Watching:", newItem.title, tvDetails.episodeTitle || '');
-
-                // Refresh the home section if currently visible (optional)
-                if(location.hash === '#home' || location.hash === '') {
-                    App.loadContinueWatchingSection(); // Reload the specific section
-                }
-            },
-
-            // Get the current list (already sorted by load/save)
-            getList: () => {
-                return State.continueWatching;
-            },
-
-             // Remove an item explicitly (optional)
-             remove: (id, type, seasonNumber = null, episodeNumber = null) => {
-                 const itemId = parseInt(id);
-                 const initialLength = State.continueWatching.length;
-
-                 State.continueWatching = State.continueWatching.filter(item =>
-                     !(item.id === itemId && item.type === type &&
-                       (type === 'movie' || (item.seasonNumber === seasonNumber && item.episodeNumber === episodeNumber)))
-                 );
-
-                 if (State.continueWatching.length < initialLength) {
-                     ContinueWatching.save();
-                     console.log("Removed from Continue Watching:", id, type, seasonNumber, episodeNumber);
-                     // Optionally refresh the list display
-                     if(location.hash === '#home' || location.hash === '') {
-                        App.loadContinueWatchingSection();
-                    }
-                     return true;
-                 }
-                 return false;
-             },
-
+        ContinueWatching._currentItem = {
+            id: itemDetails.id,
+            type: itemDetails.title ? 'movie' : 'tv',
+            title: itemDetails.title || itemDetails.name,
+            poster_path: itemDetails.poster_path,
+            backdrop_path: itemDetails.backdrop_path,
+            vote_average: itemDetails.vote_average,
+            totalDurationMinutes: duration,
+            seasonNumber: tvDetails?.seasonNumber || null,
+            episodeNumber: tvDetails?.episodeNumber || null,
+            episodeTitle: tvDetails?.episodeTitle || null,
+            startTime: Date.now(), // Record when tracking started
         };
+        
+        console.log("[CW] Started tracking:", ContinueWatching._currentItem.title);
+        
+        // Save progress every 30 seconds
+        ContinueWatching._trackingInterval = setInterval(ContinueWatching._saveProgress, 30000);
+    },
+
+    /**
+     * Stops the progress tracking timer, performs a final save, and clears the current item.
+     * Called when the user navigates away from the player.
+     */
+    stopTracking: () => {
+        if (ContinueWatching._trackingInterval) {
+            clearInterval(ContinueWatching._trackingInterval);
+            ContinueWatching._trackingInterval = null;
+        }
+        if (ContinueWatching._currentItem) {
+            console.log("[CW] Stopping tracking. Performing final save for:", ContinueWatching._currentItem.title);
+            ContinueWatching._saveProgress(); // Perform one final save.
+            ContinueWatching._currentItem = null;
+        }
+    },
+
+    /**
+     * Internal function to calculate progress and save it to Firestore.
+     */
+    _saveProgress: async () => {
+        const item = ContinueWatching._currentItem;
+        if (!item || !appAuth?.currentUser || !appDb) return;
+
+        const userId = appAuth.currentUser.uid;
+        
+        // Create a unique ID for the document (e.g., "tv-1399-s1-e5")
+        const docId = item.type === 'movie'
+            ? `movie-${item.id}`
+            : `tv-${item.id}-s${item.seasonNumber}-e${item.episodeNumber}`;
+
+        const elapsedSeconds = (Date.now() - item.startTime) / 1000;
+        // For this demo, we'll assume progress is linear from when they start.
+        // A more complex system might try to get progress from a video element if it were not an iframe.
+        let progressPercent = Math.round((elapsedSeconds / (item.totalDurationMinutes * 60)) * 100);
+        progressPercent = Math.min(Math.max(progressPercent, 0), 100); // Clamp between 0-100
+
+        const dataToSave = {
+            ...item, // includes id, type, title, poster, etc.
+            lastWatchedTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            progressPercent: progressPercent,
+        };
+        delete dataToSave.startTime; // We don't need to store this part in Firestore.
+
+        try {
+            const docRef = appDb.collection("users").doc(userId).collection("watchHistory").doc(docId);
+            await docRef.set(dataToSave, { merge: true });
+
+            console.log(`[CW] Saved progress for ${docId}: ${progressPercent}%`);
+
+            // Update the in-memory cache for immediate UI updates
+            const cacheIndex = ContinueWatching._cache.findIndex(i => i.docId === docId);
+            const cacheItem = { ...dataToSave, docId, lastWatchedTimestamp: Date.now() };
+            if (cacheIndex > -1) {
+                ContinueWatching._cache[cacheIndex] = cacheItem;
+            } else {
+                ContinueWatching._cache.unshift(cacheItem);
+            }
+            // Re-sort and trim the cache
+            ContinueWatching._cache.sort((a, b) => b.lastWatchedTimestamp - a.lastWatchedTimestamp);
+            ContinueWatching._cache = ContinueWatching._cache.slice(0, 20);
+
+        } catch (error) {
+            console.error(`[CW] Failed to save progress for ${docId}:`, error);
+        }
+    },
+
+    /**
+     * Gets the current list from the in-memory cache.
+     */
+    getCache: () => {
+        return ContinueWatching._cache;
+    }
+};
 
 
         // --- Utilities ---
         const Utils = {
-             // Debounce function to limit rate of function calls
+            // Debounce function to limit rate of function calls
+            /*debounce: (func, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            },*/ 
+
             debounce: (func, delay) => {
                 let timeoutId;
                 return (...args) => {
@@ -356,6 +479,28 @@
                 };
             },
 
+            formatRelativeTime: (date) => {
+                const now = new Date();
+                const seconds = Math.round((now - date) / 1000);
+    
+                const minutes = Math.round(seconds / 60);
+                const hours = Math.round(minutes / 60);
+    
+                const days = Math.round(hours / 24);
+                const weeks = Math.round(days / 7);
+    
+                const months = Math.round(days / 30.44);
+                const years = Math.round(days / 365.25);
+
+    
+                if (seconds < 60) return `${seconds} second${seconds === 1 ? '' : 's'} ago`;
+                if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+                if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+                if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+                if (weeks < 5) return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
+                if (months < 12) return `${months} month${months === 1 ? '' : 's'} ago`;
+                return `${years} year${years === 1 ? '' : 's'} ago`;
+            },
             // Generate HTML for a loading spinner
             getSpinnerHTML: (text = 'Loading...', large = false) => `
                 <div class="loading-spinner" style="min-height: ${large ? '300px':'150px'};">
@@ -742,15 +887,24 @@
                 }
             },
 
-             // Basic HTML escaping
-            escapeHtml: (unsafe) => {
+            // Basic HTML escaping
+            /*escapeHtml: (unsafe) => {
                  return unsafe === null || unsafe === undefined ? '' : String(unsafe)
                     .replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
                     .replace(/"/g, "&quot;")
                     .replace(/'/g, "&#039;");
-             },
+            },*/
+
+             escapeHtml: (unsafe) => {
+        return unsafe === null || unsafe === undefined ? '' : String(unsafe)
+            .replace(/&/g, "&")
+            .replace(/</g, "<")
+            .replace(/>/g, ">")
+            .replace(/"/g, '"')
+            .replace(/'/g, "'");
+    },
         };
 
         // --- API Fetching ---
@@ -1140,8 +1294,14 @@
                  hash = hash || location.hash || '#home'; // Default to #home
                  if (hash === '#') hash = '#home'; // Handle empty hash
 
-                 // Stop visualizer if running
-                 Visualizer.stop();
+                // <<< FIX: STOP TRACKING WHEN LEAVING THE PLAYER VIEW
+                if (State.previousViewHash && State.previousViewHash.startsWith('#player=')) {
+                    console.log("[Router] Navigating away from player, stopping progress tracking.");
+                    ContinueWatching.stopTracking();
+                }
+                // >>> END FIX
+                // Stop visualizer if running
+                Visualizer.stop();
 
                  // Hide all views and deactivate nav links
                  Object.values(DOM.views).forEach(view => { if(view) { view.classList.remove('active'); view.style.display = 'none';} });
@@ -1269,9 +1429,13 @@
                          // loadNetworkResultsPage itself doesn't need to be async for this part
                          App.loadNetworkResultsPage(1);
                      };
-                    }
+                }
             
-                
+                else if (hash === '#profile') { // NEW ROUTE
+                    targetViewElement = DOM.profileView;
+                    activeNavLinkHref = '#profile-settings'; // Assuming your dropdown link has this href
+                    runOnViewLoad = () => App.loadProfilePage();
+                }
 
                  // NEW: Handle Person Route
                  else if (hash.startsWith('#person=')) {
@@ -1314,11 +1478,27 @@
                          App.resizeVisualizerCanvas(); // Ensure canvas size is correct
                      };
                 }
+                else if (hash.startsWith('#community/thread/')) { // <<< ADD: Route for a specific thread
+                    targetViewElement = DOM.views.communityThreadDetail;
+                    activeNavLinkHref = '#community'; // Keep the main community link active
+                    const threadId = hash.substring('#community/thread/'.length);
+                    runOnViewLoad = () => App.loadThreadDetailPage(threadId);
+
+                } else if (hash === '#community') { // <<< ADD: Route for the main community page
+                    targetViewElement = DOM.views.community;
+                    activeNavLinkHref = '#community';
+                    runOnViewLoad = () => App.loadCommunityPage();
+                }
                 else if (hash === '#watchlist') {
                      targetViewElement = DOM.views.watchlist;
                      activeNavLinkHref = '#watchlist'; // Highlight watchlist nav link
                      runOnViewLoad = () => App.loadWatchlistPage();
-                 }
+                }
+                else if (hash === '#notifications') { // NEW ROUTE
+                    targetViewElement = DOM.notificationsView;
+                    activeNavLinkHref = '#notifications'; // Highlight the nav link
+                    runOnViewLoad = () => App.loadNotificationsPage();
+                }
                  else if (hash === '#livesports') {
                     targetViewElement = DOM.views.livesports;
                      activeNavLinkHref = '#livesports'; // Highlight the new link
@@ -1383,6 +1563,8 @@
                  if (hash !== '#home' && hash !== '#music' && !hash.startsWith('#player=')) {
                      window.scrollTo(0, 0);
                  }
+
+                 State.previousViewHash = hash;
              },
 
              // Listener for hash changes
@@ -1553,8 +1735,28 @@
 
         // --- Main App Module ---
         const App = {
+            THEME_STORAGE_KEY: 'auraStreamTheme',
             init: () => {
                console.log("🚀 App Init Starting..."); // Use an emoji for fun!
+                // --- NEW: Register Service Worker for Push Notifications ---
+                if ('serviceWorker' in navigator) {
+                    // V V V CHANGE THIS LINE V V V
+                    navigator.serviceWorker.register('service-worker.js') // REMOVE the leading slash "/"
+                    // ^ ^ ^ CHANGE THIS LINE ^ ^ ^
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                        Utils.showToast("Notifications may not work. Service Worker failed to register.", "danger");
+                    });
+                }  else {
+                   console.warn("Service Worker not supported by this browser. Push notifications will be disabled.");
+                   Utils.showToast("Your browser does not support notifications.", "warning");
+                   // Disable notification features if SW not supported
+                   if (DOM.requestNotificationPermissionBtn) DOM.requestNotificationPermissionBtn.disabled = true;
+                   if (DOM.notificationPermissionStatus) DOM.notificationPermissionStatus.textContent = "Notifications not supported.";
+                }
 
                 // --- 1. Essential Initializations (Must Happen First) ---
                  try {
@@ -1573,8 +1775,8 @@
                        });
                     } else { console.warn("  Trailer Modal element not found."); }
 
-             // Initialize Connection Explorer Modal
-             if (DOM.connectionExplorerModal) {
+                // Initialize Connection Explorer Modal
+                if (DOM.connectionExplorerModal) {
                   console.log("  Initializing Connection Modal & listeners...");
                   bsInstances.connectionModal = new bootstrap.Modal(DOM.connectionExplorerModal);
                   DOM.connectionExplorerModal.addEventListener('shown.bs.modal', () => {
@@ -1597,14 +1799,14 @@
                        Utils.setElementVisibility(DOM.connectionGraphError, false);
                        Utils.setElementVisibility(DOM.connectionGraphLoading, false);
                   });
-              } else { console.warn("  Connection Explorer Modal element not found."); }
+            } else { console.warn("  Connection Explorer Modal element not found."); }
 
-        } catch (error) {
-             console.error("💥 ERROR during essential UI initialization:", error);
-             // Display a user-facing error if critical UI fails?
-             // e.g., document.body.innerHTML = "<h2>Application failed to initialize. Please refresh.</h2>";
-             return; // Stop initialization if basic UI components fail
-        }
+            } catch (error) {
+                console.error("💥 ERROR during essential UI initialization:", error);
+                // Display a user-facing error if critical UI fails?
+                // e.g., document.body.innerHTML = "<h2>Application failed to initialize. Please refresh.</h2>";
+                return; // Stop initialization if basic UI components fail
+            }
 
 
         // --- 2. Initialize Firebase (with Try/Catch) ---
@@ -1665,6 +1867,7 @@
               console.error("💥 ERROR during initial API calls/UI setup:", error);
          }
 
+        window.addEventListener('scroll', Utils.debounce(App.handleNavbarScroll, 50)); // Debounce for performance
 
         // --- 5. Setup Routing and Event Listeners ---
         try {
@@ -1704,6 +1907,10 @@
              document.querySelector('.nav-link[href="#livesports"]')?.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
 
 
+            //Community
+            DOM.community.createThreadForm?.addEventListener('submit', App.handleCreateThreadSubmit);
+            DOM.community.addPostForm?.addEventListener('submit', App.handleAddPostSubmit);
+
             // Watchlist Clear Listener
             DOM.clearWatchlistBtn?.addEventListener('click', App.handleClearWatchlist);
 
@@ -1721,6 +1928,9 @@
         }
 
         console.log("✅ App Init Complete.");
+         if (DOM.requestNotificationPermissionBtn) {
+            DOM.requestNotificationPermissionBtn.addEventListener('click', App.requestNotificationPermission);
+        }
         }, 
 
         handleAuthReady: (user, dbInstance) => {
@@ -1760,66 +1970,82 @@
 
      },
 
+       handleNavbarScroll: () => {
+        const navbar = document.querySelector('.navbar'); // Get a reference to your navbar
+        if (!navbar) return;
 
-            applyTheme: (themeName) => {
-                const body = document.body;
-                // Remove any existing theme classes
-                body.classList.remove(
-                    'theme-midnight',
-                    'theme-forest',
-                    'theme-crimson',
-                    'theme-nebula',
-                    'theme-ocean',
-                    'theme-desert',
-                    'theme-solarized',
-                    'theme-solarflare',
-                    'theme-cyberpunk',
-                    'theme-light'
-                );
+        // Define the scroll threshold (e.g., 50 pixels from the top)
+        const scrollThreshold = 50;
 
+        // Check if the user has scrolled past the threshold
+        if (window.scrollY > scrollThreshold) {
+            navbar.classList.add('navbar-scrolled'); // Add the scrolled class
+        } else {
+            navbar.classList.remove('navbar-scrolled'); // Remove the scrolled class
+        }
+    },
+      applyTheme: (themeName) => {
+        const body = document.body;
+        // Remove any existing theme classes
+        body.classList.remove(
+            'theme-midnight', 'theme-forest', 'theme-crimson', 'theme-nebula',
+            'theme-ocean', 'theme-desert', 'theme-solarized', 'theme-solarflare',
+            'theme-cyberpunk', 'theme-light'
+        );
 
-                if (themeName && themeName !== 'default') {
-                    body.classList.add(`theme-${themeName}`);
-                     console.log(`Applied theme: ${themeName}`);
-                } else {
-                    console.log('Applied default theme');
-                }
+        if (themeName && themeName !== 'default') {
+            body.classList.add(`theme-${themeName}`);
+            console.log(`Applied theme: ${themeName}`);
+        } else {
+            // 'default' case, which maps to your Aura theme (no specific class needed)
+            console.log('Applied default theme (Aura)');
+        }
 
-                if (!localStorage.getItem(App.THEME_STORAGE_KEY)) {
-                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                        App.applyTheme('midnight');
-                    } else {
-                       App.applyTheme('light');
+        // Optional: Update active state in dropdown
+        document.querySelectorAll('#theme-selector-menu .dropdown-item').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === themeName);
+        });
+
+        // ONLY save to localStorage when applyTheme is called directly by user action
+        // or a confirmed initial preference, NOT from the internal applyTheme loop itself.
+        // This is handled by addThemeSwitcherListeners's event listener.
+    },
+
+    // New logic for applySavedTheme: Determine which theme to load initially.
+    applySavedTheme: () => {
+        const savedTheme = localStorage.getItem(App.THEME_STORAGE_KEY);
+        if (savedTheme) {
+            // If a theme is saved, apply it directly.
+            App.applyTheme(savedTheme);
+        } else {
+            // If no theme is saved, apply based on system preference.
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                App.applyTheme('midnight');
+                localStorage.setItem(App.THEME_STORAGE_KEY, 'midnight'); // Save this preference
+            } else {
+               App.applyTheme('light');
+               localStorage.setItem(App.THEME_STORAGE_KEY, 'light'); // Save this preference
+            }
+        }
+    },
+
+    addThemeSwitcherListeners: () => {
+        const themeMenu = document.getElementById('theme-selector-menu');
+        if (themeMenu) {
+            themeMenu.addEventListener('click', (e) => {
+                if (e.target.classList.contains('theme-select-btn')) {
+                    const theme = e.target.dataset.theme;
+                    if (theme) {
+                        App.applyTheme(theme);
+                        localStorage.setItem(App.THEME_STORAGE_KEY, theme); // Save user's explicit choice
                     }
                 }
+            });
+        }
+    },
 
 
-                // Optional: Update active state in dropdown (if needed)
-                 document.querySelectorAll('#theme-selector-menu .dropdown-item').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.theme === themeName);
-                 });
-            },
-
-            applySavedTheme: () => {
-                const savedTheme = localStorage.getItem(App.THEME_STORAGE_KEY);
-                // Apply saved theme, or default if nothing is saved
-                App.applyTheme(savedTheme || 'default');
-            },
-
-            addThemeSwitcherListeners: () => {
-                const themeMenu = document.getElementById('theme-selector-menu');
-                if (themeMenu) {
-                    themeMenu.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('theme-select-btn')) {
-                            const theme = e.target.dataset.theme;
-                            if (theme) {
-                                App.applyTheme(theme);
-                                localStorage.setItem(App.THEME_STORAGE_KEY, theme); // Save preference
-                            }
-                        }
-                    });
-                }
-            },
+           
 
              // Update Router to track player state for saving progress
              handlePlayerExit: async () => {
@@ -2333,57 +2559,457 @@
             },
 
             // NEW: Handler for Like/Favorite Button Click
-            handleAddOrRemoveFavorite: (button) => {
-        const { itemId, itemType, itemTitle, itemPoster, itemRating, itemGenres } = button.dataset;
-        const idNum = parseInt(itemId);
-        if (!idNum || !itemType) return;
+            handleAddOrRemoveFavorite: async (button) => {
+                const { itemId, itemType, itemTitle, itemPoster, itemRating, itemGenres } = button.dataset;
+                const idNum = parseInt(itemId);
+                if (!idNum || !itemType) return;
 
-        let genreIds = [];
-        try {
-            // Parse genre IDs safely
-            genreIds = JSON.parse(itemGenres || '[]');
-            if (!Array.isArray(genreIds)) genreIds = []; // Ensure it's an array
-        } catch (e) {
-            console.error("Failed to parse genre IDs from button data:", itemGenres, e);
-            genreIds = []; // Default to empty array on error
+                let genreIds = [];
+                try {
+                    // Parse genre IDs safely
+                    genreIds = JSON.parse(itemGenres || '[]');
+                    if (!Array.isArray(genreIds)) genreIds = []; // Ensure it's an array
+                } catch (e) {
+                    console.error("Failed to parse genre IDs from button data:", itemGenres, e);
+                    genreIds = []; // Default to empty array on error
+                }
+
+                const itemData = {
+                    id: idNum,
+                    type: itemType,
+                    title: itemTitle,
+                    poster_path: itemPoster !== 'null' ? itemPoster : null,
+                    vote_average: itemRating !== 'null' ? parseFloat(itemRating) : null,
+                    genre_ids: genreIds // Pass genre IDs
+                };
+
+                // V V V MODIFY THE LOGIC TO USE AWAIT V V V
+                button.disabled = true; // Disable button during the async operation
+
+                if (Favorites.isFavorite(idNum, itemType)) {
+                    const success = await Favorites.remove(idNum, itemType); // Await the result
+                    if (success) {
+                        button.classList.remove('is-favorite');
+                        button.innerHTML = '<i class="bi bi-heart"></i>';
+                        button.title = "Add to Favorites";
+                    }
+                } else {
+                const success = await Favorites.add(itemData); // Await the result
+                if (success) {
+                    button.classList.add('is-favorite');
+                    button.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                    button.title = "Favorited (Click to unfavorite)";
+                }
+                }
+    
+                button.disabled = false; // Re-enable the button
+                // ^ ^ ^ END OF MODIFICATIONS ^ ^ ^
+
+                // Toggle Favorite State
+                /* if (Favorites.isFavorite(idNum, itemType)) {
+                    if (Favorites.remove(idNum, itemType)) {
+                        // Update button visually
+                        button.classList.remove('is-favorite');
+                        button.innerHTML = '<i class="bi bi-heart"></i>'; // Empty heart
+                        button.title = "Add to Favorites";
+                    }
+                } else {
+                    if (Favorites.add(itemData)) {
+                       // Update button visually
+                       button.classList.add('is-favorite');
+                       button.innerHTML = '<i class="bi bi-heart-fill"></i>'; // Filled heart
+                       button.title = "Favorited (Click to unfavorite)";
+                    }
+                }*/
+
+                // --- IMPORTANT: Update Analytics Display ---
+                // Only update if the analytics view exists (or maybe always update in background?)
+                if (DOM.views.analytics && DOM.views.analytics.classList.contains('active')) {
+                    Analytics.updateAnalyticsDisplay(); // Update charts if view is active
+                } else {
+                    console.log("Favorite changed, analytics view not active.");
+                    // Optionally, you could still recalculate data in the background
+                    // without rendering if needed for other features.
+                }
+            },
+
+
+
+            // ===================================================================
+// START: NEW COMMUNITY FEATURE FUNCTIONS
+// ===================================================================
+
+/**
+ * Loads the main community page, displaying a list of discussion threads.
+ */
+loadCommunityPage: async () => {
+    if (!DOM.community.threadsList || !DOM.community.userActions) return;
+
+    // Show skeletons while loading
+    DOM.community.threadsList.innerHTML = App.getSkeletonThreadHTML(5);
+    
+    // Handle the "Create Thread" button visibility
+    if (appAuth.currentUser) {
+        DOM.community.userActions.innerHTML = `
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
+                <i class="bi bi-plus-lg me-2"></i>Create New Thread
+            </button>`;
+    } else {
+        DOM.community.userActions.innerHTML = `
+            <a href="index.html" class="btn btn-outline-light">Log in to post</a>`;
+    }
+
+    try {
+        const threadsSnapshot = await appDb.collection("community_threads")
+            .orderBy("lastReplyAt", "desc")
+            .limit(25)
+            .get();
+
+        if (threadsSnapshot.empty) {
+            DOM.community.threadsList.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-chat-quote-fill fs-1 mb-3"></i>
+                    <h4>No discussions yet.</h4>
+                    <p>Be the first to start a conversation!</p>
+                </div>`;
+        } else {
+            const threads = threadsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            App.renderCommunityThreads(threads);
         }
+    } catch (error) {
+        console.error("Error loading community threads:", error);
+        DOM.community.threadsList.innerHTML = Utils.getErrorHTML("Could not load community discussions.");
+    }
+},
 
-        const itemData = {
-            id: idNum,
-            type: itemType,
-            title: itemTitle,
-            poster_path: itemPoster !== 'null' ? itemPoster : null,
-            vote_average: itemRating !== 'null' ? parseFloat(itemRating) : null,
-            genre_ids: genreIds // Pass genre IDs
+/**
+ * Renders a list of thread items into the community page.
+ */
+renderCommunityThreads: (threads) => {
+    DOM.community.threadsList.innerHTML = ''; // Clear skeletons
+    threads.forEach(thread => {
+        const threadLink = document.createElement('a');
+        threadLink.href = `#community/thread/${thread.id}`;
+        threadLink.className = 'community-thread-item text-decoration-none';
+        
+        const lastReplyTime = thread.lastReplyAt ? Utils.formatRelativeTime(thread.lastReplyAt.toDate()) : 'No replies';
+        const createdBy = thread.createdBy ? Utils.escapeHtml(thread.createdBy.displayName) : 'Anonymous';
+
+        threadLink.innerHTML = `
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-grow-1">
+                    <h5 class="card-title mb-1">${Utils.escapeHtml(thread.title)}</h5>
+                    <p class="card-text small text-muted mb-0">
+                        By ${createdBy} • Last reply ${lastReplyTime}
+                    </p>
+                </div>
+                ${thread.linkedMovieTitle ? `<span class="badge bg-primary bg-opacity-25 text-primary-emphasis flex-shrink-0 p-2 d-none d-sm-inline-block"><i class="bi bi-film me-1"></i> ${Utils.escapeHtml(thread.linkedMovieTitle)}</span>` : ''}
+                <div class="reply-stats">
+                    <div class="fw-bold fs-4 text-light">${thread.replyCount || 0}</div>
+                    <div class="small text-muted">Replies</div>
+                </div>
+            </div>
+        `;
+        DOM.community.threadsList.appendChild(threadLink);
+    });
+},
+
+/**
+ * Handles the submission of the "Create Thread" form.
+ */
+handleCreateThreadSubmit: async (event) => {
+    event.preventDefault();
+    if (!appAuth.currentUser) {
+        Utils.showToast("You must be logged in to create a thread.", "warning");
+        return;
+    }
+
+    const title = document.getElementById('threadTitle').value.trim();
+    const firstPost = document.getElementById('threadFirstPost').value.trim();
+    const movieId = document.getElementById('threadLinkMovieId').value.trim();
+    
+    if (!title || !firstPost) {
+        Utils.showToast("Title and post content are required.", "warning");
+        return;
+    }
+    
+    const button = DOM.community.createThreadForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Creating...`;
+
+    try {
+        const user = appAuth.currentUser;
+        const now = firebase.firestore.FieldValue.serverTimestamp();
+
+        const threadData = {
+            title: title,
+            createdBy: {
+                userId: user.uid,
+                displayName: user.displayName || user.email.split('@')[0],
+            },
+            createdAt: now,
+            lastReplyAt: now, // Initially, the last reply is the creation time
+            replyCount: 0,
+            linkedMovieId: movieId || null,
+            linkedMovieTitle: null // Will be populated if movieId exists
         };
-
-        // Toggle Favorite State
-        if (Favorites.isFavorite(idNum, itemType)) {
-            if (Favorites.remove(idNum, itemType)) {
-                // Update button visually
-                button.classList.remove('is-favorite');
-                button.innerHTML = '<i class="bi bi-heart"></i>'; // Empty heart
-                button.title = "Add to Favorites";
-            }
-        } else {
-            if (Favorites.add(itemData)) {
-                // Update button visually
-                button.classList.add('is-favorite');
-                button.innerHTML = '<i class="bi bi-heart-fill"></i>'; // Filled heart
-                button.title = "Favorited (Click to unfavorite)";
+        
+        // If a movie ID is linked, fetch its title
+        if (movieId) {
+            const movieDetails = await API.fetchTMDB(`/movie/${movieId}`);
+            if (movieDetails) {
+                threadData.linkedMovieTitle = movieDetails.title;
             }
         }
 
-        // --- IMPORTANT: Update Analytics Display ---
-        // Only update if the analytics view exists (or maybe always update in background?)
-        if (DOM.views.analytics && DOM.views.analytics.classList.contains('active')) {
-            Analytics.updateAnalyticsDisplay(); // Update charts if view is active
-        } else {
-            console.log("Favorite changed, analytics view not active.");
-            // Optionally, you could still recalculate data in the background
-            // without rendering if needed for other features.
+        // Create the thread document
+        const threadRef = await appDb.collection("community_threads").add(threadData);
+        
+        // Create the first post in the thread
+        await appDb.collection("community_posts").add({
+            threadId: threadRef.id,
+            content: firstPost,
+            createdBy: {
+                userId: user.uid,
+                displayName: user.displayName || user.email.split('@')[0],
+            },
+            createdAt: now,
+        });
+
+        Utils.showToast("Thread created successfully!", "success");
+        bootstrap.Modal.getInstance(DOM.community.createThreadModal).hide();
+        DOM.community.createThreadForm.reset();
+        location.hash = `#community/thread/${threadRef.id}`; // Navigate to the new thread
+
+    } catch (error) {
+        console.error("Error creating thread:", error);
+        Utils.showToast("Failed to create thread. Please try again.", "danger");
+    } finally {
+        button.disabled = false;
+        button.innerHTML = `<i class="bi bi-plus-lg me-2"></i>Create Thread`;
+    }
+},
+
+/**
+ * Loads the detail view for a specific thread, including its posts.
+ * @param {string} threadId - The ID of the thread to load.
+ */
+loadThreadDetailPage: async (threadId) => {
+    if (!DOM.community.threadDetailContent || !DOM.community.threadPostsList || !DOM.community.addPostForm) return;
+
+    // Show skeletons
+    DOM.community.threadDetailContent.innerHTML = App.getSkeletonPostHTML();
+    DOM.community.threadPostsList.innerHTML = App.getSkeletonPostHTML(3);
+    Utils.setElementVisibility(DOM.community.addPostForm, false);
+
+    try {
+        // Fetch the main thread and its posts in parallel
+        const [threadDoc, postsSnapshot] = await Promise.all([
+            appDb.collection("community_threads").doc(threadId).get(),
+            appDb.collection("community_posts").where("threadId", "==", threadId).orderBy("createdAt", "asc").get()
+        ]);
+
+        if (!threadDoc.exists) {
+            throw new Error("Discussion thread not found.");
         }
-    },
+
+        const threadData = { id: threadDoc.id, ...threadDoc.data() };
+        const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // The first post is part of the thread detail
+        const firstPost = posts.shift(); 
+        
+        App.renderThreadDetails(threadData, firstPost);
+        App.renderThreadPosts(posts);
+
+        // Show the reply form if the user is logged in
+        if (appAuth.currentUser) {
+            Utils.setElementVisibility(DOM.community.addPostForm, true);
+            // Store threadId on the form for the submit handler
+            DOM.community.addPostForm.dataset.threadId = threadId;
+        }
+
+    } catch (error) {
+        console.error("Error loading thread details:", error);
+        DOM.community.threadDetailContent.innerHTML = Utils.getErrorHTML(error.message);
+        DOM.community.threadPostsList.innerHTML = '';
+    }
+},
+
+/**
+ * Renders the main content of a thread.
+ */
+renderThreadDetails: (thread, firstPost) => {
+    DOM.community.threadDetailContent.innerHTML = `
+        <div class="thread-detail-header">
+            <h1 class="thread-title">${Utils.escapeHtml(thread.title)}</h1>
+            <div class="thread-meta mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span>By ${Utils.escapeHtml(thread.createdBy.displayName)} • Created ${Utils.formatRelativeTime(thread.createdAt.toDate())}</span>
+                ${thread.linkedMovieTitle ? `<a href="#details=movie/${thread.linkedMovieId}" class="badge bg-primary text-decoration-none"><i class="bi bi-film me-1"></i> ${Utils.escapeHtml(thread.linkedMovieTitle)}</a>` : ''}
+            </div>
+        </div>
+        <div class="card bg-dark border-secondary">
+            <div class="card-body">
+                ${App.getPostHTML(firstPost)}
+            </div>
+        </div>
+    `;
+},
+
+/**
+ * Renders a list of reply posts.
+ */
+renderThreadPosts: (posts) => {
+    // Clear skeletons
+    DOM.community.threadPostsList.innerHTML = '';
+    
+    if (posts.length === 0) {
+        DOM.community.threadPostsList.innerHTML = `<p class="text-muted text-center mt-4">No replies yet. Be the first to respond!</p>`;
+        return;
+    }
+
+    const postsContainer = document.createElement('div');
+    postsContainer.className = 'card'; // The container card
+    
+    posts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.className = 'community-post-item';
+        postElement.innerHTML = App.getPostHTML(post);
+        postsContainer.appendChild(postElement);
+    });
+    
+    DOM.community.threadPostsList.appendChild(postsContainer);
+},
+
+/**
+ * Generates the HTML for a single post (used for main post and replies).
+ */
+getPostHTML: (post) => {
+    if (!post) return '<p class="text-muted"><em>This post could not be loaded.</em></p>';
+    const createdBy = post.createdBy ? Utils.escapeHtml(post.createdBy.displayName) : 'Anonymous';
+    const createdAt = post.createdAt ? Utils.formatRelativeTime(post.createdAt.toDate()) : '...';
+    const initials = (createdBy.split(' ').map(n=>n[0]).join('') || 'A').substring(0,2).toUpperCase();
+
+    // Use replace to convert newlines to <br> for proper display
+    const postContentHtml = Utils.escapeHtml(post.content).replace(/\n/g, '<br>');
+
+    return `
+        <div class="post-author-avatar" title="${createdBy}">${initials}</div>
+        <div class="post-content flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="author-name">${createdBy}</span>
+                <span class="post-timestamp">${createdAt}</span>
+            </div>
+            <div class="post-body mt-2">
+                ${postContentHtml}
+            </div>
+        </div>
+    `;
+},
+
+
+/**
+ * Handles the submission of a new reply post.
+ */
+handleAddPostSubmit: async (event) => {
+    event.preventDefault();
+    const threadId = event.target.dataset.threadId;
+    if (!appAuth.currentUser || !threadId) {
+        Utils.showToast("You must be logged in to reply.", "warning");
+        return;
+    }
+
+    const content = document.getElementById('newPostContent').value.trim();
+    if (!content) return;
+
+    const button = DOM.community.addPostForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+
+    try {
+        const user = appAuth.currentUser;
+        const now = firebase.firestore.FieldValue.serverTimestamp();
+
+        // Add the new post document
+        await appDb.collection("community_posts").add({
+            threadId: threadId,
+            content: content,
+            createdBy: {
+                userId: user.uid,
+                displayName: user.displayName || user.email.split('@')[0],
+            },
+            createdAt: now,
+        });
+
+        // Update the thread's reply count and last reply timestamp using a transaction
+        const threadRef = appDb.collection("community_threads").doc(threadId);
+        await appDb.runTransaction(async (transaction) => {
+            transaction.update(threadRef, {
+                replyCount: firebase.firestore.FieldValue.increment(1),
+                lastReplyAt: now,
+            });
+        });
+
+        DOM.community.addPostForm.reset();
+        App.loadThreadDetailPage(threadId); // Reload the whole page to show the new post
+
+    } catch (error) {
+        console.error("Error adding post:", error);
+        Utils.showToast("Failed to add reply. Please try again.", "danger");
+    } finally {
+        button.disabled = false;
+    }
+},
+
+/**
+ * Generates skeleton HTML for the thread list.
+ */
+getSkeletonThreadHTML: (count = 5) => {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="skeleton-thread-item">
+                <div class="flex-grow-1">
+                    <div class="skeleton skeleton-title" style="width: 60%; height: 1.2em; margin-bottom: 0.5rem;"></div>
+                    <div class="skeleton" style="width: 40%; height: 0.8em;"></div>
+                </div>
+                <div class="reply-stats">
+                    <div class="skeleton mx-auto" style="width: 30px; height: 1.5em; margin-bottom: 0.3rem;"></div>
+                    <div class="skeleton mx-auto" style="width: 50px; height: 0.8em;"></div>
+                </div>
+            </div>`;
+    }
+    return html;
+},
+
+/**
+ * Generates skeleton HTML for posts.
+ */
+getSkeletonPostHTML: (count = 1) => {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="community-post-item">
+                <div class="post-author-avatar skeleton"></div>
+                <div class="post-content flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="skeleton" style="width: 120px; height: 1em;"></div>
+                        <div class="skeleton" style="width: 80px; height: 0.8em;"></div>
+                    </div>
+                    <div class="post-body mt-3">
+                        <div class="skeleton mb-2" style="width: 90%; height: 1em;"></div>
+                        <div class="skeleton mb-2" style="width: 100%; height: 1em;"></div>
+                        <div class="skeleton" style="width: 70%; height: 1em;"></div>
+                    </div>
+                </div>
+            </div>`;
+    }
+    // Wrap replies in the card structure
+    return `<div class="card">${html}</div>`;
+},
+
+// ===================================================================
+// END: NEW COMMUNITY FEATURE FUNCTIONS
+// ===================================================================
        
             // --- TMDB Methods ---
             loadTmdbGenres: async () => {
@@ -2438,7 +3064,7 @@
                  }
             },
 
-            loadHomePageContent: async () => {
+            /*loadHomePageContent: async () => {
                 console.log("Loading home page content...");
 
                 // Show Skeletons or Spinners
@@ -2483,9 +3109,99 @@
                         DOM.networkLogosContainer?.classList.add('loaded');
                     }, 50); // Minor delay for smooth transition
                 }
-            },
+            },*/
 
-            
+            loadHomePageContent: async () => {
+        console.log("Loading home page content...");
+
+        // Show Skeletons or Spinners
+        if (DOM.views.hero) DOM.views.hero.innerHTML = Utils.getSkeletonHeroHTML();
+        if (DOM.homeContentSectionsContainer) DOM.homeContentSectionsContainer.innerHTML = Utils.getSpinnerHTML("Loading sections...", true);
+        if (DOM.networkLogosContainer) DOM.networkLogosContainer.innerHTML = Utils.getSkeletonNetworkLogoHTML(10);
+
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        try {
+            // Concurrently load continue watching data (from Firebase or local)
+            const [continueWatchingData] = await Promise.all([
+                App.loadContinueWatchingData(), // <<< NEW FUNCTION CALL
+                App.loadHeroItem(),
+                App.renderNetworkLogos()
+            ]);
+
+            // Now, call loadHomeSections with the fetched continueWatchingData
+            // Pass it as the `continueWatchingList` to avoid re-fetching in the loop.
+            await App.loadHomeSections(continueWatchingData); // <<< Pass data to loadHomeSections
+
+            await delay(config.MIN_SKELETON_DISPLAY_TIME); // ⏱️ Hold skeletons/spinners
+
+            // Update scroll buttons AFTER logos and sections are rendered
+            App.updateNetworkScrollButtons();
+            setTimeout(() => {
+                State.horizontalScrollContainers?.forEach(({ container, prevBtn, nextBtn }) => {
+                    App.updateHScrollButtons(container, prevBtn, nextBtn);
+                });
+            }, 200);
+
+        } catch (error) {
+            console.error("Error loading home page content:", error);
+            if (DOM.views.hero) DOM.views.hero.innerHTML = Utils.getErrorHTML("Failed to load hero section.");
+            if (DOM.homeContentSectionsContainer) DOM.homeContentSectionsContainer.innerHTML = Utils.getErrorHTML("Failed to load sections.");
+            if (DOM.networkLogosContainer) DOM.networkLogosContainer.innerHTML = Utils.getErrorHTML("Failed to load networks.");
+        } finally {
+            setTimeout(() => {
+                DOM.views.hero?.classList.add('loaded');
+                DOM.homeContentSectionsContainer?.classList.add('loaded');
+                DOM.networkLogosContainer?.classList.add('loaded');
+            }, 50);
+        }
+    },
+
+    // --- NEW: Function to load Continue Watching data from Firebase/Local ---
+    loadContinueWatchingData: async () => {
+        if (typeof appAuth === 'undefined' || !appAuth.currentUser || typeof appDb === 'undefined' || !appDb) {
+            console.log("[Continue Watching] User not logged in or Firebase not ready. Using local storage (if any).");
+            // Fallback to local storage if user not logged in or Firebase not ready
+            // (You might need to re-implement a simple local storage load for this fallback,
+            // or just return an empty array if localStorage isn't the primary source anymore)
+            // For now, let's assume if not logged in, there's no data to 'continue' from Firebase.
+            return [];
+        }
+
+        const userId = appAuth.currentUser.uid;
+        const watchHistoryRef = appDb.collection("users").doc(userId).collection("watchHistory");
+
+         try {
+        console.log("[CW Debug] Attempting to fetch watch history for user:", userId);
+        const querySnapshot = await watchHistoryRef.orderBy("lastWatchedTimestamp", "desc").limit(config.CONTINUE_WATCHING_MAX_ITEMS || 20).get();
+
+        const fetchedItems = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            console.log("[CW Debug] Fetched doc data:", data); // Log each fetched document
+            return {
+                continueWatchingId: doc.id,
+                id: data.tmdbId,
+                type: data.type,
+                lastWatchedTimestamp: data.lastWatchedTimestamp?.toDate().getTime(),
+                title: data.title,
+                poster_path: data.poster_path,
+                backdrop_path: data.backdrop_path,
+                vote_average: data.vote_average,
+                progressPercent: data.estimatedProgressPercent,
+                seasonNumber: data.seasonNumber,
+                episodeNumber: data.episodeNumber,
+                episodeTitle: data.episodeTitle,
+                totalDurationMinutes: data.totalDurationMinutes,
+            };
+        }).filter(item => item.lastWatchedTimestamp);
+        console.log("[CW Debug] Final fetched items (length):", fetchedItems.length, fetchedItems); // Log the final array
+        State.continueWatching = fetchedItems;
+        return fetchedItems;
+    } catch (error) {
+        console.error("[CW Debug] Error fetching user watch history from Firebase:", error);
+        return [];
+    }
+    },
         
             loadHeroItem: async () => {
                  if (!DOM.views.hero) return;
@@ -2516,54 +3232,66 @@
             
 
 
-             loadHomeSections: async () => {
-        console.log("[Home Sections] Starting home sections load...");
-        const mainContainer = DOM.homeContentSectionsContainer;
-        if (!mainContainer) {
-            console.error("[Home Sections] Main container (#home-content-sections) not found!");
-            return;
-        }
+            /*loadHomeSections: async () => {
+                console.log("[Home Sections] Starting home sections load...");
+                const mainContainer = DOM.homeContentSectionsContainer;
+                if (!mainContainer) {
+                   console.error("[Home Sections] Main container (#home-content-sections) not found!");
+                   return;
+                }
 
-        // 1. Clear Container & Reset State
-        mainContainer.innerHTML = Utils.getSpinnerHTML("Loading content sections...", true); // Show initial spinner
-        State.horizontalScrollContainers = []; // Reset scroll container tracking
-        // Short delay to allow spinner to render before potentially heavy operations
-        await new Promise(resolve => setTimeout(resolve, 50));
-        mainContainer.innerHTML = ''; // Clear spinner before adding sections
+                // 1. Clear Container & Reset State
+                mainContainer.innerHTML = Utils.getSpinnerHTML("Loading content sections...", true); // Show initial spinner
+                State.horizontalScrollContainers = []; // Reset scroll container tracking
+                // Short delay to allow spinner to render before potentially heavy operations
+                await new Promise(resolve => setTimeout(resolve, 50));
+                mainContainer.innerHTML = ''; // Clear spinner before adding sections
+ 
+                // 2. Prepare Promises/Data Needed Before the Loop
+                const continueWatchingList = ContinueWatching.getList(); // Get list synchronously
 
-        // 2. Prepare Promises/Data Needed Before the Loop
-        const continueWatchingList = ContinueWatching.getList(); // Get list synchronously
+                // Check ONCE if any global view data exists in Firestore
+                const mostViewedCheckPromise = (async () => {
+                    if (typeof appDb === 'undefined' || !appDb) {
+                        console.warn("[Home Sections] Firestore (appDb) not available for 'Most Viewed' check.");
+                        return false; // Assume no data if DB is not ready
+                    }
+                    try {
+                        console.log("[Home Sections] Checking Firestore for 'viewCounts' existence...");
+                        const querySnapshot = await appDb.collection("viewCounts").limit(1).get();
+                        const exists = !querySnapshot.empty;
+                        console.log(`[Home Sections] Firestore 'viewCounts' check complete. Data exists: ${exists}`);
+                        return exists;
+                    } catch (e) {
+                       console.error("[Home Sections] Firestore check for 'viewCounts' failed:", e);
+                       return false; // Assume no data on error
+                    }
+                })(); // Immediately invoke the async function
 
-        // Check ONCE if any global view data exists in Firestore
-        const mostViewedCheckPromise = (async () => {
-            if (typeof appDb === 'undefined' || !appDb) {
-                console.warn("[Home Sections] Firestore (appDb) not available for 'Most Viewed' check.");
-                return false; // Assume no data if DB is not ready
-            }
-            try {
-                console.log("[Home Sections] Checking Firestore for 'viewCounts' existence...");
-                const querySnapshot = await appDb.collection("viewCounts").limit(1).get();
-                const exists = !querySnapshot.empty;
-                console.log(`[Home Sections] Firestore 'viewCounts' check complete. Data exists: ${exists}`);
-                return exists;
-            } catch (e) {
-                console.error("[Home Sections] Firestore check for 'viewCounts' failed:", e);
-                return false; // Assume no data on error
-            }
-        })(); // Immediately invoke the async function
+                // Await the Firestore check result *before* starting the loop
+                const globalViewsExist = await mostViewedCheckPromise;
+                console.log(`[Home Sections] Proceeding with loop. Global views exist: ${globalViewsExist}`);
 
-        // Await the Firestore check result *before* starting the loop
-        const globalViewsExist = await mostViewedCheckPromise;
-        console.log(`[Home Sections] Proceeding with loop. Global views exist: ${globalViewsExist}`);
+                // 3. Iterate Through Section Configurations and Build Structure
+                for (const sectionConfig of config.HOME_SECTIONS) {
+                    console.log(`[Home Sections] Processing config: "${sectionConfig.title}" (ID: ${sectionConfig.id || 'N/A'})`);
+                    let sectionDiv = null;
+                    let shouldRender = false; // Flag to determine if the section needs rendering/population
 
-        // 3. Iterate Through Section Configurations and Build Structure
-        for (const sectionConfig of config.HOME_SECTIONS) {
-            console.log(`[Home Sections] Processing config: "${sectionConfig.title}" (ID: ${sectionConfig.id || 'N/A'})`);
-            let sectionDiv = null;
-            let shouldRender = false; // Flag to determine if the section needs rendering/population
-
-            // --- Determine if section should be rendered/populated ---
-            if (sectionConfig.id === 'continue-watching') {
+                    // --- Determine if section should be rendered/populated ---
+                    if (sectionConfig.id === 'continue-watching') {
+                        // This is where it checks if there's data in State.continueWatching
+                        if (continueWatchingList.length > 0) {
+                            console.log(`[Home Sections] 'Continue Watching' has ${continueWatchingList.length} items. Will render.`);
+                            sectionDiv = document.createElement('section'); // <--- THIS CREATES THE <section> ELEMENT
+                            sectionDiv.id = 'continue-watching-section';   // <--- GIVES IT THE ID
+                            shouldRender = true;
+                        } else {
+                            console.log(`[Home Sections] Skipping 'Continue Watching' (list is empty).`);
+                            // If the list is empty, this sectionDiv will remain null, and thus not be appended.
+                        }
+                    }
+                   if (sectionConfig.id === 'continue-watching') {
                 if (continueWatchingList.length > 0) {
                     console.log(`[Home Sections] 'Continue Watching' has ${continueWatchingList.length} items. Will render.`);
                     sectionDiv = document.createElement('section'); // Create dynamically
@@ -2725,8 +3453,234 @@
         } // End for...of loop
 
         console.log("[Home Sections] Finished processing all section configurations.");
-    }, // End loadHomeSections
+    },*/// End loadHomeSections
              
+   /**
+ * Loads and renders all configured sections for the home page.
+ * Manages static sections (Continue Watching, Most Viewed) and dynamically creates others.
+ * Handles loading states with skeletons and provides robust error handling.
+ * @param {Array} preFetchedContinueWatchingList - The user's watch history, pre-fetched on login.
+ */
+loadHomeSections: async (preFetchedContinueWatchingList = []) => {
+    console.log("[Home Sections] Starting to build home page...");
+    const mainContainer = DOM.homeContentSectionsContainer;
+    if (!mainContainer) {
+        console.error("[Home Sections] CRITICAL: Main container (#home-content-sections) not found!");
+        return;
+    }
+
+    // --- 1. PREPARATION ---
+    // Clear only dynamically generated sections from previous loads, preserving static ones.
+    mainContainer.querySelectorAll('section.dynamic-section').forEach(el => el.remove());
+    State.horizontalScrollContainers = []; // Reset scroll container tracking.
+
+    // Check for global data availability (non-blocking).
+    const globalViewsExist = await (async () => {
+        if (!appDb) return false;
+        try {
+            const snapshot = await appDb.collection("viewCounts").limit(1).get();
+            return !snapshot.empty;
+        } catch (e) {
+            console.error("[Home Sections] Firestore check for 'viewCounts' failed:", e);
+            return false;
+        }
+    })();
+
+    // --- 2. LOOP THROUGH SECTION CONFIGURATIONS ---
+    for (const sectionConfig of config.HOME_SECTIONS) {
+        // <<< FIX: Skip sections with invalid configuration to prevent errors.
+        if (!sectionConfig.id && !sectionConfig.endpoint) {
+            console.warn(`[Home Sections] Skipping section "${sectionConfig.title}" due to invalid configuration (missing 'id' or 'endpoint').`);
+            continue;
+        }
+
+        let sectionElement, contentContainer, prevBtn, nextBtn;
+        let shouldRenderContent = false; // Flag to determine if we should fetch data for this section.
+        const isHorizontal = sectionConfig.display_style?.startsWith('horizontal');
+
+        // --- A) Handle STATIC sections (already in HTML) ---
+        if (sectionConfig.id === 'continue-watching' || sectionConfig.id === 'most-viewed') {
+            sectionElement = document.getElementById(`${sectionConfig.id}-section`);
+            if (!sectionElement) {
+                console.warn(`[Home Sections] Static section #${sectionConfig.id}-section not found in HTML.`);
+                continue;
+            }
+            contentContainer = sectionElement.querySelector('.horizontal-card-container');
+            prevBtn = sectionElement.querySelector('.h-scroll-btn.prev');
+            nextBtn = sectionElement.querySelector('.h-scroll-btn.next');
+
+            // Determine visibility based on data availability.
+            const hasData = (sectionConfig.id === 'continue-watching' && preFetchedContinueWatchingList.length > 0) ||
+                            (sectionConfig.id === 'most-viewed' && globalViewsExist);
+
+            Utils.setElementVisibility(sectionElement, hasData);
+            if (hasData) {
+                shouldRenderContent = true;
+                contentContainer.innerHTML = Utils.getSkeletonHorizontalCardHTML(5); // Show skeletons.
+            }
+
+        // --- B) Handle DYNAMIC sections (created on the fly) ---
+        } else if (sectionConfig.endpoint) {
+            shouldRenderContent = true;
+            sectionElement = document.createElement('section');
+            sectionElement.className = 'content-section mb-5 dynamic-section'; // Add class for easy cleanup.
+
+            const skeletonHtml = isHorizontal ? Utils.getSkeletonHorizontalCardHTML(5) : Utils.getSkeletonCardHTML(6);
+            const containerClass = isHorizontal ? 'horizontal-card-container' : 'row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6';
+
+            sectionElement.innerHTML = `
+                <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
+                <div class="${isHorizontal ? 'horizontal-scroll-wrapper' : ''}">
+                    ${isHorizontal ? `<button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>` : ''}
+                    <div class="${containerClass}">${skeletonHtml}</div>
+                    ${isHorizontal ? `<button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>` : ''}
+                </div>`;
+            mainContainer.appendChild(sectionElement);
+
+            contentContainer = sectionElement.querySelector(`.${containerClass.split(' ')[0]}`);
+            prevBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.prev') : null;
+            nextBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.next') : null;
+        }
+
+        // --- 3. ASYNCHRONOUS DATA FETCHING FOR THE SECTION ---
+        if (shouldRenderContent && contentContainer) {
+            // Use an IIFE (Immediately Invoked Function Expression) to capture the current loop's variables.
+            (async (config, element, container, pBtn, nBtn) => {
+                try {
+                    console.log(`[Home Sections Load] Starting async load for "${config.title}"`);
+                    let itemsToRender = [];
+                    let hasResults = false;
+
+                    // Fetch data based on section type.
+                    if (config.id === 'continue-watching') {
+                        itemsToRender = preFetchedContinueWatchingList; // Use pre-fetched data.
+                    } else if (config.id === 'most-viewed') {
+                        // This now calls a function that returns the items instead of rendering directly.
+                        itemsToRender = await App.fetchMostViewedItems(config); 
+                    } else {
+                        const data = await API.fetchTMDB(config.endpoint, { page: 1 });
+                        itemsToRender = data?.results || [];
+                    }
+                    
+                    hasResults = itemsToRender.length > 0;
+
+                    // Render the fetched content.
+                    if (hasResults) {
+                        const limitedItems = itemsToRender.slice(0, isHorizontal ? 20 : 12);
+                        if (config.id === 'continue-watching') {
+                            App.renderContinueWatchingCards(limitedItems, container); // Use a dedicated renderer.
+                        } else if (isHorizontal) {
+                            App.renderHorizontalCards(limitedItems, container, config.type || null, config.show_trailer_button || false);
+                        } else {
+                            App.renderTmdbCards(limitedItems, container, config.type || null, false);
+                        }
+                    } else {
+                        container.innerHTML = `<p class="text-muted px-3 ${isHorizontal ? '' : 'col-12'}">No content found for this section.</p>`;
+                    }
+
+                    // Setup horizontal scrolling after content is rendered.
+                    if (isHorizontal) {
+                        App.setupHorizontalScroll(container, pBtn, nBtn);
+                    }
+
+                // <<< FIX: This improved catch block prevents stuck spinners.
+                } catch (error) {
+                    console.error(`[Home Sections Load] Error loading data for "${config.title}":`, error);
+                    if (container) {
+                        container.innerHTML = Utils.getErrorHTML(`Could not load this section.`);
+                    }
+                    if (isHorizontal) {
+                        if (pBtn) Utils.setElementVisibility(pBtn, false);
+                        if (nBtn) Utils.setElementVisibility(nBtn, false);
+                    }
+                }
+            })(sectionConfig, sectionElement, contentContainer, prevBtn, nextBtn);
+        }
+    }
+    console.log("[Home Sections] Finished processing all section configurations.");
+},
+
+// ADD this new function inside the App object
+fetchMostViewedItems: async (sectionConfig) => {
+    const maxItems = sectionConfig.max_items || 15;
+    if (!appDb) {
+        throw new Error("Database service is unavailable.");
+    }
+
+    const querySnapshot = await appDb.collection("viewCounts")
+        .orderBy("viewCount", "desc")
+        .limit(maxItems)
+        .get();
+
+    if (querySnapshot.empty) {
+        return []; // Return empty array if no data
+    }
+
+    const topItemsData = querySnapshot.docs.map(doc => doc.data());
+
+    const itemDetailPromises = topItemsData.map(viewData =>
+        API.fetchTMDB(`/${viewData.type}/${viewData.tmdbId}`).catch(err => {
+            console.warn(`[Most Viewed] Failed to fetch TMDB details for ${viewData.type}-${viewData.tmdbId}`, err);
+            return null;
+        })
+    );
+    
+    return (await Promise.all(itemDetailPromises)).filter(item => item !== null);
+},
+
+
+// ADD this new function inside the App object
+renderContinueWatchingCards: (items, containerElement) => {
+    containerElement.innerHTML = ''; // Always clear first
+    items.forEach(item => {
+        const title = Utils.escapeHtml(item.title);
+        const imagePath = item.backdrop_path || item.poster_path;
+        const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+
+        let cardHref = `#player=${item.type}/${item.id}`;
+        if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
+            cardHref += `/${item.seasonNumber}/${item.episodeNumber}`;
+        }
+        
+        const cardLink = document.createElement('a');
+        cardLink.href = cardHref;
+        cardLink.className = 'h-card';
+        cardLink.title = title + (item.episodeTitle ? ` - ${Utils.escapeHtml(item.episodeTitle)}` : '');
+
+        const imageHtml = imageUrl
+            ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+            : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
+
+        const overlayHtml = `
+            <div class="h-card-overlay">
+                <h3 class="h-card-title">${title}</h3>
+                ${item.type === 'tv' && item.episodeTitle ? `<span class="h-card-episode-title">S${item.seasonNumber} E${item.episodeNumber} - ${Utils.escapeHtml(item.episodeTitle)}</span>` : ''}
+                <div class="progress-bar-container mt-2">
+                    <div class="progress-bar-fill" style="width: ${item.progressPercent || 0}%;" title="${item.progressPercent || 0}% Watched"></div>
+                </div>
+            </div>`;
+        
+        cardLink.innerHTML = imageHtml + overlayHtml;
+        containerElement.appendChild(cardLink);
+    });
+},
+
+// ADD this new function inside the App object
+setupHorizontalScroll: (container, prevBtn, nextBtn) => {
+    if (!container || !prevBtn || !nextBtn) return;
+    
+    // Update button state immediately after rendering.
+    App.updateHScrollButtons(container, prevBtn, nextBtn);
+    
+    // Add to state tracking if not already present to avoid duplicate listeners.
+    if (!State.horizontalScrollContainers.some(c => c.container === container)) {
+        State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
+        container.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(container, prevBtn, nextBtn), 100), { passive: true });
+        prevBtn.addEventListener('click', () => App.handleHScrollPrev(container));
+        nextBtn.addEventListener('click', () => App.handleHScrollNext(container));
+    }
+},
+
     loadMostViewedSection: async (sectionDiv, sectionConfig) => {
     const container = sectionDiv.querySelector('.most-viewed-container');
     const isHorizontal = container?.classList.contains('horizontal-card-container');
@@ -2823,8 +3777,555 @@
         if(isHorizontal && prevBtn && nextBtn){ App.updateHScrollButtons(container, prevBtn, nextBtn);}
     }
 },
-              // --- NEW: Function to specifically load and render Continue Watching ---
-              loadContinueWatchingSection: (sectionDiv) => {
+
+
+ /**
+     * Loads and renders the "Highly Anticipated & Upcoming" section.
+     */
+    loadUpcomingSection: async () => {
+        if (!DOM.upcomingSection || !DOM.upcomingContainer) {
+            console.warn("Upcoming section DOM elements not found.");
+            return;
+        }
+
+        Utils.setElementVisibility(DOM.upcomingSection, true); // Ensure section is visible
+        DOM.upcomingContainer.innerHTML = Utils.getSkeletonHorizontalCardHTML(5); // Show skeletons
+
+        try {
+            // Fetch upcoming movies (most reliable "upcoming" data from TMDB)
+            const upcomingMoviesData = await API.fetchTMDB('/movie/upcoming', {
+                language: 'en-US',
+                region: config.TARGET_REGION,
+                page: 1
+            });
+
+            // For TV shows, "upcoming" is harder. We might use highly anticipated new shows
+            // or popular shows that are airing. For simplicity, let's start with movies.
+            // A more advanced approach might involve searching for new seasons of popular shows.
+
+            const upcomingItems = upcomingMoviesData?.results?.filter(item => item.backdrop_path)
+                .slice(0, config.UPCOMING_SECTION_ITEMS || 15) || [];
+
+            if (upcomingItems.length > 0) {
+                App.renderUpcomingCards(upcomingItems, DOM.upcomingContainer);
+            } else {
+                DOM.upcomingContainer.innerHTML = '<p class="text-muted px-3" style="width: 100%;">No upcoming content found.</p>';
+                Utils.setElementVisibility(DOM.upcomingContainer.previousElementSibling, false); // Hide prev/next buttons
+                Utils.setElementVisibility(DOM.upcomingContainer.nextElementSibling, false);
+            }
+
+            // Update scroll buttons
+            const prevBtn = DOM.upcomingSection.querySelector('.h-scroll-btn.prev');
+            const nextBtn = DOM.upcomingSection.querySelector('.h-scroll-btn.next');
+            App.updateHScrollButtons(DOM.upcomingContainer, prevBtn, nextBtn);
+            if (!State.horizontalScrollContainers.some(c => c.container === DOM.upcomingContainer)) {
+                State.horizontalScrollContainers.push({
+                    container: DOM.upcomingContainer,
+                    prevBtn,
+                    nextBtn
+                });
+                DOM.upcomingContainer.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(DOM.upcomingContainer, prevBtn, nextBtn), 100), {
+                    passive: true
+                });
+                prevBtn.addEventListener('click', () => App.handleHScrollPrev(DOM.upcomingContainer));
+                nextBtn.addEventListener('click', () => App.handleHScrollNext(DOM.upcomingContainer));
+            }
+
+        } catch (error) {
+            console.error("Error loading upcoming section:", error);
+            DOM.upcomingContainer.innerHTML = Utils.getErrorHTML("Failed to load upcoming content.");
+            Utils.setElementVisibility(DOM.upcomingContainer.previousElementSibling, false);
+            Utils.setElementVisibility(DOM.upcomingContainer.nextElementSibling, false);
+        }
+    },
+
+    /**
+     * Renders upcoming movie/TV show cards with release dates and notify buttons.
+     * @param {Array} items - List of TMDB items.
+     * @param {HTMLElement} containerElement - The container to render into.
+     */
+    renderUpcomingCards: (items, containerElement) => {
+        if (!containerElement) return;
+        containerElement.innerHTML = ''; // Clear existing content/skeletons
+
+        items.forEach(item => {
+            const itemType = item.media_type || 'movie'; // Assuming mostly movies from /movie/upcoming
+            if (itemType === 'person' || !item.id) return; // Skip persons
+
+            const title = Utils.escapeHtml(item.title || item.name || 'N/A');
+            const imagePath = item.backdrop_path || item.poster_path;
+            const imageUrl = imagePath ? `${config.BACKDROP_BASE_URL}${imagePath}` : null;
+            const releaseDateStr = item.release_date || item.first_air_date; // Use specific release date for upcoming
+            const releaseDate = releaseDateStr ? new Date(releaseDateStr) : null;
+
+            let releaseStatus = '';
+            let releaseBadgeClass = '';
+            let notifyButtonText = '<i class="bi bi-bell-fill"></i> Notify Me';
+            let notifyButtonClass = 'btn-primary'; // Default color
+            let isSubscribed = false;
+
+            if (releaseDate) {
+                const now = new Date();
+                const diffDays = Math.ceil((releaseDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+                if (diffDays < 0) {
+                    releaseStatus = 'Released!';
+                    releaseBadgeClass = 'released';
+                    notifyButtonText = 'Released';
+                    notifyButtonClass = 'btn-success disabled'; // Disable button if already released
+                } else if (diffDays <= 7) {
+                    releaseStatus = `${diffDays === 0 ? 'Today!' : diffDays === 1 ? 'Tomorrow!' : `In ${diffDays} days`}`;
+                    releaseBadgeClass = 'imminent';
+                } else {
+                    releaseStatus = Utils.formatAirDate(releaseDateStr); // Format full date
+                }
+            } else {
+                releaseStatus = 'TBD';
+            }
+
+            // Check if user is already subscribed to notifications for this item
+            if (appAuth.currentUser) { // Only check if logged in
+                isSubscribed = State.activeNotificationSubscriptions.some(
+                    sub => sub.tmdbId === item.id && sub.type === itemType
+                );
+                if (isSubscribed) {
+                    notifyButtonText = '<i class="bi bi-check-lg"></i> Subscribed';
+                    notifyButtonClass = 'subscribed';
+                }
+                if (releaseDate && new Date() > releaseDate) { // Item already released
+                     notifyButtonText = 'Released';
+                     notifyButtonClass = 'disabled'; // Disable notify button for released content
+                 }
+            } else {
+                // If not logged in, disable notify button and hint
+                notifyButtonClass = 'disabled';
+                notifyButtonText = '<i class="bi bi-box-arrow-in-right"></i> Log In';
+            }
+
+
+            const cardLink = document.createElement('a');
+            cardLink.href = `#details=${itemType}/${item.id}`;
+            cardLink.className = 'h-card upcoming-card'; // Add upcoming-card specific class
+            cardLink.title = title;
+
+            const imageHtml = imageUrl
+                ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+                : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
+
+            const overlayHtml = `
+                <div class="h-card-overlay">
+                    <h3 class="h-card-title">${title}</h3>
+                    <p class="h-card-meta small opacity-80">
+                        ${item.vote_average && parseFloat(item.vote_average) > 0 ? `<span class="me-2"><i class="bi bi-star-fill text-warning"></i> ${item.vote_average.toFixed(1)}</span>` : ''}
+                    </p>
+                </div>
+            `;
+
+            const notifyButtonHtml = `
+                <button class="notify-me-btn ${notifyButtonClass}"
+                        data-item-id="${item.id}"
+                        data-item-type="${itemType}"
+                        data-item-title="${Utils.escapeHtml(title)}"
+                        data-release-date="${releaseDateStr || ''}"
+                        ${isSubscribed ? 'data-subscribed="true"' : ''}
+                        ${notifyButtonClass.includes('disabled') ? 'disabled' : ''}>
+                    ${notifyButtonText}
+                </button>
+            `;
+
+            const releaseBadgeHtml = releaseDate ? `
+                <span class="release-date-badge ${releaseBadgeClass}">
+                    <i class="bi bi-calendar-check-fill"></i> ${releaseStatus}
+                </span>` : '';
+
+            cardLink.innerHTML = imageHtml + overlayHtml + notifyButtonHtml + releaseBadgeHtml;
+            containerElement.appendChild(cardLink);
+
+            // Add event listener for the Notify Me button
+            const notifyBtn = cardLink.querySelector('.notify-me-btn');
+            if (notifyBtn && !notifyBtn.disabled) {
+                notifyBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent navigating to details page
+                    e.stopPropagation(); // Stop event bubbling
+                    App.handleNotifyMeClick(e.currentTarget);
+                });
+            }
+        });
+        App.initializeTooltips(containerElement);
+    },
+
+     /**
+     * Request browser notification permission from the user.
+     */
+    requestNotificationPermission: async () => {
+        if (!('Notification' in window)) {
+            Utils.showToast("This browser does not support desktop notifications.", "danger");
+            DOM.notificationPermissionStatus.textContent = "Notifications not supported.";
+            if (DOM.requestNotificationPermissionBtn) DOM.requestNotificationPermissionBtn.disabled = true;
+            return;
+        }
+
+        if (Notification.permission === 'granted') {
+            Utils.showToast("Notification permission already granted!", "success");
+            DOM.notificationPermissionStatus.textContent = "Permission Granted.";
+            return;
+        }
+
+        if (Notification.permission === 'denied') {
+            Utils.showToast("Notification permission denied by user. Please enable it in browser settings.", "danger");
+            DOM.notificationPermissionStatus.textContent = "Permission Denied.";
+            if (DOM.requestNotificationPermissionBtn) DOM.requestNotificationPermissionBtn.disabled = true; // Disable if denied
+            return;
+        }
+
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                Utils.showToast("Notification permission granted!", "success");
+                DOM.notificationPermissionStatus.textContent = "Permission Granted.";
+                // Now try to subscribe to push notifications
+                await App.subscribeUserToPush();
+            } else {
+                Utils.showToast("Notification permission denied.", "warning");
+                DOM.notificationPermissionStatus.textContent = "Permission Denied.";
+                if (DOM.requestNotificationPermissionBtn) DOM.requestNotificationPermissionBtn.disabled = true;
+            }
+        } catch (error) {
+            console.error("Error requesting notification permission:", error);
+            Utils.showToast("Error requesting notification permission.", "danger");
+        }
+    },
+
+    /**
+     * Subscribes the user's browser to push notifications and saves the subscription to Firebase.
+     */
+    subscribeUserToPush: async () => {
+        if (!('serviceWorker' in navigator) || !navigator.serviceWorker.ready || !('PushManager' in window)) {
+            console.warn("Push messaging not supported/ready.");
+            Utils.showToast("Push notifications not supported or service worker not ready.", "warning");
+            return;
+        }
+        if (!appAuth.currentUser || !appDb) {
+            Utils.showToast("Log in to enable push notifications.", "info");
+            return;
+        }
+
+        DOM.notificationPermissionStatus.textContent = "Subscribing to push...";
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const pushSubscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: App.urlBase64ToUint8Array(config.VAPID_PUBLIC_KEY)
+            });
+
+            // Save pushSubscription to Firebase
+            const userId = appAuth.currentUser.uid;
+            await appDb.collection("users").doc(userId).update({
+                pushSubscription: pushSubscription.toJSON() // Save the subscription object
+            });
+
+            Utils.showToast("Successfully subscribed to push notifications!", "success");
+            DOM.notificationPermissionStatus.textContent = "Subscribed.";
+            console.log("Push subscription saved:", pushSubscription);
+            return pushSubscription;
+
+        } catch (error) {
+            console.error("Failed to subscribe user to push:", error);
+            Utils.showToast(`Failed to subscribe to push: ${error.message}`, "danger");
+            DOM.notificationPermissionStatus.textContent = "Subscription Failed.";
+        }
+    },
+
+    /**
+     * Helper function to convert VAPID public key to Uint8Array.
+     */
+    urlBase64ToUint8Array: (base64String) => {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    },
+
+    /**
+     * Handles the "Notify Me" button click to add/remove notification subscription for a content item.
+     * @param {HTMLElement} button - The clicked notify button.
+     */
+    handleNotifyMeClick: async (button) => {
+        if (!appAuth.currentUser || !appDb) {
+            Utils.showToast("Log in to set notifications.", "info");
+            location.hash = '#'; // Redirect to login/home
+            return;
+        }
+
+        const userId = appAuth.currentUser.uid;
+        const itemId = parseInt(button.dataset.itemId);
+        const itemType = button.dataset.itemType;
+        const itemTitle = button.dataset.itemTitle;
+        const releaseDate = button.dataset.releaseDate; // YYYY-MM-DD string
+
+        // Create a unique ID for the notification subscription
+        const subId = `${itemType}-${itemId}`;
+        const notificationSubRef = appDb.collection("users").doc(userId).collection("notificationSubscriptions").doc(subId);
+
+        button.disabled = true;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+        try {
+            if (button.dataset.subscribed === "true") {
+                // User wants to UNSUBSCRIBE
+                await notificationSubRef.delete();
+                State.activeNotificationSubscriptions = State.activeNotificationSubscriptions.filter(s => s.tmdbId !== itemId || s.type !== itemType);
+                button.dataset.subscribed = "false";
+                button.classList.remove('subscribed');
+                button.innerHTML = '<i class="bi bi-bell-fill"></i> Notify Me';
+                Utils.showToast(`Notification removed for "${itemTitle}".`, "info");
+            } else {
+                // User wants to SUBSCRIBE
+                // Ensure notification permission is granted before subscribing
+                if (Notification.permission !== 'granted') {
+                    await App.requestNotificationPermission(); // Request permission first
+                    if (Notification.permission !== 'granted') {
+                        Utils.showToast("Notification permission required to subscribe.", "warning");
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        return; // Exit if permission not granted
+                    }
+                }
+                // Check if browser is subscribed to push
+                const registration = await navigator.serviceWorker.ready;
+                const pushSubscription = await registration.pushManager.getSubscription();
+                if (!pushSubscription) {
+                     Utils.showToast("Please 'Enable Browser Notifications' on the Notifications page first.", "warning");
+                     button.innerHTML = originalText;
+                     button.disabled = false;
+                     return;
+                }
+
+                // Save subscription for this item in Firestore
+                await notificationSubRef.set({
+                    tmdbId: itemId,
+                    type: itemType,
+                    title: itemTitle,
+                    releaseDate: releaseDate, // Store as string for easier comparison/parsing server-side
+                    subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'active',
+                    // You might also save the pushSubscription endpoint/keys here if not already at user root.
+                    // Or, the server will read the pushSubscription from users/{userId} directly.
+                });
+                State.activeNotificationSubscriptions.push({ tmdbId: itemId, type: itemType, title: itemTitle });
+                button.dataset.subscribed = "true";
+                button.classList.add('subscribed');
+                button.innerHTML = '<i class="bi bi-check-lg"></i> Subscribed';
+                Utils.showToast(`You will be notified for "${itemTitle}"!`, "success");
+            }
+        } catch (error) {
+            console.error("Error handling notification subscription:", error);
+            Utils.showToast(`Failed to update notification: ${error.message}`, "danger");
+            button.innerHTML = originalText; // Revert text on error
+        } finally {
+            button.disabled = false;
+            // Re-render upcoming section to reflect updated state of buttons
+            // App.loadUpcomingSection(); // This might cause a flicker, only do if necessary
+        }
+    },
+
+    /**
+     * Loads the user's active notification subscriptions from Firebase and displays them.
+     */
+    loadNotificationsPage: async () => {
+        if (!DOM.notificationsView || !appAuth.currentUser || !appDb) {
+            Utils.showToast("Please log in to manage notifications.", "info");
+            location.hash = '#home';
+            return;
+        }
+        const userId = appAuth.currentUser.uid;
+
+        // Check and display current Notification permission status
+        const currentPermission = Notification.permission;
+        DOM.notificationPermissionStatus.textContent = `Permission: ${currentPermission.charAt(0).toUpperCase() + currentPermission.slice(1)}`;
+        if (currentPermission === 'granted') {
+             Utils.setElementVisibility(DOM.requestNotificationPermissionBtn, false); // Hide if granted
+        } else {
+             Utils.setElementVisibility(DOM.requestNotificationPermissionBtn, true); // Show if not granted
+        }
+
+        DOM.notificationSubscriptionsList.innerHTML = Utils.getSpinnerHTML("Loading subscriptions...");
+
+        try {
+            // Fetch user's push subscription (if any)
+            const userDoc = await appDb.collection("users").doc(userId).get();
+            const pushSubscriptionData = userDoc.data()?.pushSubscription;
+
+            if (currentPermission === 'granted' && pushSubscriptionData) {
+                DOM.notificationPermissionStatus.textContent += " (Push Subscribed)";
+            } else if (currentPermission === 'granted' && !pushSubscriptionData) {
+                DOM.notificationPermissionStatus.textContent += " (Not Push Subscribed)";
+                // Prompt user to subscribe if permission is granted but no push subscription
+                Utils.setElementVisibility(DOM.requestNotificationPermissionBtn, true); // Show button
+                DOM.requestNotificationPermissionBtn.textContent = 'Complete Push Subscription';
+            } else if (currentPermission === 'denied') {
+                 DOM.notificationPermissionStatus.textContent = "Permission Denied. Enable in browser settings.";
+                 Utils.setElementVisibility(DOM.requestNotificationPermissionBtn, false);
+            }
+
+            // Fetch notification subscriptions for content items
+            const subscriptionsSnapshot = await appDb.collection("users").doc(userId).collection("notificationSubscriptions")
+                .orderBy("subscribedAt", "desc")
+                .get();
+
+            State.activeNotificationSubscriptions = subscriptionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            DOM.notificationSubscriptionsList.innerHTML = ''; // Clear spinner
+
+            if (State.activeNotificationSubscriptions.length === 0) {
+                DOM.notificationSubscriptionsList.innerHTML = '<p class="text-muted text-center py-4">You have no active notification subscriptions.</p>';
+            } else {
+                State.activeNotificationSubscriptions.forEach(sub => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'notification-item';
+
+                    const releaseDate = sub.releaseDate ? Utils.formatAirDate(sub.releaseDate) : 'N/A';
+                    let statusBadge = `<span class="item-status-badge bg-primary">Upcoming</span>`;
+                    if (sub.releaseDate && new Date(sub.releaseDate) < new Date()) {
+                        statusBadge = `<span class="item-status-badge bg-success">Released</span>`;
+                    }
+
+                    itemElement.innerHTML = `
+                        <img src="${config.IMAGE_BASE_URL}${sub.poster_path || ''}" alt="${Utils.escapeHtml(sub.title)}" class="item-poster" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x90/1a1d24/666?text=N/A';">
+                        <div class="item-info">
+                            <h5><a href="#details=${sub.type}/${sub.tmdbId}" class="text-light text-decoration-none">${Utils.escapeHtml(sub.title)}</a></h5>
+                            <p>Release: ${releaseDate} ${statusBadge}</p>
+                            <p>Subscribed: ${sub.subscribedAt ? Utils.formatAirDate(sub.subscribedAt.toDate()) : 'N/A'}</p>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-danger unsubscribe-btn" data-sub-id="${sub.id}" data-item-title="${Utils.escapeHtml(sub.title)}">
+                                <i class="bi bi-trash"></i> Unsubscribe
+                            </button>
+                        </div>
+                    `;
+                    DOM.notificationSubscriptionsList.appendChild(itemElement);
+                });
+
+                // Add unsubscribe button listeners
+                DOM.notificationSubscriptionsList.querySelectorAll('.unsubscribe-btn').forEach(button => {
+                    button.addEventListener('click', App.unsubscribeNotification);
+                });
+            }
+
+        } catch (error) {
+            console.error("Error loading notification subscriptions:", error);
+            DOM.notificationSubscriptionsList.innerHTML = Utils.getErrorHTML("Failed to load your subscriptions.");
+        }
+    },
+
+    /**
+     * Handles unsubscribing from a specific content notification.
+     * @param {Event} event - The click event from the unsubscribe button.
+     */
+    unsubscribeNotification: async (event) => {
+        const button = event.currentTarget;
+        const subId = button.dataset.subId;
+        const itemTitle = button.dataset.itemTitle;
+        if (!subId || !appAuth.currentUser || !appDb) return;
+
+        if (!confirm(`Are you sure you want to unsubscribe from notifications for "${itemTitle}"?`)) return;
+
+        button.disabled = true;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+        try {
+            const userId = appAuth.currentUser.uid;
+            await appDb.collection("users").doc(userId).collection("notificationSubscriptions").doc(subId).delete();
+
+            State.activeNotificationSubscriptions = State.activeNotificationSubscriptions.filter(s => s.id !== subId);
+            button.closest('.notification-item').remove(); // Remove item from DOM
+
+            Utils.showToast(`Unsubscribed from "${itemTitle}".`, "info");
+            // If list becomes empty, show empty message
+            if (State.activeNotificationSubscriptions.length === 0) {
+                 DOM.notificationSubscriptionsList.innerHTML = '<p class="text-muted text-center py-4">You have no active notification subscriptions.</p>';
+            }
+        } catch (error) {
+            console.error("Error unsubscribing notification:", error);
+            Utils.showToast(`Failed to unsubscribe: ${error.message}`, "danger");
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    },
+        
+
+    // V V V REPLACE the entire `loadContinueWatchingSection` function with this one V V V
+loadContinueWatchingSection: (sectionDiv) => {
+    if (!sectionDiv) return;
+
+    const resultsContainer = sectionDiv.querySelector('.continue-watching-container');
+    const prevBtn = sectionDiv.querySelector('.h-scroll-btn.prev');
+    const nextBtn = sectionDiv.querySelector('.h-scroll-btn.next');
+    if (!resultsContainer || !prevBtn || !nextBtn) return;
+
+    const continueWatchingList = ContinueWatching.getCache(); // Use the cache
+
+    if (continueWatchingList.length === 0) {
+        Utils.setElementVisibility(sectionDiv, false); // Hide the whole section if empty
+        return;
+    }
+
+    Utils.setElementVisibility(sectionDiv, true); // Ensure section is visible
+    resultsContainer.innerHTML = ''; // Clear any skeletons or old content
+
+    continueWatchingList.forEach(item => {
+        const title = Utils.escapeHtml(item.title);
+        const imagePath = item.backdrop_path || item.poster_path;
+        const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+        const progressPercent = item.progressPercent || 0;
+
+        let cardHref = `#player=${item.type}/${item.id}`;
+        if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
+            cardHref += `/${item.seasonNumber}/${item.episodeNumber}`;
+        }
+        
+        const cardLink = document.createElement('a');
+        cardLink.href = cardHref;
+        cardLink.className = 'h-card';
+        cardLink.title = title + (item.episodeTitle ? ` - ${Utils.escapeHtml(item.episodeTitle)}` : '');
+
+        const imageHtml = imageUrl
+            ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+            : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
+
+        const overlayHtml = `
+            <div class="h-card-overlay">
+                <h3 class="h-card-title">${title}</h3>
+                ${item.type === 'tv' && item.episodeTitle ? `<span class="h-card-episode-title">S${item.seasonNumber} E${item.episodeNumber} - ${Utils.escapeHtml(item.episodeTitle)}</span>` : ''}
+                <div class="progress-bar-container mt-2">
+                    <div class="progress-bar-fill" style="width: ${progressPercent}%;" title="${progressPercent}% Watched"></div>
+                </div>
+            </div>
+        `;
+        
+        cardLink.innerHTML = imageHtml + overlayHtml;
+        resultsContainer.appendChild(cardLink);
+    });
+
+    // Setup horizontal scrolling
+    App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
+    if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
+        State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
+        resultsContainer.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn), 100));
+        prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
+        nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
+    }
+},
+    
+            /*loadContinueWatchingSection: (sectionDiv) => {
                 if (!sectionDiv) {
                     sectionDiv = document.getElementById('continue-watching-section'); // Try to find it if not passed
                 }
@@ -2879,7 +4380,7 @@
                                  ${rating ? `<span class="me-2"><i class="bi bi-star-fill text-warning"></i> ${rating}</span>` : ''}
                                  <span>Last watched: ${new Date(item.lastWatchedTimestamp).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'})}</span>
                              </p>
-                             ${ /* Progress Bar */ ''}
+                             ${ ''}
                              <div class="progress-bar-container">
                                  <div class="progress-bar-fill" style="width: ${progressPercent}%;"></div>
                              </div>
@@ -2912,7 +4413,7 @@
                  nextBtn.removeEventListener('click', App.handleHScrollNextForContainer);
                  nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
 
-             }, 
+            },*/
 
             handleHScrollPrev: (container) => {
                 if (!container) return;
@@ -3132,6 +4633,205 @@
                 }
          },
 
+           /**
+     * Loads and renders the user's profile dashboard page.
+     * Fetches user info, watch history, watchlist, and favorites.
+     */
+    loadProfilePage: async () => {
+        if (!DOM.profileView || !appAuth.currentUser || !appDb) {
+            Utils.showToast("Please log in to view your profile.", "info");
+            location.hash = '#home'; // Redirect if not logged in
+            return;
+        }
+
+        const user = appAuth.currentUser;
+        const userId = user.uid;
+
+        // Display user info
+        DOM.profileDisplayName.textContent = user.displayName || 'AuraStream User';
+        DOM.profileEmail.textContent = user.email || 'N/A';
+        DOM.profileNameInput.value = user.displayName || '';
+
+        if (user.photoURL) {
+            DOM.profileUserAvatarImage.src = user.photoURL;
+            Utils.setElementVisibility(DOM.profileUserAvatarImage, true);
+            Utils.setElementVisibility(DOM.profileUserAvatarInitials, false);
+        } else {
+            const initials = (user.displayName || user.email || 'A')
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
+            DOM.profileUserAvatarInitials.textContent = initials;
+            Utils.setElementVisibility(DOM.profileUserAvatarImage, false);
+            Utils.setElementVisibility(DOM.profileUserAvatarInitials, true);
+        }
+
+        // Handle Update Profile Name
+        DOM.updateProfileForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const newDisplayName = DOM.profileNameInput.value.trim();
+            if (newDisplayName && newDisplayName !== user.displayName) {
+                DOM.updateNameBtn.disabled = true;
+                DOM.updateNameBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Updating...';
+                try {
+                    await user.updateProfile({ displayName: newDisplayName });
+                    Utils.showToast("Display name updated!", "success");
+                    // Update UI immediately
+                    DOM.profileDisplayName.textContent = newDisplayName;
+                    // Re-render avatar if needed (e.g., if initials changed)
+                    App.loadProfilePage(); // Reload the whole page for simplicity
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                    Utils.showToast(`Failed to update name: ${error.message}`, "danger");
+                } finally {
+                    DOM.updateNameBtn.disabled = false;
+                    DOM.updateNameBtn.innerHTML = 'Update';
+                }
+            } else {
+                Utils.showToast("Enter a new display name.", "info");
+            }
+        };
+
+        // Handle Password Reset
+        DOM.resetPasswordBtn.onclick = async () => {
+            if (confirm("Send password reset email to " + user.email + "?")) {
+                try {
+                    await appAuth.sendPasswordResetEmail(user.email);
+                    Utils.showToast("Password reset email sent!", "info");
+                } catch (error) {
+                    console.error("Error sending password reset:", error);
+                    Utils.showToast(`Failed to send reset email: ${error.message}`, "danger");
+                }
+            }
+        };
+
+        // Handle Account Deletion
+        DOM.deleteAccountBtn.onclick = async () => {
+            if (confirm("Are you sure you want to delete your account? This action is irreversible.")) {
+                try {
+                    // It's a good practice to re-authenticate user before deletion
+                    // This typically requires user to log in again via a popup or redirect.
+                    // For simplicity in this example, we proceed directly, but be aware of security implications.
+                    await user.delete();
+                    Utils.showToast("Account deleted successfully.", "success");
+                    location.hash = '#home'; // Redirect to home or login page
+                    // Firebase Auth listener will handle logout UI
+                } catch (error) {
+                    console.error("Error deleting account:", error);
+                    Utils.showToast(`Failed to delete account: ${error.message}. Please re-authenticate if recent.`, "danger");
+                    // Often, Firebase requires recent authentication for deletion.
+                    // If 'auth/requires-recent-login' error, prompt user to re-login.
+                }
+            }
+        };
+
+
+        // --- Load User Activity & Lists ---
+
+        // 1. Recently Watched (from Firebase watchHistory)
+        DOM.profileRecentWatchedContainer.innerHTML = Utils.getSkeletonHorizontalCardHTML(5); // Skeletons
+        try {
+            const recentWatchedSnapshot = await appDb.collection("users").doc(userId).collection("watchHistory")
+                .orderBy("lastWatchedTimestamp", "desc")
+                .limit(10) // Limit to 10 most recent
+                .get();
+
+            const recentWatchedItems = recentWatchedSnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: data.tmdbId,
+                    type: data.type,
+                    title: data.title,
+                    name: data.title, // For renderHorizontalCards compatibility
+                    poster_path: data.poster_path,
+                    backdrop_path: data.backdrop_path,
+                    vote_average: data.vote_average,
+                    lastWatchedTimestamp: data.lastWatchedTimestamp?.toDate().getTime(),
+                    progressPercent: data.estimatedProgressPercent,
+                    seasonNumber: data.seasonNumber,
+                    episodeNumber: data.episodeNumber,
+                    episodeTitle: data.episodeTitle,
+                };
+            }).filter(item => item.lastWatchedTimestamp);
+
+            if (recentWatchedItems.length > 0) {
+                App.renderHorizontalCards(recentWatchedItems, DOM.profileRecentWatchedContainer, null, false);
+                // Update scroll buttons
+                App.updateHScrollButtons(
+                    DOM.profileRecentWatchedContainer,
+                    DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.prev'),
+                    DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.next')
+                );
+            } else {
+                DOM.profileRecentWatchedContainer.innerHTML = '<p class="text-muted text-center col-12 py-4">No recent viewing activity.</p>';
+            }
+        } catch (error) {
+            console.error("Error loading profile recent watched:", error);
+            DOM.profileRecentWatchedContainer.innerHTML = Utils.getErrorHTML("Failed to load recent activity.");
+        }
+
+
+        // 2. Watchlist (from local storage, or migrate to Firebase)
+        DOM.profileWatchlistGrid.innerHTML = Utils.getSkeletonCardHTML(4); // Skeletons
+        try {
+            // For simplicity, we'll use local storage version directly for now
+            // For multi-device sync, you'd load from Firebase here similar to watchHistory
+            const userWatchlist = Watchlist.getList(); // This gets from State.watchlist (populated from local storage)
+
+            if (userWatchlist.length > 0) {
+                // Render a subset for summary, provide link to full watchlist page
+                const itemsToRender = userWatchlist.slice(0, 4); // Show first 4
+                App.renderTmdbCards(itemsToRender, DOM.profileWatchlistGrid, null, false);
+                // Watchlist cards have their own remove buttons
+            } else {
+                DOM.profileWatchlistGrid.innerHTML = '<p class="text-muted text-center col-12 py-4">Your watchlist is empty.</p>';
+            }
+        } catch (error) {
+            console.error("Error loading profile watchlist:", error);
+            DOM.profileWatchlistGrid.innerHTML = Utils.getErrorHTML("Failed to load watchlist.");
+        }
+
+
+        // 3. Favorites (from local storage, or migrate to Firebase)
+        DOM.profileFavoritesGrid.innerHTML = Utils.getSkeletonCardHTML(4); // Skeletons
+        try {
+            // Similar to watchlist, currently local storage
+            const userFavorites = Favorites.getList(); // Assuming Favorites.getList() exists and works
+
+            if (userFavorites.length > 0) {
+                // Render a subset for summary, provide link to full analytics/favorites page
+                const itemsToRender = userFavorites.slice(0, 4); // Show first 4
+                App.renderTmdbCards(itemsToRender, DOM.profileFavoritesGrid, null, false);
+            } else {
+                DOM.profileFavoritesGrid.innerHTML = '<p class="text-muted text-center col-12 py-4">You have no favorites yet.</p>';
+            }
+        } catch (error) {
+            console.error("Error loading profile favorites:", error);
+            DOM.profileFavoritesGrid.innerHTML = Utils.getErrorHTML("Failed to load favorites.");
+        }
+
+        // Add event listener for horizontal scroll container if it's not already added
+        if (!State.horizontalScrollContainers.some(c => c.container === DOM.profileRecentWatchedContainer)) {
+            State.horizontalScrollContainers.push({
+                container: DOM.profileRecentWatchedContainer,
+                prevBtn: DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.prev'),
+                nextBtn: DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.next')
+            });
+            DOM.profileRecentWatchedContainer.addEventListener('scroll', Utils.debounce(() => {
+                App.updateHScrollButtons(
+                    DOM.profileRecentWatchedContainer,
+                    DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.prev'),
+                    DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.next')
+                );
+            }, 100), { passive: true });
+        }
+        DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.prev').addEventListener('click', () => App.handleHScrollPrev(DOM.profileRecentWatchedContainer));
+        DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.next').addEventListener('click', () => App.handleHScrollNext(DOM.profileRecentWatchedContainer));
+
+        App.initializeTooltips(DOM.profileView); // Initialize tooltips for the new content
+    },
 
          loadPlayerPageContext: async (type, id, season = null, episode = null) => {
              if (!DOM.playerTitleEl || !DOM.playerSourceBtnsContainer || !DOM.playerIframe || !DOM.playerIframePlaceholder || !DOM.playerEpisodeSelectorContainer) return;
@@ -3144,40 +4844,87 @@
              Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, false);
              DOM.playerEpisodeSelectorContainer.innerHTML = '';
 
-             State.moviePlayerContext = { itemId: id, itemType: type, currentSeason: season, currentEpisode: episode }; // Store context
+             State.moviePlayerContext = { 
+                itemId: id,
+                itemType: type, 
+                currentSeason: season, 
+                currentEpisode: episode,
+                itemData: null 
+            }; // Store context
 
-             try {
-                 const itemData = await API.fetchTMDB(`/${type}/${id}`);
-                 if (!itemData) throw new Error("Media item not found.");
+            try {
+                // Fetch with append_to_response to get runtime for movies, episode_run_time for TV
+                const itemData = await API.fetchTMDB(`/${type}/${id}`, { append_to_response: 'videos,credits' });
+                if (!itemData) throw new Error("Media item not found.");
 
-                 const title = Utils.escapeHtml(itemData.title || itemData.name || 'Media Item');
-                 DOM.playerTitleEl.textContent = title;
+                // Store the full itemData for use by recordUserWatchActivity
+                State.moviePlayerContext.itemData = itemData; // <<< STORE FULL itemData
 
-                 // Render source buttons (always show these)
-                 App.renderStreamingSourceButtons();
+                const title = Utils.escapeHtml(itemData.title || itemData.name || 'Media Item');
+                DOM.playerTitleEl.textContent = title;
 
-                 // If TV show, render episode selectors
-                 if (type === 'tv') {
-                     const seasonData = await API.fetchTMDB(`/tv/${id}/season/${season || 1}`); // Fetch first season by default or specified one
-                     if (!seasonData || !seasonData.episodes) throw new Error("Season data not found.");
-                     App.renderEpisodeSelectors(itemData, seasonData);
-                     Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, true);
-                 } else {
-                     // For movies, directly set the source for the first button (if available)
-                     const firstButton = DOM.playerSourceBtnsContainer.querySelector('button');
-                     if (firstButton) {
-                         App.setStreamingSource(firstButton.dataset.sourceIndex);
-                     } else {
-                          DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">No streaming sources available.</span>`;
-                     }
-                 }
+                App.renderStreamingSourceButtons();
 
-             } catch (error) {
-                 console.error("Failed to load player context:", error);
-                 DOM.playerTitleEl.textContent = 'Error Loading Player';
-                 DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML(`Error: ${error.message}`);
-             }
-         },
+                let tvDetails = {};
+
+            if (type === 'tv') {
+                const targetSeasonNum = season || (itemData.last_episode_to_air?.season_number || 1);
+                const seasonDetails = await API.fetchTMDB(`/tv/${id}/season/${targetSeasonNum}`);
+                    
+                //if (!seasonDetails || !seasonDetails.episodes) throw new Error("Season data not found.");
+                if (!seasonDetails?.episodes) throw new Error("Season data not found.");
+
+                // If no specific episode, try to find the last watched one for that season from Firebase, or default to 1
+                if (!episode && appAuth.currentUser && appDb) {
+                    const userId = appAuth.currentUser.uid;
+                    const docIdPrefix = `tv-${id}-s${targetSeasonNum}-e`; // Pattern for episodes
+                    const watchHistorySnapshot = await appDb.collection("users").doc(userId).collection("watchHistory")
+                        .orderBy("lastWatchedTimestamp", "desc")
+                        .where("tmdbId", "==", id)
+                        .where("seasonNumber", "==", targetSeasonNum)
+                        .limit(1) // Get the most recent watched episode for this season
+                        .get();
+
+                    if (!watchHistorySnapshot.empty) {
+                        const lastWatchedEp = watchHistorySnapshot.docs[0].data();
+                        State.moviePlayerContext.currentEpisode = lastWatchedEp.episodeNumber;
+                        console.log(`[Player] Resuming TV show: Season ${targetSeasonNum}, Episode ${lastWatchedEp.episodeNumber}`);
+                    } else {
+                        State.moviePlayerContext.currentEpisode = 1; // Default to first episode
+                    }
+                }
+
+                   const currentEpisodeDetails = seasonDetails.episodes.find(ep => ep.episode_number === State.moviePlayerContext.currentEpisode);
+                    tvDetails = {
+                        seasonNumber: targetSeasonNum,
+                        episodeNumber: State.moviePlayerContext.currentEpisode,
+                        episodeTitle: currentEpisodeDetails?.name || `Episode ${State.moviePlayerContext.currentEpisode}`
+                    };
+                    App.renderEpisodeSelectors(itemData, seasonDetails);
+                    Utils.setElementVisibility(DOM.playerEpisodeSelectorContainer, true);
+
+            } else { // For movies
+                const firstButton = DOM.playerSourceBtnsContainer.querySelector('button');
+                if (firstButton) {
+                    App.setStreamingSource(parseInt(firstButton.dataset.sourceIndex));
+                } else {
+                    DOM.playerIframePlaceholder.innerHTML = `<span class="text-muted">No streaming sources available.</span>`;
+                }
+            }
+
+                // V V V THIS IS THE NEW LINE TO START TRACKING V V V
+                ContinueWatching.startTracking(itemData, tvDetails);
+                // ^ ^ ^ THIS IS THE NEW LINE TO START TRACKING ^ ^ ^
+
+        } catch (error) {
+            console.error("Failed to load player context:", error);
+            DOM.playerTitleEl.textContent = 'Error Loading Player';
+            DOM.playerIframePlaceholder.innerHTML = Utils.getErrorHTML(`Error: ${error.message}`);
+            State.moviePlayerContext.itemData = null; // Clear on error
+        }
+    },
+
+        
 
           
 
@@ -3204,8 +4951,161 @@
              },
 
 
+            /**
+     * Loads and renders results for a specific genre.
+     * Handles initial loading, pagination, header background, and skeleton/spinner display.
+     * @param {number} [page=1] - The page number to fetch.
+     */
+    loadGenreResultsPage: async (page = 1) => {
+        // --- 1. Initial Validation & Error Handling Setup ---
+        // Check if all necessary DOM elements and current genre state are available.
+        // If not, log an error, ensure loaders are hidden/shown appropriately, and exit.
+        if (!State.currentGenre || !DOM.genreResultsGrid || !DOM.genreResultsTitleDynamic || !DOM.loadMoreGenreBtn || !DOM.genreLoadingSpinner || !DOM.genreHeaderSection) {
+            console.error("loadGenreResultsPage: Missing critical DOM elements or State.currentGenre is not set.");
+            // Ensure the loading spinner is hidden and the load more button is visible (as a retry or no-more-items indicator).
+            if (DOM.genreLoadingSpinner) Utils.setElementVisibility(DOM.genreLoadingSpinner, false);
+            if (DOM.loadMoreGenreBtn) Utils.setElementVisibility(DOM.loadMoreGenreBtn, true);
+            return; // Exit the function immediately as we cannot proceed.
+        }
 
-             loadGenreResultsPage: async (page = 1) => {
+        // Destructure current genre details for easier access.
+        const { type, id, name } = State.currentGenre;
+        // Determine if this is the first page load or a subsequent "Load More" action.
+        const isLoadingMore = page > 1;
+        let startTime = null; // Used to measure loading time for minimum skeleton display.
+
+        // --- 2. Set Initial Loading UI State ---
+        // Hide the "Load More" button and show the spinner at the start of any data fetch.
+        Utils.setElementVisibility(DOM.loadMoreGenreBtn, false);
+        Utils.setElementVisibility(DOM.genreLoadingSpinner, true); // Show the spinner next to the load more button.
+
+        // --- 3. Initial Load Specific Setup (Only on page 1) ---
+        // If it's the first page being loaded:
+        if (!isLoadingMore) {
+            // Populate the results grid with skeletons to indicate loading content.
+            DOM.genreResultsGrid.innerHTML = Utils.getSkeletonCardHTML(80); // Show a generous number of skeletons.
+
+            // Reset the genre header's background and show its skeleton.
+            DOM.genreHeaderSection.style.backgroundImage = 'none'; // Clear any previous background image.
+            // Remove 'd-none' from the header's skeleton to make it visible.
+            DOM.genreHeaderSection.querySelector('.skeleton-genre-header').classList.remove('d-none');
+            DOM.genreResultsTitleDynamic.textContent = ''; // Clear the title text temporarily.
+
+            startTime = performance.now(); // Record the start time for skeleton display duration.
+        }
+
+        let genreData = null; // Initialize genreData to null for scope.
+
+        // --- 4. Data Fetching Logic (Try Block) ---
+        try {
+            // Fetch genre-specific data from TMDb.
+            genreData = await API.fetchTMDB(`/discover/${type}`, {
+                with_genres: id,
+                page: page,
+                sort_by: 'popularity.desc', // Sort by popularity in descending order.
+                include_adult: false // Exclude adult content from results.
+            });
+
+            // --- Handle Header Background Image (Only for initial load, page 1) ---
+            // If it's the initial load AND data was successfully fetched AND there are results:
+            if (!isLoadingMore && genreData && genreData.results && genreData.results.length > 0) {
+                // Find the first item in the results that has a `backdrop_path`.
+                const itemWithBackdrop = genreData.results.find(item => item.backdrop_path);
+                if (itemWithBackdrop) {
+                    // Construct the full URL for the backdrop image.
+                    const backdropUrl = `${config.BACKDROP_BASE_URL}${itemWithBackdrop.backdrop_path}`;
+                    // Set the background image of the genre header section.
+                    // This will trigger the CSS transition for a smooth visual effect.
+                    DOM.genreHeaderSection.style.backgroundImage = `url('${backdropUrl}')`;
+                } else {
+                    // If no item with a backdrop is found, use a fallback background (e.g., solid color).
+                    DOM.genreHeaderSection.style.backgroundImage = 'none'; // Ensure no image is set.
+                    DOM.genreHeaderSection.style.backgroundColor = 'rgba(var(--surface-rgb), 0.5)'; // Apply a semi-transparent surface color.
+                }
+            }
+
+            // --- Render Results to the Grid ---
+            // If data was fetched successfully and there are results:
+            if (genreData && genreData.results) {
+                // Render the cards into the genre results grid.
+                // `isLoadingMore` acts as the `append` flag: true to append, false to replace.
+                App.renderTmdbCards(genreData.results, DOM.genreResultsGrid, type, isLoadingMore);
+            } else {
+                // If no results were found for the current query (and it's the initial load):
+                if (!isLoadingMore) {
+                    // Display a "No results found" message in the grid area.
+                    DOM.genreResultsGrid.innerHTML = '<p class="text-muted col-12 py-4 text-center">No results found for this genre.</p>';
+                }
+                // If no results or no more pages, the "Load More" button will remain hidden by default.
+            }
+
+        } catch (error) {
+            // --- 5. Error Handling (Catch Block) ---
+            console.error("Genre results loading failed:", error); // Log the error for debugging.
+            // If it's the initial load and an error occurred:
+            if (!isLoadingMore) {
+                // Display a user-friendly error message in the grid.
+                DOM.genreResultsGrid.innerHTML = Utils.getErrorHTML(`Failed to load genre results: ${error.message}`);
+                // Apply a visual error state to the header (e.g., red background).
+                DOM.genreHeaderSection.style.backgroundImage = 'none';
+                DOM.genreHeaderSection.style.backgroundColor = 'var(--danger-color)';
+                // Ensure the header skeleton is hidden on error.
+                DOM.genreHeaderSection.querySelector('.skeleton-genre-header').classList.add('d-none');
+            } else {
+                // If it's a "Load More" request that failed, show a toast notification.
+                Utils.showToast(`Failed to load more results: ${error.message}`, 'warning');
+            }
+        } finally {
+            // --- 6. Final UI State Management (Finally Block) ---
+            // This block always executes, regardless of try/catch outcome, to ensure UI is consistent.
+
+            // Debugging logs to inspect the final state of genreData and pagination.
+            console.log("--- Genre Load Finally Block ---");
+            console.log("genreData:", genreData); // Log the full API response.
+            console.log("Current Page:", genreData?.page, "Total Pages:", genreData?.total_pages);
+
+            // Determine if there are more pages to load.
+            // `canLoadMore` is true if the current page is less than the total available pages.
+            const canLoadMore = (genreData?.page || 0) < (genreData?.total_pages || 0);
+            console.log("Can Load More:", canLoadMore); // Log the critical `canLoadMore` flag.
+
+            // Update the genre title in the header.
+            DOM.genreResultsTitleDynamic.textContent = `${Utils.escapeHtml(name)} ${type === 'tv' ? 'TV Shows' : 'Movies'}`;
+            // Hide the header skeleton now that content (or an error) is displayed.
+            DOM.genreHeaderSection.querySelector('.skeleton-genre-header').classList.add('d-none');
+
+            // Set the visibility of the "Load More" button based on `canLoadMore`.
+            Utils.setElementVisibility(DOM.loadMoreGenreBtn, canLoadMore);
+            if (canLoadMore) {
+                // If more pages are available, update the `data-page` attribute
+                // of the "Load More" button to the *next* page number to be fetched.
+                DOM.loadMoreGenreBtn.dataset.page = (genreData?.page || 1) + 1;
+            } else {
+                // If no more pages, remove the `data-page` attribute to prevent stale data.
+                delete DOM.loadMoreGenreBtn.dataset.page;
+            }
+
+            // Hide the loading spinner.
+            Utils.setElementVisibility(DOM.genreLoadingSpinner, false);
+
+            // Implement a minimum display time for skeletons on the initial load.
+            // This prevents a "flicker" effect on very fast connections.
+            if (!isLoadingMore && startTime) {
+                const endTime = performance.now();
+                const elapsedTime = endTime - startTime;
+                const remainingTime = Math.max(0, (config.MIN_SKELETON_DISPLAY_TIME || 3000) - elapsedTime);
+                if (remainingTime > 0) {
+                     console.log(`Delaying genre render by ${remainingTime.toFixed(0)}ms for skeleton display.`);
+                     // Wait for the remaining time before truly finishing the load process.
+                     await new Promise(resolve => setTimeout(resolve, remainingTime));
+                }
+            }
+            console.log("--- Genre Load Finally Block END ---");
+        }
+    },
+
+           /*
+              loadGenreResultsPage: async (page = 1) => {
                  if (!State.currentGenre || !DOM.genreResultsGrid || !DOM.genreResultsTitle || !DOM.loadMoreGenreBtn || !DOM.genreLoadingSpinner) return;
 
                  const { type, id, name } = State.currentGenre;
@@ -3247,7 +5147,7 @@
                      Utils.setElementVisibility(DOM.genreLoadingSpinner, false);
                  }
              },
-
+*/
             handleTmdbSearchSubmit: (event) => {
                  event.preventDefault();
                  const query = DOM.tmdbSearchInput?.value.trim();
@@ -4268,7 +6168,7 @@
                      // Image or Placeholder
                      const imageHtml = posterUrl ? `<img src="${posterUrl}" class="card-img-top" alt="${title} Poster" loading="lazy">` : `<div class="card-img-placeholder d-flex align-items-center justify-content-center"><i class="bi bi-film fs-1"></i></div>`;
                      // Card Body
-                     const bodyHtml = `<div class="card-body d-flex flex-column flex-grow-1 p-3"> <h3 class="card-title fs-6 fw-medium mb-2">${title}</h3> ${rating && parseFloat(rating) > 0 ? `<span class="card-rating mt-auto"><i class="bi bi-star-fill me-1"></i>${rating}</span>` : '<span class="card-rating text-muted small mt-auto">NR</span>'} </div>`;
+                     const bodyHtml = `<div class="card-body d-flex flex-column flex-grow-1 p-3"> <h3 class="card-title fs-6 fw-medium mb-2">${title}</h3> ${rating && parseFloat(rating) > 0 ? `<span class="card-rating mt-auto"><i class="bi bi-star-fill me-1"></i>${rating}</span>` : `<span class="card-rating not-rated mt-auto"><i class="bi bi-star me-1"></i>NR</span>`}  </div>`;
 
 
                       // --- NEW: Add Watchlist Button ---
@@ -4620,8 +6520,8 @@
                  `;
              },
 
-            // Renders episodes into a specific season pane
-             renderSeasonEpisodes: (episodes, paneElement, tvId, seasonNum) => {
+             /*
+                 renderSeasonEpisodes: (episodes, paneElement, tvId, seasonNum) => {
                 if (!paneElement) return;
                 paneElement.innerHTML = ''; // Clear spinner
                  if (!episodes || episodes.length === 0) {
@@ -4640,9 +6540,16 @@
                      const episodeDiv = document.createElement('div');
                      episodeDiv.className = 'episode-item';
                      episodeDiv.innerHTML = `
-                         <div class="episode-still flex-shrink-0">
-                             <img src="${stillUrl}" alt="${epTitle} Still" loading="lazy" style="width: 100%; max-width: 240px; border-radius: var(--radius-md);">
-                         </div>
+                        <div class="episode-still flex-shrink-0">
+                            <img 
+                                src="${stillUrl}" 
+                                alt="${epTitle} Still" 
+                                loading="lazy"
+                                style="width: 100%; max-width: 240px; border-radius: var(--radius-md);"
+                                onerror="this.onerror=null;this.src='https://sdmntprnortheu.oaiusercontent.com/files/00000000-82b8-61f4-b635-0e690386afbc/raw?se=2025-07-22T21%3A58%3A55Z&sp=r&sv=2024-08-04&sr=b&scid=5928490a-9559-5166-af23-2432e1b351da&skoid=82a3371f-2f6c-4f81-8a78-2701b362559b&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-22T07%3A02%3A19Z&ske=2025-07-23T07%3A02%3A19Z&sks=b&skv=2024-08-04&sig=KxpuDEAZ/5uj2UkCgf8OumWj2OPvjYcNUPh6umRzL6Y%3D';"
+                            >
+                        </div>
+
                          <div class="episode-details flex-grow-1">
                              <h5 class="mb-1">${ep.episode_number}. ${epTitle}</h5>
                              <div class="episode-meta text-muted small mb-2">
@@ -4667,7 +6574,98 @@
                      paneElement.appendChild(episodeDiv);
                  });
              },
+*/
+            // Renders episodes into a specific season pane
+            renderSeasonEpisodes: (episodes, paneElement, tvId, seasonNum) => {
+    if (!paneElement) return;
+    paneElement.innerHTML = '';
 
+    if (!episodes || episodes.length === 0) {
+        paneElement.innerHTML = '<p class="text-muted p-3">No episode data available for this season.</p>';
+        return;
+    }
+
+    episodes.sort((a, b) => a.episode_number - b.episode_number).forEach(ep => {
+        const isFuture = ep.air_date && new Date(ep.air_date) > new Date();
+        const epTitle = Utils.escapeHtml(ep.name || `Episode ${ep.episode_number}`);
+        const epOverview = Utils.escapeHtml(ep.overview || 'No description.');
+        const epAirDate = ep.air_date ? Utils.formatAirDate(ep.air_date) : 'N/A';
+        const epRating = ep.vote_average ? ep.vote_average.toFixed(1) : null;
+        const epRuntime = ep.runtime ? Utils.formatRuntime(ep.runtime) : null;
+
+        let stillImg = '';
+        if (ep.still_path) {
+            // Valid episode image
+            stillImg = `
+                    <img 
+                       src="${config.STILL_BASE_URL}${ep.still_path}" 
+                       alt="${epTitle} Still" 
+                       loading="lazy"
+                       style=" border-radius: var(--radius-md); object-fit: cover;"
+                       onerror="this.onerror=null;this.src='https://via.placeholder.com/240x135/1a1d24/666?text=Image+Not+Available';"
+                    >
+            `;
+        } else {
+            // Placeholder box with optional air date
+            stillImg = `
+                <div style="
+                    width: 100%; 
+                    max-width: 280px; 
+                    height: 135px; 
+                    border-radius: var(--radius-md); 
+                    background-color: #1a1d24; 
+                    color: #aaa; 
+                    display: flex; 
+                    flex-direction: column; 
+                    align-items: center; 
+                    justify-content: center; 
+                    text-align: center; 
+                    font-size: 0.9rem;
+                ">
+                    <div>Image Not Available</div>
+                    ${isFuture ? `<div style="font-size: 0.75rem; margin-top: 0.25rem; color: #ccc;">Airing: ${epAirDate}</div>` : ''}
+                </div>
+            `;
+        }
+
+        const episodeDiv = document.createElement('div');
+        episodeDiv.className = 'episode-item d-flex gap-3 mb-4';
+        episodeDiv.innerHTML = `
+            <div class="episode-still flex-shrink-0">
+                ${stillImg}
+            </div>
+
+            <div class="episode-details flex-grow-1">
+                <h5 class="mb-1">${ep.episode_number}. ${epTitle}</h5>
+                <div class="episode-meta text-muted small mb-2">
+                    <span><i class="bi bi-calendar3 me-1"></i> ${epAirDate}</span>
+                    ${epRating && parseFloat(epRating) > 0 ? `<span class="ms-3"><i class="bi bi-star-fill text-warning me-1"></i> ${epRating}/10</span>` : ''}
+                    ${epRuntime ? `<span class="ms-3"><i class="bi bi-clock me-1"></i> ${epRuntime}</span>` : ''}
+                </div>
+                <p class="episode-overview mb-3">${epOverview.length > 150 ? epOverview.substring(0, 150) + '...' : epOverview}</p>
+                <a href="#player=tv/${tvId}/${seasonNum}/${ep.episode_number}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-play-fill me-1"></i> Watch Ep ${ep.episode_number}
+                </a>
+                ${ep.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ? `
+                    <button 
+                        class="btn btn-sm btn-outline-secondary ms-2 watch-trailer-btn" 
+                        data-video-key="${ep.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}">
+                        <i class="bi bi-film me-1"></i> Trailer
+                    </button>
+                ` : ''}
+            </div>
+        `;
+
+        const trailerBtn = episodeDiv.querySelector('.watch-trailer-btn');
+        if (trailerBtn) {
+            trailerBtn.addEventListener('click', App.handleEpisodeTrailerClick);
+        }
+
+        paneElement.appendChild(episodeDiv);
+    });
+},
+
+         
              // Renders the player page source buttons
              renderStreamingSourceButtons: () => {
                  if (!DOM.playerSourceBtnsContainer) return;
@@ -4691,10 +6689,14 @@
 
              recordGlobalView: async (type, id, title) => {
         // Use the globally initialized appDb from firebase.js
-        if (typeof appDb === 'undefined' || !appDb) {
+        /*if (typeof appDb === 'undefined' || !appDb) {
             console.warn("Firestore (appDb) not available, cannot record global view.");
             return; // Exit if Firestore instance isn't ready
-        }
+        }*/
+       if (typeof appAuth === 'undefined' || !appAuth.currentUser || typeof appDb === 'undefined' || !appDb) {
+    console.log("[Continue Watching] User not logged in or Firebase not ready. Using local storage (if any).");
+    return []; // Returns an empty array if not logged in
+}
         if (!type || !id || !title) {
             console.warn(`recordGlobalView skipped: Missing type (${type}), id (${id}), or title (${title}).`);
             return; // Exit if required info is missing
@@ -5111,4 +7113,4 @@
          }
 
         // --- Start the Application ---
-        document.addEventListener('DOMContentLoaded', App.init);
+        //document.addEventListener('DOMContentLoaded', App.init);
