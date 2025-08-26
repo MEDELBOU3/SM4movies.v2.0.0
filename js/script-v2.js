@@ -110,6 +110,8 @@
             person: document.getElementById('person-view'),
             watchlist: document.getElementById('watchlist-view'),
             analytics: document.getElementById('analytics-view'),
+            community: document.getElementById('community-view'), // <<< ADD
+            communityThreadDetail: document.getElementById('community-thread-detail-view'), // <<< ADD
         },
         // Navbar
         navbarMenu: document.getElementById('navbarNav'),
@@ -215,6 +217,19 @@
         notificationSubscriptionsList: document.getElementById('notification-subscriptions-list'),
         requestNotificationPermissionBtn: document.getElementById('request-notification-permission-btn'),
         notificationPermissionStatus: document.getElementById('notification-permission-status'),
+
+        //Community
+        
+        community : {
+            userActions: document.getElementById('community-user-actions'),
+            threadsList: document.getElementById('community-threads-list'),
+            createThreadModal: document.getElementById('createThreadModal'),
+            createThreadForm: document.getElementById('create-thread-form'),
+            threadDetailContent: document.getElementById('thread-detail-content'),
+            threadPostsList: document.getElementById('thread-posts-list'),
+            addPostForm: document.getElementById('add-post-form'),
+        },
+
 
     };
         // --- State Variables ---
@@ -453,16 +468,38 @@ const ContinueWatching = {
                 };
             },*/ 
 
-             debounce: (func, delay) => {
-        let timeoutId;
-        return (...args) => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                func.apply(this, args);
-            }, delay);
-        };
-    },
+            debounce: (func, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            },
 
+            formatRelativeTime: (date) => {
+                const now = new Date();
+                const seconds = Math.round((now - date) / 1000);
+    
+                const minutes = Math.round(seconds / 60);
+                const hours = Math.round(minutes / 60);
+    
+                const days = Math.round(hours / 24);
+                const weeks = Math.round(days / 7);
+    
+                const months = Math.round(days / 30.44);
+                const years = Math.round(days / 365.25);
+
+    
+                if (seconds < 60) return `${seconds} second${seconds === 1 ? '' : 's'} ago`;
+                if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+                if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+                if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+                if (weeks < 5) return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
+                if (months < 12) return `${months} month${months === 1 ? '' : 's'} ago`;
+                return `${years} year${years === 1 ? '' : 's'} ago`;
+            },
             // Generate HTML for a loading spinner
             getSpinnerHTML: (text = 'Loading...', large = false) => `
                 <div class="loading-spinner" style="min-height: ${large ? '300px':'150px'};">
@@ -1440,6 +1477,17 @@ const ContinueWatching = {
                          App.resizeVisualizerCanvas(); // Ensure canvas size is correct
                      };
                 }
+                else if (hash.startsWith('#community/thread/')) { // <<< ADD: Route for a specific thread
+                    targetViewElement = DOM.views.communityThreadDetail;
+                    activeNavLinkHref = '#community'; // Keep the main community link active
+                    const threadId = hash.substring('#community/thread/'.length);
+                    runOnViewLoad = () => App.loadThreadDetailPage(threadId);
+
+                } else if (hash === '#community') { // <<< ADD: Route for the main community page
+                    targetViewElement = DOM.views.community;
+                    activeNavLinkHref = '#community';
+                    runOnViewLoad = () => App.loadCommunityPage();
+                }
                 else if (hash === '#watchlist') {
                      targetViewElement = DOM.views.watchlist;
                      activeNavLinkHref = '#watchlist'; // Highlight watchlist nav link
@@ -1857,6 +1905,10 @@ const ContinueWatching = {
              DOM.analyticsNavLink?.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
              document.querySelector('.nav-link[href="#livesports"]')?.addEventListener('click', () => bsInstances.navbarCollapse?.hide());
 
+
+            //Community
+            DOM.community.createThreadForm?.addEventListener('submit', App.handleCreateThreadSubmit);
+            DOM.community.addPostForm?.addEventListener('submit', App.handleAddPostSubmit);
 
             // Watchlist Clear Listener
             DOM.clearWatchlistBtn?.addEventListener('click', App.handleClearWatchlist);
@@ -2579,6 +2631,384 @@ const ContinueWatching = {
                     // without rendering if needed for other features.
                 }
             },
+
+
+
+            // ===================================================================
+// START: NEW COMMUNITY FEATURE FUNCTIONS
+// ===================================================================
+
+/**
+ * Loads the main community page, displaying a list of discussion threads.
+ */
+loadCommunityPage: async () => {
+    if (!DOM.community.threadsList || !DOM.community.userActions) return;
+
+    // Show skeletons while loading
+    DOM.community.threadsList.innerHTML = App.getSkeletonThreadHTML(5);
+    
+    // Handle the "Create Thread" button visibility
+    if (appAuth.currentUser) {
+        DOM.community.userActions.innerHTML = `
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
+                <i class="bi bi-plus-lg me-2"></i>Create New Thread
+            </button>`;
+    } else {
+        DOM.community.userActions.innerHTML = `
+            <a href="index.html" class="btn btn-outline-light">Log in to post</a>`;
+    }
+
+    try {
+        const threadsSnapshot = await appDb.collection("community_threads")
+            .orderBy("lastReplyAt", "desc")
+            .limit(25)
+            .get();
+
+        if (threadsSnapshot.empty) {
+            DOM.community.threadsList.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-chat-quote-fill fs-1 mb-3"></i>
+                    <h4>No discussions yet.</h4>
+                    <p>Be the first to start a conversation!</p>
+                </div>`;
+        } else {
+            const threads = threadsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            App.renderCommunityThreads(threads);
+        }
+    } catch (error) {
+        console.error("Error loading community threads:", error);
+        DOM.community.threadsList.innerHTML = Utils.getErrorHTML("Could not load community discussions.");
+    }
+},
+
+/**
+ * Renders a list of thread items into the community page.
+ */
+renderCommunityThreads: (threads) => {
+    DOM.community.threadsList.innerHTML = ''; // Clear skeletons
+    threads.forEach(thread => {
+        const threadLink = document.createElement('a');
+        threadLink.href = `#community/thread/${thread.id}`;
+        threadLink.className = 'community-thread-item text-decoration-none';
+        
+        const lastReplyTime = thread.lastReplyAt ? Utils.formatRelativeTime(thread.lastReplyAt.toDate()) : 'No replies';
+        const createdBy = thread.createdBy ? Utils.escapeHtml(thread.createdBy.displayName) : 'Anonymous';
+
+        threadLink.innerHTML = `
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="flex-grow-1">
+                    <h5 class="card-title mb-1">${Utils.escapeHtml(thread.title)}</h5>
+                    <p class="card-text small text-muted mb-0">
+                        By ${createdBy} • Last reply ${lastReplyTime}
+                    </p>
+                </div>
+                ${thread.linkedMovieTitle ? `<span class="badge bg-primary bg-opacity-25 text-primary-emphasis flex-shrink-0 p-2 d-none d-sm-inline-block"><i class="bi bi-film me-1"></i> ${Utils.escapeHtml(thread.linkedMovieTitle)}</span>` : ''}
+                <div class="reply-stats">
+                    <div class="fw-bold fs-4 text-light">${thread.replyCount || 0}</div>
+                    <div class="small text-muted">Replies</div>
+                </div>
+            </div>
+        `;
+        DOM.community.threadsList.appendChild(threadLink);
+    });
+},
+
+/**
+ * Handles the submission of the "Create Thread" form.
+ */
+handleCreateThreadSubmit: async (event) => {
+    event.preventDefault();
+    if (!appAuth.currentUser) {
+        Utils.showToast("You must be logged in to create a thread.", "warning");
+        return;
+    }
+
+    const title = document.getElementById('threadTitle').value.trim();
+    const firstPost = document.getElementById('threadFirstPost').value.trim();
+    const movieId = document.getElementById('threadLinkMovieId').value.trim();
+    
+    if (!title || !firstPost) {
+        Utils.showToast("Title and post content are required.", "warning");
+        return;
+    }
+    
+    const button = DOM.community.createThreadForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Creating...`;
+
+    try {
+        const user = appAuth.currentUser;
+        const now = firebase.firestore.FieldValue.serverTimestamp();
+
+        const threadData = {
+            title: title,
+            createdBy: {
+                userId: user.uid,
+                displayName: user.displayName || user.email.split('@')[0],
+            },
+            createdAt: now,
+            lastReplyAt: now, // Initially, the last reply is the creation time
+            replyCount: 0,
+            linkedMovieId: movieId || null,
+            linkedMovieTitle: null // Will be populated if movieId exists
+        };
+        
+        // If a movie ID is linked, fetch its title
+        if (movieId) {
+            const movieDetails = await API.fetchTMDB(`/movie/${movieId}`);
+            if (movieDetails) {
+                threadData.linkedMovieTitle = movieDetails.title;
+            }
+        }
+
+        // Create the thread document
+        const threadRef = await appDb.collection("community_threads").add(threadData);
+        
+        // Create the first post in the thread
+        await appDb.collection("community_posts").add({
+            threadId: threadRef.id,
+            content: firstPost,
+            createdBy: {
+                userId: user.uid,
+                displayName: user.displayName || user.email.split('@')[0],
+            },
+            createdAt: now,
+        });
+
+        Utils.showToast("Thread created successfully!", "success");
+        bootstrap.Modal.getInstance(DOM.community.createThreadModal).hide();
+        DOM.community.createThreadForm.reset();
+        location.hash = `#community/thread/${threadRef.id}`; // Navigate to the new thread
+
+    } catch (error) {
+        console.error("Error creating thread:", error);
+        Utils.showToast("Failed to create thread. Please try again.", "danger");
+    } finally {
+        button.disabled = false;
+        button.innerHTML = `<i class="bi bi-plus-lg me-2"></i>Create Thread`;
+    }
+},
+
+/**
+ * Loads the detail view for a specific thread, including its posts.
+ * @param {string} threadId - The ID of the thread to load.
+ */
+loadThreadDetailPage: async (threadId) => {
+    if (!DOM.community.threadDetailContent || !DOM.community.threadPostsList || !DOM.community.addPostForm) return;
+
+    // Show skeletons
+    DOM.community.threadDetailContent.innerHTML = App.getSkeletonPostHTML();
+    DOM.community.threadPostsList.innerHTML = App.getSkeletonPostHTML(3);
+    Utils.setElementVisibility(DOM.community.addPostForm, false);
+
+    try {
+        // Fetch the main thread and its posts in parallel
+        const [threadDoc, postsSnapshot] = await Promise.all([
+            appDb.collection("community_threads").doc(threadId).get(),
+            appDb.collection("community_posts").where("threadId", "==", threadId).orderBy("createdAt", "asc").get()
+        ]);
+
+        if (!threadDoc.exists) {
+            throw new Error("Discussion thread not found.");
+        }
+
+        const threadData = { id: threadDoc.id, ...threadDoc.data() };
+        const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // The first post is part of the thread detail
+        const firstPost = posts.shift(); 
+        
+        App.renderThreadDetails(threadData, firstPost);
+        App.renderThreadPosts(posts);
+
+        // Show the reply form if the user is logged in
+        if (appAuth.currentUser) {
+            Utils.setElementVisibility(DOM.community.addPostForm, true);
+            // Store threadId on the form for the submit handler
+            DOM.community.addPostForm.dataset.threadId = threadId;
+        }
+
+    } catch (error) {
+        console.error("Error loading thread details:", error);
+        DOM.community.threadDetailContent.innerHTML = Utils.getErrorHTML(error.message);
+        DOM.community.threadPostsList.innerHTML = '';
+    }
+},
+
+/**
+ * Renders the main content of a thread.
+ */
+renderThreadDetails: (thread, firstPost) => {
+    DOM.community.threadDetailContent.innerHTML = `
+        <div class="thread-detail-header">
+            <h1 class="thread-title">${Utils.escapeHtml(thread.title)}</h1>
+            <div class="thread-meta mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span>By ${Utils.escapeHtml(thread.createdBy.displayName)} • Created ${Utils.formatRelativeTime(thread.createdAt.toDate())}</span>
+                ${thread.linkedMovieTitle ? `<a href="#details=movie/${thread.linkedMovieId}" class="badge bg-primary text-decoration-none"><i class="bi bi-film me-1"></i> ${Utils.escapeHtml(thread.linkedMovieTitle)}</a>` : ''}
+            </div>
+        </div>
+        <div class="card bg-dark border-secondary">
+            <div class="card-body">
+                ${App.getPostHTML(firstPost)}
+            </div>
+        </div>
+    `;
+},
+
+/**
+ * Renders a list of reply posts.
+ */
+renderThreadPosts: (posts) => {
+    // Clear skeletons
+    DOM.community.threadPostsList.innerHTML = '';
+    
+    if (posts.length === 0) {
+        DOM.community.threadPostsList.innerHTML = `<p class="text-muted text-center mt-4">No replies yet. Be the first to respond!</p>`;
+        return;
+    }
+
+    const postsContainer = document.createElement('div');
+    postsContainer.className = 'card'; // The container card
+    
+    posts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.className = 'community-post-item';
+        postElement.innerHTML = App.getPostHTML(post);
+        postsContainer.appendChild(postElement);
+    });
+    
+    DOM.community.threadPostsList.appendChild(postsContainer);
+},
+
+/**
+ * Generates the HTML for a single post (used for main post and replies).
+ */
+getPostHTML: (post) => {
+    if (!post) return '<p class="text-muted"><em>This post could not be loaded.</em></p>';
+    const createdBy = post.createdBy ? Utils.escapeHtml(post.createdBy.displayName) : 'Anonymous';
+    const createdAt = post.createdAt ? Utils.formatRelativeTime(post.createdAt.toDate()) : '...';
+    const initials = (createdBy.split(' ').map(n=>n[0]).join('') || 'A').substring(0,2).toUpperCase();
+
+    // Use replace to convert newlines to <br> for proper display
+    const postContentHtml = Utils.escapeHtml(post.content).replace(/\n/g, '<br>');
+
+    return `
+        <div class="post-author-avatar" title="${createdBy}">${initials}</div>
+        <div class="post-content flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="author-name">${createdBy}</span>
+                <span class="post-timestamp">${createdAt}</span>
+            </div>
+            <div class="post-body mt-2">
+                ${postContentHtml}
+            </div>
+        </div>
+    `;
+},
+
+
+/**
+ * Handles the submission of a new reply post.
+ */
+handleAddPostSubmit: async (event) => {
+    event.preventDefault();
+    const threadId = event.target.dataset.threadId;
+    if (!appAuth.currentUser || !threadId) {
+        Utils.showToast("You must be logged in to reply.", "warning");
+        return;
+    }
+
+    const content = document.getElementById('newPostContent').value.trim();
+    if (!content) return;
+
+    const button = DOM.community.addPostForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+
+    try {
+        const user = appAuth.currentUser;
+        const now = firebase.firestore.FieldValue.serverTimestamp();
+
+        // Add the new post document
+        await appDb.collection("community_posts").add({
+            threadId: threadId,
+            content: content,
+            createdBy: {
+                userId: user.uid,
+                displayName: user.displayName || user.email.split('@')[0],
+            },
+            createdAt: now,
+        });
+
+        // Update the thread's reply count and last reply timestamp using a transaction
+        const threadRef = appDb.collection("community_threads").doc(threadId);
+        await appDb.runTransaction(async (transaction) => {
+            transaction.update(threadRef, {
+                replyCount: firebase.firestore.FieldValue.increment(1),
+                lastReplyAt: now,
+            });
+        });
+
+        DOM.community.addPostForm.reset();
+        App.loadThreadDetailPage(threadId); // Reload the whole page to show the new post
+
+    } catch (error) {
+        console.error("Error adding post:", error);
+        Utils.showToast("Failed to add reply. Please try again.", "danger");
+    } finally {
+        button.disabled = false;
+    }
+},
+
+/**
+ * Generates skeleton HTML for the thread list.
+ */
+getSkeletonThreadHTML: (count = 5) => {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="skeleton-thread-item">
+                <div class="flex-grow-1">
+                    <div class="skeleton skeleton-title" style="width: 60%; height: 1.2em; margin-bottom: 0.5rem;"></div>
+                    <div class="skeleton" style="width: 40%; height: 0.8em;"></div>
+                </div>
+                <div class="reply-stats">
+                    <div class="skeleton mx-auto" style="width: 30px; height: 1.5em; margin-bottom: 0.3rem;"></div>
+                    <div class="skeleton mx-auto" style="width: 50px; height: 0.8em;"></div>
+                </div>
+            </div>`;
+    }
+    return html;
+},
+
+/**
+ * Generates skeleton HTML for posts.
+ */
+getSkeletonPostHTML: (count = 1) => {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="community-post-item">
+                <div class="post-author-avatar skeleton"></div>
+                <div class="post-content flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="skeleton" style="width: 120px; height: 1em;"></div>
+                        <div class="skeleton" style="width: 80px; height: 0.8em;"></div>
+                    </div>
+                    <div class="post-body mt-3">
+                        <div class="skeleton mb-2" style="width: 90%; height: 1em;"></div>
+                        <div class="skeleton mb-2" style="width: 100%; height: 1em;"></div>
+                        <div class="skeleton" style="width: 70%; height: 1em;"></div>
+                    </div>
+                </div>
+            </div>`;
+    }
+    // Wrap replies in the card structure
+    return `<div class="card">${html}</div>`;
+},
+
+// ===================================================================
+// END: NEW COMMUNITY FEATURE FUNCTIONS
+// ===================================================================
        
             // --- TMDB Methods ---
             loadTmdbGenres: async () => {
@@ -3024,168 +3454,232 @@ const ContinueWatching = {
         console.log("[Home Sections] Finished processing all section configurations.");
     },*/// End loadHomeSections
              
-        loadHomeSections: async (preFetchedContinueWatchingList = []) => {
-        console.log("[Home Sections] Starting home sections load...");
-        const mainContainer = DOM.homeContentSectionsContainer;
-        if (!mainContainer) {
-            console.error("[Home Sections] Main container (#home-content-sections) not found!");
-            return;
+   /**
+ * Loads and renders all configured sections for the home page.
+ * Manages static sections (Continue Watching, Most Viewed) and dynamically creates others.
+ * Handles loading states with skeletons and provides robust error handling.
+ * @param {Array} preFetchedContinueWatchingList - The user's watch history, pre-fetched on login.
+ */
+loadHomeSections: async (preFetchedContinueWatchingList = []) => {
+    console.log("[Home Sections] Starting to build home page...");
+    const mainContainer = DOM.homeContentSectionsContainer;
+    if (!mainContainer) {
+        console.error("[Home Sections] CRITICAL: Main container (#home-content-sections) not found!");
+        return;
+    }
+
+    // --- 1. PREPARATION ---
+    // Clear only dynamically generated sections from previous loads, preserving static ones.
+    mainContainer.querySelectorAll('section.dynamic-section').forEach(el => el.remove());
+    State.horizontalScrollContainers = []; // Reset scroll container tracking.
+
+    // Check for global data availability (non-blocking).
+    const globalViewsExist = await (async () => {
+        if (!appDb) return false;
+        try {
+            const snapshot = await appDb.collection("viewCounts").limit(1).get();
+            return !snapshot.empty;
+        } catch (e) {
+            console.error("[Home Sections] Firestore check for 'viewCounts' failed:", e);
+            return false;
+        }
+    })();
+
+    // --- 2. LOOP THROUGH SECTION CONFIGURATIONS ---
+    for (const sectionConfig of config.HOME_SECTIONS) {
+        // <<< FIX: Skip sections with invalid configuration to prevent errors.
+        if (!sectionConfig.id && !sectionConfig.endpoint) {
+            console.warn(`[Home Sections] Skipping section "${sectionConfig.title}" due to invalid configuration (missing 'id' or 'endpoint').`);
+            continue;
         }
 
-        // Clear any previous dynamic content that might have been loaded here,
-        // but preserve static sections if they are present.
-        // This line might need adjustment if you have other static sections
-        // that are children of mainContainer besides the ones we're managing.
-        // For now, let's assume we clean up dynamically added ones but preserve the ones above.
-        // A safer approach might be to specifically remove old dynamic children,
-        // rather than blindly clearing mainContainer.innerHTML if it contains static children.
-        // For simplicity for now, we'll let the individual section logic handle their innerHTML.
-        // mainContainer.innerHTML = Utils.getSpinnerHTML("Loading content sections...", true); // This line is likely problematic if you have static children now. Remove or adjust.
+        let sectionElement, contentContainer, prevBtn, nextBtn;
+        let shouldRenderContent = false; // Flag to determine if we should fetch data for this section.
+        const isHorizontal = sectionConfig.display_style?.startsWith('horizontal');
 
-        State.horizontalScrollContainers = []; // Reset scroll container tracking
-        await new Promise(resolve => setTimeout(resolve, 50));
-        // mainContainer.innerHTML = ''; // DO NOT clear mainContainer here if it contains static HTML
-
-        const continueWatchingList = preFetchedContinueWatchingList;
-
-        // Ensure the 'Most Viewed' section is initially hidden or shown based on global data
-        const mostViewedCheckPromise = (async () => {
-            if (typeof appDb === 'undefined' || !appDb) return false;
-            try {
-                const querySnapshot = await appDb.collection("viewCounts").limit(1).get();
-                return !querySnapshot.empty;
-            } catch (e) {
-                console.error("[Home Sections] Firestore check for 'viewCounts' failed:", e);
-                return false;
+        // --- A) Handle STATIC sections (already in HTML) ---
+        if (sectionConfig.id === 'continue-watching' || sectionConfig.id === 'most-viewed') {
+            sectionElement = document.getElementById(`${sectionConfig.id}-section`);
+            if (!sectionElement) {
+                console.warn(`[Home Sections] Static section #${sectionConfig.id}-section not found in HTML.`);
+                continue;
             }
-        })();
-        const globalViewsExist = await mostViewedCheckPromise;
- 
-        App.loadUpcomingSection(); 
+            contentContainer = sectionElement.querySelector('.horizontal-card-container');
+            prevBtn = sectionElement.querySelector('.h-scroll-btn.prev');
+            nextBtn = sectionElement.querySelector('.h-scroll-btn.next');
 
-        for (const sectionConfig of config.HOME_SECTIONS) {
-            console.log(`[Home Sections] Processing config: "${sectionConfig.title}" (ID: ${sectionConfig.id || 'N/A'})`);
+            // Determine visibility based on data availability.
+            const hasData = (sectionConfig.id === 'continue-watching' && preFetchedContinueWatchingList.length > 0) ||
+                            (sectionConfig.id === 'most-viewed' && globalViewsExist);
 
-            let sectionElement = null; // Renamed from sectionDiv to sectionElement
-            let contentContainer = null;
-            let prevBtn = null;
-            let nextBtn = null;
-            let shouldRenderContent = false; // Flag to indicate if this section's content needs populating
-
-            // --- Determine the target element and its content container ---
-            if (sectionConfig.id === 'continue-watching') {
-                sectionElement = document.getElementById('continue-watching-section'); // FIND THE STATIC ELEMENT
-                if (!sectionElement) { console.warn("[Home Sections] Static #continue-watching-section not found."); continue; }
-                contentContainer = sectionElement.querySelector('.continue-watching-container');
-                prevBtn = sectionElement.querySelector('.h-scroll-btn.prev');
-                nextBtn = sectionElement.querySelector('.h-scroll-btn.next');
-
-                if (continueWatchingList.length > 0) {
-                    Utils.setElementVisibility(sectionElement, true); // Ensure section is visible
-                    shouldRenderContent = true;
-                } else {
-                    Utils.setElementVisibility(sectionElement, false); // Hide if no content
-                }
-            } else if (sectionConfig.id === 'most-viewed') {
-                sectionElement = document.getElementById('most-viewed-section'); // FIND THE STATIC ELEMENT
-                if (!sectionElement) { console.warn("[Home Sections] Static #most-viewed-section not found."); continue; }
-                contentContainer = sectionElement.querySelector('.most-viewed-container');
-                prevBtn = sectionElement.querySelector('.h-scroll-btn.prev');
-                nextBtn = sectionElement.querySelector('.h-scroll-btn.next');
-
-                if (globalViewsExist) {
-                    Utils.setElementVisibility(sectionElement, true); // Ensure section is visible
-                    shouldRenderContent = true;
-                } else {
-                    Utils.setElementVisibility(sectionElement, false); // Hide if no global views
-                }
-            } else if (sectionConfig.endpoint) {
-                // Dynamically create and append other sections as before
-                sectionElement = document.createElement('section');
-                sectionElement.className = 'content-section mb-5';
-                const isHorizontal = sectionConfig.display_style?.startsWith('horizontal');
-                let skeletonHtml = isHorizontal ? Utils.getSkeletonHorizontalCardHTML(5) : Utils.getSkeletonCardHTML(6);
-                let containerClass = isHorizontal ? 'horizontal-card-container' : `row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6`;
-
-                sectionElement.innerHTML = `
-                    <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
-                    <div class="${isHorizontal ? 'horizontal-scroll-wrapper' : ''}">
-                        ${isHorizontal ? `<button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>` : ''}
-                        <div class="${containerClass}">${skeletonHtml}</div>
-                        ${isHorizontal ? `<button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>` : ''}
-                    </div>`;
-                mainContainer.appendChild(sectionElement); // Append dynamic sections
-                contentContainer = sectionElement.querySelector(`.${containerClass.split(' ')[0]}`); // Get content container
-                prevBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.prev') : null;
-                nextBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.next') : null;
-                shouldRenderContent = true; // Always try to render content for dynamic sections
-            } else {
-                console.warn(`[Home Sections] Skipping section "${sectionConfig.title}" due to invalid configuration.`);
-                continue; // Skip this iteration
+            Utils.setElementVisibility(sectionElement, hasData);
+            if (hasData) {
+                shouldRenderContent = true;
+                contentContainer.innerHTML = Utils.getSkeletonHorizontalCardHTML(5); // Show skeletons.
             }
 
-            // If we found/created a section and it should have content:
-            if (shouldRenderContent && sectionElement && contentContainer) {
-                // Add skeletons to the contentContainer immediately (unless it's already a placeholder)
-                // For static sections, if they have an initial placeholder, we'll keep that
-                if (contentContainer.innerHTML.includes('initial-placeholder')) {
-                    // Placeholder already exists, leave it for now until actual content is ready.
-                } else if (!contentContainer.querySelector('.spinner-border')) {
-                    // Only add skeleton if it's not already spinning/loading
-                    let skeletonHtml = (sectionConfig.display_style?.startsWith('horizontal')) ? Utils.getSkeletonHorizontalCardHTML(5) : Utils.getSkeletonCardHTML(6);
-                    contentContainer.innerHTML = skeletonHtml;
-                }
+        // --- B) Handle DYNAMIC sections (created on the fly) ---
+        } else if (sectionConfig.endpoint) {
+            shouldRenderContent = true;
+            sectionElement = document.createElement('section');
+            sectionElement.className = 'content-section mb-5 dynamic-section'; // Add class for easy cleanup.
 
+            const skeletonHtml = isHorizontal ? Utils.getSkeletonHorizontalCardHTML(5) : Utils.getSkeletonCardHTML(6);
+            const containerClass = isHorizontal ? 'horizontal-card-container' : 'row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6';
 
-                // --- Trigger Asynchronous Data Loading for This Section ---
-                (async (currentSectionElement, currentConfig, currentContentContainer, currentPrevBtn, currentNextBtn) => {
-                    try {
-                        console.log(`[Home Sections Load] Starting async load for "${currentConfig.title}"`);
-                        if (currentConfig.id === 'continue-watching') {
-                            App.loadContinueWatchingSection(currentSectionElement, continueWatchingList); // Pass list
-                        } else if (currentConfig.id === 'most-viewed') {
-                            await App.loadMostViewedSection(currentSectionElement, currentConfig);
-                        } else if (currentConfig.endpoint) {
-                            const data = await API.fetchTMDB(currentConfig.endpoint, { page: 1 });
-                            if (data?.results && data.results.length > 0) {
-                                const itemsToRender = data.results.slice(0, currentConfig.display_style?.startsWith('horizontal') ? 20 : 12);
-                                if (currentConfig.display_style?.startsWith('horizontal')) {
-                                    App.renderHorizontalCards(itemsToRender, currentContentContainer, currentConfig.type || null, currentConfig.show_trailer_button || false);
-                                } else {
-                                    App.renderTmdbCards(itemsToRender, currentContentContainer, currentConfig.type || null, false);
-                                }
-                            } else {
-                                console.log(`[Home Sections Load] No results from API for "${currentConfig.title}".`);
-                                currentContentContainer.innerHTML = `<p class="text-muted px-3 ${currentConfig.display_style?.startsWith('horizontal') ? '' : 'col-12'}">No content found for this section.</p>`;
-                            }
-                        }
+            sectionElement.innerHTML = `
+                <h2 class="section-title">${Utils.escapeHtml(sectionConfig.title)}</h2>
+                <div class="${isHorizontal ? 'horizontal-scroll-wrapper' : ''}">
+                    ${isHorizontal ? `<button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>` : ''}
+                    <div class="${containerClass}">${skeletonHtml}</div>
+                    ${isHorizontal ? `<button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>` : ''}
+                </div>`;
+            mainContainer.appendChild(sectionElement);
 
-                        // Setup/Update horizontal scroll AFTER rendering content
-                        if (currentConfig.display_style?.startsWith('horizontal') && currentContentContainer && currentPrevBtn && currentNextBtn) {
-                            if (!State.horizontalScrollContainers.some(c => c.container === currentContentContainer)) {
-                                State.horizontalScrollContainers.push({ container: currentContentContainer, prevBtn: currentPrevBtn, nextBtn: currentNextBtn });
-                                currentContentContainer.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(currentContentContainer, currentPrevBtn, currentNextBtn), 100), { passive: true });
-                                currentPrevBtn.addEventListener('click', () => App.handleHScrollPrev(currentContentContainer));
-                                currentNextBtn.addEventListener('click', () => App.handleHScrollNext(currentContentContainer));
-                                console.log(`[Home Sections Load] Added scroll listeners for "${currentConfig.title}"`);
-                            }
-                            App.updateHScrollButtons(currentContentContainer, currentPrevBtn, currentNextBtn);
-                        }
+            contentContainer = sectionElement.querySelector(`.${containerClass.split(' ')[0]}`);
+            prevBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.prev') : null;
+            nextBtn = isHorizontal ? sectionElement.querySelector('.h-scroll-btn.next') : null;
+        }
 
-                    } catch (error) {
-                        console.error(`[Home Sections Load] Error loading data for "${currentConfig.title}":`, error);
-                        if (currentContentContainer) {
-                            currentContentContainer.innerHTML = Utils.getErrorHTML(`Could not load "${currentConfig.title}".`);
-                        }
-                        if (currentConfig.display_style?.startsWith('horizontal') && currentContentContainer && currentPrevBtn && currentNextBtn) {
-                             App.updateHScrollButtons(currentContentContainer, currentPrevBtn, currentNextBtn);
-                        }
+        // --- 3. ASYNCHRONOUS DATA FETCHING FOR THE SECTION ---
+        if (shouldRenderContent && contentContainer) {
+            // Use an IIFE (Immediately Invoked Function Expression) to capture the current loop's variables.
+            (async (config, element, container, pBtn, nBtn) => {
+                try {
+                    console.log(`[Home Sections Load] Starting async load for "${config.title}"`);
+                    let itemsToRender = [];
+                    let hasResults = false;
+
+                    // Fetch data based on section type.
+                    if (config.id === 'continue-watching') {
+                        itemsToRender = preFetchedContinueWatchingList; // Use pre-fetched data.
+                    } else if (config.id === 'most-viewed') {
+                        // This now calls a function that returns the items instead of rendering directly.
+                        itemsToRender = await App.fetchMostViewedItems(config); 
+                    } else {
+                        const data = await API.fetchTMDB(config.endpoint, { page: 1 });
+                        itemsToRender = data?.results || [];
                     }
-                })(sectionElement, sectionConfig, contentContainer, prevBtn, nextBtn);
-            }
+                    
+                    hasResults = itemsToRender.length > 0;
+
+                    // Render the fetched content.
+                    if (hasResults) {
+                        const limitedItems = itemsToRender.slice(0, isHorizontal ? 20 : 12);
+                        if (config.id === 'continue-watching') {
+                            App.renderContinueWatchingCards(limitedItems, container); // Use a dedicated renderer.
+                        } else if (isHorizontal) {
+                            App.renderHorizontalCards(limitedItems, container, config.type || null, config.show_trailer_button || false);
+                        } else {
+                            App.renderTmdbCards(limitedItems, container, config.type || null, false);
+                        }
+                    } else {
+                        container.innerHTML = `<p class="text-muted px-3 ${isHorizontal ? '' : 'col-12'}">No content found for this section.</p>`;
+                    }
+
+                    // Setup horizontal scrolling after content is rendered.
+                    if (isHorizontal) {
+                        App.setupHorizontalScroll(container, pBtn, nBtn);
+                    }
+
+                // <<< FIX: This improved catch block prevents stuck spinners.
+                } catch (error) {
+                    console.error(`[Home Sections Load] Error loading data for "${config.title}":`, error);
+                    if (container) {
+                        container.innerHTML = Utils.getErrorHTML(`Could not load this section.`);
+                    }
+                    if (isHorizontal) {
+                        if (pBtn) Utils.setElementVisibility(pBtn, false);
+                        if (nBtn) Utils.setElementVisibility(nBtn, false);
+                    }
+                }
+            })(sectionConfig, sectionElement, contentContainer, prevBtn, nextBtn);
         }
-        console.log("[Home Sections] Finished processing all section configurations.");
-    },
+    }
+    console.log("[Home Sections] Finished processing all section configurations.");
+},
+
+// ADD this new function inside the App object
+fetchMostViewedItems: async (sectionConfig) => {
+    const maxItems = sectionConfig.max_items || 15;
+    if (!appDb) {
+        throw new Error("Database service is unavailable.");
+    }
+
+    const querySnapshot = await appDb.collection("viewCounts")
+        .orderBy("viewCount", "desc")
+        .limit(maxItems)
+        .get();
+
+    if (querySnapshot.empty) {
+        return []; // Return empty array if no data
+    }
+
+    const topItemsData = querySnapshot.docs.map(doc => doc.data());
+
+    const itemDetailPromises = topItemsData.map(viewData =>
+        API.fetchTMDB(`/${viewData.type}/${viewData.tmdbId}`).catch(err => {
+            console.warn(`[Most Viewed] Failed to fetch TMDB details for ${viewData.type}-${viewData.tmdbId}`, err);
+            return null;
+        })
+    );
+    
+    return (await Promise.all(itemDetailPromises)).filter(item => item !== null);
+},
+
+
+// ADD this new function inside the App object
+renderContinueWatchingCards: (items, containerElement) => {
+    containerElement.innerHTML = ''; // Always clear first
+    items.forEach(item => {
+        const title = Utils.escapeHtml(item.title);
+        const imagePath = item.backdrop_path || item.poster_path;
+        const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+
+        let cardHref = `#player=${item.type}/${item.id}`;
+        if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
+            cardHref += `/${item.seasonNumber}/${item.episodeNumber}`;
+        }
+        
+        const cardLink = document.createElement('a');
+        cardLink.href = cardHref;
+        cardLink.className = 'h-card';
+        cardLink.title = title + (item.episodeTitle ? ` - ${Utils.escapeHtml(item.episodeTitle)}` : '');
+
+        const imageHtml = imageUrl
+            ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+            : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
+
+        const overlayHtml = `
+            <div class="h-card-overlay">
+                <h3 class="h-card-title">${title}</h3>
+                ${item.type === 'tv' && item.episodeTitle ? `<span class="h-card-episode-title">S${item.seasonNumber} E${item.episodeNumber} - ${Utils.escapeHtml(item.episodeTitle)}</span>` : ''}
+                <div class="progress-bar-container mt-2">
+                    <div class="progress-bar-fill" style="width: ${item.progressPercent || 0}%;" title="${item.progressPercent || 0}% Watched"></div>
+                </div>
+            </div>`;
+        
+        cardLink.innerHTML = imageHtml + overlayHtml;
+        containerElement.appendChild(cardLink);
+    });
+},
+
+// ADD this new function inside the App object
+setupHorizontalScroll: (container, prevBtn, nextBtn) => {
+    if (!container || !prevBtn || !nextBtn) return;
+    
+    // Update button state immediately after rendering.
+    App.updateHScrollButtons(container, prevBtn, nextBtn);
+    
+    // Add to state tracking if not already present to avoid duplicate listeners.
+    if (!State.horizontalScrollContainers.some(c => c.container === container)) {
+        State.horizontalScrollContainers.push({ container, prevBtn, nextBtn });
+        container.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(container, prevBtn, nextBtn), 100), { passive: true });
+        prevBtn.addEventListener('click', () => App.handleHScrollPrev(container));
+        nextBtn.addEventListener('click', () => App.handleHScrollNext(container));
+    }
+},
+
     loadMostViewedSection: async (sectionDiv, sectionConfig) => {
     const container = sectionDiv.querySelector('.most-viewed-container');
     const isHorizontal = container?.classList.contains('horizontal-card-container');
