@@ -15,14 +15,17 @@
     <link rel="preconnect" href="https://image.tmdb.org">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3287630225807352"
      crossorigin="anonymous"></script>
+    
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <!-- AOS Animate On Scroll Library CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="css/phone.css">
 </head>
 <body>
     <!-- Loading Screen -->
@@ -31,8 +34,17 @@
         <div class="loading-text">LOADING AURASTREAM</div>
     </div>
 
-    <!-- Three.js Background Canvas & Noise Overlay -->
-    <canvas id="three-bg-canvas"></canvas>
+    <!-- ===== NEW: ADVANCED CSS BACKGROUND ===== -->
+    <div class="background-effects">
+        <div class="aurora-layer">
+            <div class="aurora-shape shape-1"></div>
+            <div class="aurora-shape shape-2"></div>
+            <div class="aurora-shape shape-3"></div>
+            <div class="aurora-shape shape-4"></div>
+        </div>
+        <div class="spotlight"></div>
+        <div class="stars-parallax-layer"></div>
+    </div>
     <div class="noise-overlay"></div>
 
     <!-- Custom Navbar -->
@@ -42,7 +54,7 @@
                AuraStream
             </a>
             <div class="nav-links-desktop d-none d-lg-flex">
-                <ul class="navbar-nav flex-row"> <!-- Use Bootstrap nav classes -->
+                <ul class="navbar-nav flex-row">
                     <li class="nav-item"><a class="nav-link active" href="#hero">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="#content-showcase">Discover</a></li>
                     <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
@@ -63,16 +75,12 @@
                      </button>
                       <!-- Logged IN View -->
                      <div class="d-none align-items-center" id="user-info-area">
-                         <!-- Avatar Placeholder - THIS will display the image -->
                          <div id="user-avatar" class="user-avatar me-2" title="User Profile">
-                             <!-- Initials shown if no image -->
                              <span id="user-avatar-initials"></span>
-                             <!-- Image shown when available -->
                              <img id="user-avatar-image" src="" alt="Profile" class="d-none" />
                          </div>
-                         <!-- Span for User Name (will be populated by JS) -->
                          <span id="user-display-name" class="me-3 text-light small fw-medium"></span>
-                         <button type="button" class="btn btn-secondary-outline btn-sm" id="logout-button"> <!-- Made button smaller -->
+                         <button type="button" class="btn btn-secondary-outline btn-sm" id="logout-button">
                              Logout
                          </button>
                      </div>
@@ -83,7 +91,7 @@
            </button>
         </nav>
 
-        <!-- Mobile Offcanvas Menu (Assuming no changes needed here for this request) -->
+        <!-- Mobile Offcanvas Menu -->
         <div class="offcanvas-menu" id="mobile-menu">
             <button class="mobile-menu-toggle active" style="position: absolute; top: 1.5rem; right: 1.5rem;" aria-label="Close navigation" id="mobile-menu-close">
                 <i class="bi bi-x"></i>
@@ -96,13 +104,13 @@
                 <li><a class="nav-link" href="#analytics-dashboard">Insights</a></li>
                 <li><a class="nav-link" href="#faq">FAQ</a></li>
             </ul>
-            <div class="mobile-search search-bar mt-4 mb-4"> <!-- Added margins -->
+            <div class="mobile-search search-bar mt-4 mb-4">
                 <i class="bi bi-search"></i>
                 <input type="text" placeholder="Search..." id="mobile-search-input">
             </div>
-             <div class="mobile-launch-cta mt-auto"> <!-- Ensure button is at bottom -->
+             <div class="mobile-launch-cta mt-auto">
                  <button type="button" class="btn btn-primary-gradient btn-nav-cta w-100" data-bs-toggle="modal" data-bs-target="#launchAppModal">
-                     Launch App <!-- Assuming this button should open the same auth modal -->
+                     Launch App
                  </button>
              </div>
         </div>
@@ -119,11 +127,10 @@
                  <div class="container">
                      <div class="row">
                          <div class="col-lg-7 col-md-9">
-                             <div class="hero-content" data-aos="fade-right" data-aos-delay="200"> <!-- Adjusted delay -->
+                             <div class="hero-content" data-aos="fade-right" data-aos-delay="200">
                                  <h1 id="hero-title">Loading Universe...</h1>
                                  <p class="lead" id="hero-overview">Discover, track, and discuss your favorite movies and TV shows like never before.</p>
-                                 <div class="hero-movie-info mb-4" id="hero-info-container"> <!-- Added mb-4 -->
-                                    <!-- Skeleton Loader for Info -->
+                                 <div class="hero-movie-info mb-4" id="hero-info-container">
                                     <div class="hero-info-item skeleton-item" style="width: 90px;"></div>
                                     <div class="hero-info-item skeleton-item" style="width: 70px;"></div>
                                     <div class="hero-info-item skeleton-item" style="width: 130px;"></div>
@@ -142,81 +149,41 @@
                  </div>
             </section>
              
-          <section id="phoneContainer" class="section">
-               <div class="phone-container">
-        <div class="phone">
-            <div class="notch">
-                <div class="camera"></div>
-                <div class="sensor"></div>
-                <div class="camera"></div>
-            </div>
-            <div class="power-button"></div>
-            <div class="volume-buttons">
-                <div class="volume-button"></div>
-                <div class="volume-button"></div>
-            </div>
-           <div class="screen">
-                <div class="video-container">
-                    <iframe
-                        id="youtubePlayer"
-                        width="100%"
-                        height="100%"
-                        src="https://www.youtube.com/embed/zEpdM_zW6yY"
-                        frameborder="0"
-                        allow="autoplay; encrypted-media"
-                        allowfullscreen
-                        style="border-radius: 25px;"
-                    ></iframe>
-                    <div class="play-button" onclick="playYouTubeVideo()"></div>
-                </div>
-            </div>
-    </div>
-          </section>
-             
-
             <!-- Content Showcase Section -->
             <section id="content-showcase" class="section section-angled-top section-angled-bottom">
                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
                  <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
                  <div class="container-fluid position-relative" style="z-index: 10;">
-
-                    <!-- Trending Movies Shelf -->
                     <div class="content-shelf" id="shelf-trending-movie" data-aos="fade-up">
-                        <div class="shelf-header"> <h3 class="shelf-title"><i class="bi bi-graph-up-arrow"></i> Trending Movies</h3> <a href="#browse-trending-movies" class="shelf-view-all conceptual-link" title="View All Trending Movies (Concept)">View All <i class="bi bi-chevron-right"></i></a> </div>
+                        <div class="shelf-header"> <h3 class="shelf-title"><i class="bi bi-graph-up-arrow"></i> Trending Movies</h3> <a href="#" class="shelf-view-all conceptual-link" title="View All Trending Movies (Concept)">View All <i class="bi bi-chevron-right"></i></a> </div>
                         <div class="horizontal-scroll-wrapper">
-                            <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous" aria-controls="trending-movies-scroll" aria-disabled="true"><i class="bi bi-chevron-left"></i></button>
-                            <div class="horizontal-scroll-container" id="trending-movies-scroll" role="region" aria-label="Trending Movies Carousel">
-                                <!-- JS will populate this -->
+                            <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
+                            <div class="horizontal-scroll-container" id="trending-movies-scroll">
                                 <div class="loading-shelf-text"><div class="loading-spinner"></div> Loading Trending Movies...</div>
                             </div>
-                            <button class="btn h-scroll-btn next" aria-label="Scroll Next" aria-controls="trending-movies-scroll" aria-disabled="false"><i class="bi bi-chevron-right"></i></button>
+                            <button class="btn h-scroll-btn next" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
                         </div>
                     </div>
-
-                     <!-- Popular TV Shelf -->
                      <div class="content-shelf" id="shelf-popular-tv" data-aos="fade-up" data-aos-delay="100">
-                         <div class="shelf-header"> <h3 class="shelf-title"><i class="bi bi-fire"></i> Popular TV Shows</h3> <a href="#browse-popular-tv" class="shelf-view-all conceptual-link" title="View All Popular TV Shows (Concept)">View All <i class="bi bi-chevron-right"></i></a> </div>
+                         <div class="shelf-header"> <h3 class="shelf-title"><i class="bi bi-fire"></i> Popular TV Shows</h3> <a href="#" class="shelf-view-all conceptual-link" title="View All Popular TV Shows (Concept)">View All <i class="bi bi-chevron-right"></i></a> </div>
                          <div class="horizontal-scroll-wrapper">
-                            <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous" aria-controls="popular-tv-scroll" aria-disabled="true"><i class="bi bi-chevron-left"></i></button>
-                            <div class="horizontal-scroll-container" id="popular-tv-scroll" role="region" aria-label="Popular TV Shows Carousel">
+                            <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
+                            <div class="horizontal-scroll-container" id="popular-tv-scroll">
                                <div class="loading-shelf-text"><div class="loading-spinner"></div> Loading Popular Shows...</div>
                             </div>
-                            <button class="btn h-scroll-btn next" aria-label="Scroll Next" aria-controls="popular-tv-scroll" aria-disabled="false"><i class="bi bi-chevron-right"></i></button>
+                            <button class="btn h-scroll-btn next" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
                          </div>
                      </div>
-
-                    <!-- Top Rated Movies Shelf -->
                     <div class="content-shelf" id="shelf-toprated-movie" data-aos="fade-up" data-aos-delay="200">
-                         <div class="shelf-header"> <h3 class="shelf-title"><i class="bi bi-star-fill"></i> Top Rated Movies</h3> <a href="#browse-toprated-movies" class="shelf-view-all conceptual-link" title="View All Top Rated Movies (Concept)">View All <i class="bi bi-chevron-right"></i></a> </div>
+                         <div class="shelf-header"> <h3 class="shelf-title"><i class="bi bi-star-fill"></i> Top Rated Movies</h3> <a href="#" class="shelf-view-all conceptual-link" title="View All Top Rated Movies (Concept)">View All <i class="bi bi-chevron-right"></i></a> </div>
                          <div class="horizontal-scroll-wrapper">
-                             <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous" aria-controls="toprated-movies-scroll" aria-disabled="true"><i class="bi bi-chevron-left"></i></button>
-                             <div class="horizontal-scroll-container" id="toprated-movies-scroll" role="region" aria-label="Top Rated Movies Carousel">
+                             <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
+                             <div class="horizontal-scroll-container" id="toprated-movies-scroll">
                                 <div class="loading-shelf-text"><div class="loading-spinner"></div> Loading Top Rated Movies...</div>
                              </div>
-                             <button class="btn h-scroll-btn next" aria-label="Scroll Next" aria-controls="toprated-movies-scroll" aria-disabled="false"><i class="bi bi-chevron-right"></i></button>
+                             <button class="btn h-scroll-btn next" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
                          </div>
                      </div>
-
                  </div>
             </section>
 
@@ -234,626 +201,271 @@
                           <article class="feature-item" data-aos="fade-up" data-aos-delay="500"> <i class="bi bi-people-fill feature-icon"></i> <h4>Vibrant Community</h4> <p>Connect with fans, share reviews, discover curated lists, and join discussions (Coming Soon!).</p> </article>
                           <article class="feature-item" data-aos="fade-up" data-aos-delay="600"> <i class="bi bi-calendar-check-fill feature-icon"></i> <h4>Release Radar</h4> <p>Never miss a premiere. Get notified about new episodes, movies, and arrivals (Coming Soon!).</p> </article>
                           <article class="feature-item" data-aos="fade-up" data-aos-delay="700"> <i class="bi bi-phone-fill feature-icon"></i> <h4>Cross-Device Sync</h4> <p>Your watchlist, progress, and recommendations stay synced across all platforms.</p> </article>
-                          <!-- Video Feature Placeholder/Demo -->
-                          <article class="feature-item video-feature-demo" data-aos="fade-up" data-aos-delay="700">
-                            <i class="bi bi-play-btn-fill feature-icon"></i> <!-- Optional: Icon for the feature -->
-                            <h4>Interactive Preview</h4>
-                            <p>See AuraStream in action with a quick interface demo.</p>
-                            <!-- The Video Container -->
-                             <div id="intro-overlay"  style="position: relative; padding-top: 56.25%; height: 0; overflow: hidden; border-radius: 10px;">
-                                <iframe
-                                    id="intro-video"
-                                    src="https://www.youtube.com/embed/zEpdM_zW6yY?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&rel=0&showinfo=0"
-                                    frameborder="0"
-                                    allow="autoplay; encrypted-media"
-                                    allowfullscreen
-                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-                                </iframe>
-                                <button id="skip-intro-button">Skip Intro <i class="bi bi-skip-forward-fill ms-1"></i></button>
+                     </div>
+                 </div>
+            </section>
+            
+            <!-- Interactive Demo Section -->
+            <section id="interactive-demo" class="section section-angled-top section-angled-bottom">
+                <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                <div class="container position-relative" style="z-index: 10;">
+                    <h2 class="text-center mb-4" data-aos="fade-up">See it in <span class="text-gradient">Action</span></h2>
+                    <p class="lead text-center mb-5 pb-3" data-aos="fade-up" data-aos-delay="100">
+                        Experience a glimpse of our seamless interface, designed for discovery.
+                    </p>
+                    <div class="phone-container-wrapper" data-aos="fade-up" data-aos-delay="200">
+                        <div class="phone-container">
+                            <div class="phone">
+                                <div class="notch"><div class="camera"></div><div class="sensor"></div></div>
+                                <div class="power-button"></div>
+                                <div class="volume-buttons"><div class="volume-button"></div><div class="volume-button"></div></div>
+                                <div class="screen">
+                                    <div class="video-wrapper">
+                                        <iframe id="youtubePlayer" width="100%" height="100%" src="https://www.youtube.com/embed/zEpdM_zW6yY" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen title="Interface Demo Video"></iframe>
+                                        <div class="play-button-overlay" id="play-button-demo"><div class="play-button-icon"></div></div>
+                                    </div>
+                                </div>
                             </div>
-                      
-                          </article>
                         </div>
-                 </div>
-             </section>
+                    </div>
+                </div>
+            </section>
 
-    
-
-             <!-- Trailer Feature Section -->
-             <section id="trailer-feature" class="section section-angled-top section-angled-bottom">
-                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
-                  <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
-                  <div class="container position-relative" style="z-index: 10;">
-                       <div class="trailer-feature-container">
-                           <div class="trailer-text-content" data-aos="fade-right">
-                               <h2 class="mb-3">Featured Trailer</h2>
-                               <h3 id="trailer-feature-title"><span class="trailer-loading-placeholder">Loading Title...</span></h3>
-                               <p id="trailer-feature-desc"><span class="trailer-loading-placeholder">Loading description...</span></p>
-                               <button class="btn btn-secondary-outline conceptual-link" id="trailer-feature-more-info" disabled title="More Info (Concept)"><i class="bi bi-film me-2"></i> View Movie Details</button>
-                           </div>
-                           <div class="trailer-visual" data-aos="fade-left" data-aos-delay="200">
-                              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" class="trailer-thumbnail-img" id="trailer-feature-thumbnail" alt="Trailer Thumbnail Loading...">
-                              <button class="btn btn-play trailer-play-button" id="trailer-feature-play-btn" aria-label="Play Featured Trailer" disabled><i class="bi bi-play-fill"></i></button>
-                           </div>
-                       </div>
-                  </div>
-             </section>
-
-             <!-- =================================== -->
-             <!-- ===== 3D Gallery Section START ===== -->
-             <!-- =================================== -->
-             <section id="gallery-section" class="section section-angled-top section-angled-bottom">
-                 <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
-                 <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
-
-                 <div class="galaxy-bg"></div>
-
-                 <div class="container">
-                     <div class="section-heading" data-aos="fade-up">
-                         <h2>Experience <span class="text-gradient">AuraStream</span> UI</h2>
-                         <div class="glow-line"></div>
-                         <p class="lead">Explore our futuristic interface with immersive visuals and seamless integration across all your content.</p>
-                     </div>
-
-                     <!-- 3D Gallery Container -->
-                     <div class="gallery-3d-container" data-aos="fade-up" data-aos-delay="200">
-                         <div class="gallery-3d-stage" id="galleryStage">
-                             <!-- Card 1: Home Interface -->
-                             <div class="gallery-card" data-index="0" data-name="Home Interface">
-                                 <div class="card-front">
-                                     <img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/interface.png?raw=true" alt="AuraStream Home Interface" class="card-image" loading="lazy">
-                                     <div class="card-overlay"></div>
-                                     <div class="card-content">
-                                         <span class="card-tag">Dashboard</span>
-                                         <h3 class="card-title">Home Interface</h3>
-                                         <p class="card-description">Your personalized hub for discovering content.</p>
-                                     </div>
-                                 </div>
-                             </div>
-                             <!-- Card 2: Recommendations -->
-                             <div class="gallery-card" data-index="1" data-name="Smart Recommendations">
-                                 <div class="card-front">
-                                     <img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/ai-powered.png?raw=true" alt="AuraStream Recommendations" class="card-image" loading="lazy">
-                                     <div class="card-overlay"></div>
-                                     <div class="card-content">
-                                         <span class="card-tag">AI Powered</span>
-                                         <h3 class="card-title">Smart Suggestions</h3>
-                                         <p class="card-description">AI algorithms suggest perfect content matches.</p>
-                                     </div>
-                                 </div>
-                             </div>
-                             <!-- Card 3: Watchlist -->
-                             <div class="gallery-card" data-index="2" data-name="Watchlist Feature">
-                                 <div class="card-front">
-                                     <img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/watchlist.png?raw=true" alt="AuraStream Watchlist" class="card-image" loading="lazy">
-                                     <div class="card-overlay"></div>
-                                     <div class="card-content">
-                                         <span class="card-tag">Organization</span>
-                                         <h3 class="card-title">Watchlist</h3>
-                                         <p class="card-description">Keep track of everything you want to watch easily.</p>
-                                     </div>
-                                 </div>
-                             </div>
-                             <!-- Card 4: Detail View -->
-                             <div class="gallery-card" data-index="3" data-name="Detailed View">
-                                 <div class="card-front">
-                                     <img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/details.png?raw=true" alt="AuraStream Detail View" class="card-image" loading="lazy">
-                                     <div class="card-overlay"></div>
-                                     <div class="card-content">
-                                         <span class="card-tag">Info</span>
-                                         <h3 class="card-title">Detailed View</h3>
-                                         <p class="card-description">Get all the info, cast, crew, and streaming options.</p>
-                                     </div>
-                                 </div>
-                             </div>
-                             <!-- Card 5: Community (Concept) -->
-                             <div class="gallery-card" data-index="4" data-name="Community Hub">
-                                 <div class="card-front">
-                                     <img src="https://raw.githubusercontent.com/MEDELBOU3/SM4movies.v2.0.0/bfa85dcc23eb2e81f159934bfe7ee1f993d05889/images/community.svg" alt="AuraStream Community Hub" class="card-image" loading="lazy">
-                                     <div class="card-overlay"></div>
-                                     <div class="card-content">
-                                         <span class="card-tag">Connect</span>
-                                         <h3 class="card-title">Community Hub</h3>
-                                         <p class="card-description">Connect with fans, share reviews, and discuss.</p>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div> <!-- / gallery-3d-stage -->
-                     </div> <!-- / gallery-3d-container -->
-
-                     <!-- Navigation Controls -->
-                     <div class="gallery-nav" data-aos="fade-up" data-aos-delay="300">
-                         <button class="nav-btn prev-btn" id="prevBtn" aria-label="Previous Gallery Item"><i class="bi bi-chevron-left"></i></button>
-                         <div class="gallery-dots" id="galleryDots">
-                             <button class="dot active" data-index="0" aria-label="Go to slide 1"></button>
-                             <button class="dot" data-index="1" aria-label="Go to slide 2"></button>
-                             <button class="dot" data-index="2" aria-label="Go to slide 3"></button>
-                             <button class="dot" data-index="3" aria-label="Go to slide 4"></button>
-                             <button class="dot" data-index="4" aria-label="Go to slide 5"></button>
-                         </div>
-                         <button class="nav-btn next-btn" id="nextBtn" aria-label="Next Gallery Item"><i class="bi bi-chevron-right"></i></button>
-                     </div>
-
-                 </div> <!-- / .container -->
-
-                 <!-- Fullscreen Modal -->
-                 <div class="fullscreen-modal" id="fullscreenModal">
-                     <div class="modal-content">
-                         <button class="modal-close" id="modalClose" aria-label="Close fullscreen image"><i class="bi bi-x"></i></button>
-                         <div class="modal-image-container">
-                           <img src="" alt="Gallery Image Fullscreen" class="modal-image" id="modalImageFs">
-                         </div>
-                         <div class="modal-caption" id="modalCaptionFs">Image Caption</div>
-                     </div>
-                 </div>
-             </section>
-             <!-- ================================= -->
-             <!-- ===== 3D Gallery Section END ===== -->
-             <!-- ================================= -->
-
-             <!-- ====================================== -->
-             <!-- ===== Analytics Dashboard Section ===== -->
-             <!-- ====================================== -->
-             <section id="analytics-dashboard" class="section section-angled-top section-angled-bottom">
+            <!-- Trailer Feature Section -->
+            <section id="trailer-feature" class="section section-angled-top section-angled-bottom">
                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
                  <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
-
                  <div class="container position-relative" style="z-index: 10;">
-                     <h2 class="text-center mb-4" data-aos="fade-up">AuraStream <span class="text-gradient">Insights</span></h2>
-                     <p class="lead text-center mb-5 pb-3" data-aos="fade-up" data-aos-delay="100">
-                         Explore the data behind the entertainment universe. See what's trending, popular, and highly-rated.
-                     </p>
-
-                     <div class="analytics-grid">
-
-                         <!-- Card 1: Key Metrics (KPIs) -->
-                         <div class="analytics-card kpi-card" data-aos="fade-up" data-aos-delay="200">
-                             <h4>Platform Overview</h4>
-                             <div class="kpi-grid">
-                                 <div class="kpi-item">
-                                     <span class="kpi-value" id="kpi-total-titles">~</span>
-                                     <span class="kpi-label">Titles Tracked</span>
-                                 </div>
-                                 <div class="kpi-item">
-                                     <span class="kpi-value" id="kpi-active-users">~</span>
-                                     <span class="kpi-label">Active Users</span>
-                                 </div>
-                                 <div class="kpi-item">
-                                     <span class="kpi-value" id="kpi-avg-rating"><i class="bi bi-star-fill text-warning"></i> ~</span>
-                                     <span class="kpi-label">Avg. Rating</span>
-                                 </div>
-                                  <div class="kpi-item">
-                                      <span class="kpi-value" id="kpi-community-posts">~</span>
-                                      <span class="kpi-label">Discussions</span>
-                                  </div>
-                             </div>
-                         </div>
-
-                         <!-- Card 2: Genre Distribution (Simulated Donut Chart) -->
-                         <div class="analytics-card" data-aos="fade-up" data-aos-delay="300">
-                             <h4>Popular Genres (Movies)</h4>
-                             <div class="chart-container simulated-donut-chart" id="genre-donut-chart">
-                                 <!-- Simulated using CSS conic-gradient -->
-                                 <div class="donut-chart-visual"></div>
-                                 <ul class="chart-legend">
-                                     <li><span class="legend-color" style="background-color: var(--primary-accent);"></span>Action</li>
-                                     <li><span class="legend-color" style="background-color: var(--secondary-accent);"></span>Sci-Fi</li>
-                                     <li><span class="legend-color" style="background-color: var(--tertiary-accent);"></span>Comedy</li>
-                                     <li><span class="legend-color" style="background-color: #ffc107;"></span>Drama</li>
-                                      <li><span class="legend-color" style="background-color: #4caf50;"></span>Other</li>
-                                 </ul>
-                             </div>
-                         </div>
-
-                         <!-- Card 3: Trending Score (Simulated Gauge) -->
-                         <div class="analytics-card" data-aos="fade-up" data-aos-delay="400">
-                              <h4>Weekly Trend Score</h4>
-                              <div class="chart-container simulated-gauge-chart">
-                                 <div class="gauge-wrap">
-                                      <div class="gauge-fill" id="gauge-fill-element" style="transform: rotate(0.5turn)"></div> <!-- JS will update -->
-                                      <div class="gauge-cover">
-                                           <span class="gauge-value" id="gauge-value-element">0%</span>
-                                           <span class="gauge-label">Trending</span>
-                                      </div>
-                                 </div>
-                                 <p class="chart-subtext">Based on recent activity.</p>
-                              </div>
-                         </div>
-
-                          <!-- Card 4: Release Year Trend (Simulated Area Chart) -->
-                         <div class="analytics-card large-card" data-aos="fade-up" data-aos-delay="250">
-                             <h4>Content Releases Over Time (Conceptual)</h4>
-                             <div class="chart-container simulated-area-chart">
-                                 <div class="area-chart-visual">
-                                      <svg viewBox="0 0 100 30" preserveAspectRatio="none">
-                                         <polyline fill="rgba(var(--primary-accent-rgb), 0.2)" stroke="var(--primary-accent)" stroke-width="0.5" points="0,25 10,20 20,22 30,15 40,18 50,12 60,16 70,10 80,14 90,8 100,12 100,30 0,30" />
-                                      </svg>
-                                 </div>
-                                  <div class="chart-axis-labels"><span>'20</span><span>'21</span><span>'22</span><span>'23</span><span>'24</span></div>
-                             </div>
-                         </div>
-
-                         <!-- Card 5: Popular Actors -->
-                         <div class="analytics-card" data-aos="fade-up" data-aos-delay="350">
-                             <h4>Most Popular Actors</h4>
-                             <div class="list-container scrollable-list" id="top-actors-list">
-                                 <!-- JS will populate this -->
-                                 <div class="loading-placeholder">Loading actors...</div>
-                             </div>
-                         </div>
-
-                          <!-- Card 6: Top Networks/Studios (Simulated Bar Chart) -->
-                          <div class="analytics-card" data-aos="fade-up" data-aos-delay="450">
-                             <h4>Top Production Networks (Sample)</h4>
-                             <div class="chart-container simulated-bar-chart" id="network-bar-chart">
-                                 <!-- JS will populate this -->
-                                 <div class="loading-placeholder">Loading networks...</div>
-                             </div>
-                         </div>
-
-                     </div> <!-- /.analytics-grid -->
-                 </div> <!-- /.container -->
-             </section>
-             <!-- ==================================== -->
-             <!-- ===== Analytics Dashboard END ===== -->
-             <!-- ==================================== -->
-
-             <!-- Available Everywhere Section -->
-             <section id="available-everywhere" class="section section-angled-top section-angled-bottom">
-                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
-                  <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
-                  <div class="container position-relative" style="z-index: 10;">
-                      <div class="row align-items-center g-5">
-                         <div class="col-lg-6 order-lg-2" data-aos="fade-left">
-                              <h2 class="mb-4">Your Universe, <span class="text-gradient">Everywhere</span>.</h2>
-                              <p class="lead mb-4">Access AuraStream seamlessly on your desktop, tablet, or mobile browser. Dedicated apps are launching soon!</p>
-                              <ul class="platform-list">
-                                  <li><i class="bi bi-display-fill"></i> Web Browser (Current Focus)</li>
-                                  <li><i class="bi bi-tablet-landscape-fill"></i> Tablet Responsive</li>
-                                  <li><i class="bi bi-apple"></i> Native iOS App <span class="coming-soon">Planned</span></li>
-                                  <li><i class="bi bi-android2"></i> Native Android App <span class="coming-soon">Planned</span></li>
-                                   <li><i class="bi bi-tv-fill"></i> TV App Support <span class="coming-soon">Future</span></li>
-                              </ul>
-                              <button type="button" class="btn btn-secondary-outline mt-3 conceptual-link" title="Platform Details (Concept)">
-                                  View Platform Roadmap
-                              </button>
+                      <div class="trailer-feature-container">
+                          <div class="trailer-text-content" data-aos="fade-right">
+                              <h2 class="mb-3">Featured Trailer</h2>
+                              <h3 id="trailer-feature-title"><span class="trailer-loading-placeholder">Loading Title...</span></h3>
+                              <p id="trailer-feature-desc"><span class="trailer-loading-placeholder">Loading description...</span></p>
+                              <button class="btn btn-secondary-outline conceptual-link" id="trailer-feature-more-info" disabled title="More Info (Concept)"><i class="bi bi-film me-2"></i> View Movie Details</button>
                           </div>
-                         <div class="col-lg-6 order-lg-1 text-center" data-aos="zoom-in-right">
-                             <div class="device-graphic-placeholder">
-                                <i class="bi bi-phone-stack"></i>
-                             </div>
-                         </div>
-                      </div>
-                  </div>
-             </section>
-
-             <!-- FAQ Section -->
-             <section id="faq" class="section section-angled-top section-angled-bottom">
-                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
-                  <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
-                  <div class="container position-relative" style="z-index: 10; max-width: 900px;"> <!-- Adjusted max-width -->
-                     <h2 class="text-center mb-5" data-aos="fade-up">Answers to Your <span class="text-gradient">Burning Questions</span></h2>
-                      <div class="accordion faq-accordion" id="faqAccordionLanding" data-aos="fade-up" data-aos-delay="100">
-                          <div class="accordion-item">
-                              <h3 class="accordion-header" id="faqH1">
-                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC1" aria-expanded="false" aria-controls="faqC1">What exactly IS AuraStream?</button>
-                              </h3>
-                              <div id="faqC1" class="accordion-collapse collapse" aria-labelledby="faqH1" data-bs-parent="#faqAccordionLanding">
-                                  <div class="accordion-body">AuraStream is your ultimate entertainment command center. It helps you discover movies and TV shows across various streaming services using real-time data, track what you've watched, manage your watchlist, and explore related content. Think of it as a super-powered TV guide and discovery tool.</div>
-                              </div>
-                          </div>
-                          <div class="accordion-item">
-                              <h3 class="accordion-header" id="faqH2">
-                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC2" aria-expanded="false" aria-controls="faqC2">Do I watch movies directly ON AuraStream?</button>
-                              </h3>
-                              <div id="faqC2" class="accordion-collapse collapse" aria-labelledby="faqH2" data-bs-parent="#faqAccordionLanding">
-                                  <div class="accordion-body">No, AuraStream itself doesn't host or stream video content due to legal and licensing reasons. We primarily focus on discovery and tracking. We provide information and potentially deep links (where available and permitted) to the actual streaming services where you can watch the content (like Netflix, Hulu, etc.), assuming you have a subscription.</div>
-                              </div>
-                          </div>
-                          <div class="accordion-item">
-                              <h3 class="accordion-header" id="faqH3">
-                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC3" aria-expanded="false" aria-controls="faqC3">Is AuraStream free to use?</button>
-                              </h3>
-                              <div id="faqC3" class="accordion-collapse collapse" aria-labelledby="faqH3" data-bs-parent="#faqAccordionLanding">
-                                  <div class="accordion-body">The core features presented on this landing page – discovery, tracking, watchlist management – are based on freely available APIs (like TMDb). This demonstration itself is free. Future development might include premium features, but the goal is to keep core discovery accessible.</div>
-                              </div>
-                          </div>
-                          <div class="accordion-item">
-                              <h3 class="accordion-header" id="faqH4">
-                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC4" aria-expanded="false" aria-controls="faqC4">What data sources power AuraStream?</button>
-                              </h3>
-                              <div id="faqC4" class="accordion-collapse collapse" aria-labelledby="faqH4" data-bs-parent="#faqAccordionLanding">
-                                  <div class="accordion-body">We primarily use The Movie Database (TMDb) API for movie/show metadata, posters, cast information, ratings, and trending data. This product uses the TMDb API but is not endorsed or certified by TMDb. All data usage complies with TMDb's terms of service.</div>
-                              </div>
-                          </div>
-                           <div class="accordion-item">
-                              <h3 class="accordion-header" id="faqH5">
-                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC5" aria-expanded="false" aria-controls="faqC5">Is the 'Community' feature active?</button>
-                              </h3>
-                              <div id="faqC5" class="accordion-collapse collapse" aria-labelledby="faqH5" data-bs-parent="#faqAccordionLanding">
-                                  <div class="accordion-body">The community features (user reviews, lists, following others) mentioned in the 'Features' section are conceptual for this landing page demonstration and are not currently implemented. Building a full community requires significant backend infrastructure.</div>
-                              </div>
+                          <div class="trailer-visual" data-aos="fade-left" data-aos-delay="200">
+                             <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" class="trailer-thumbnail-img" id="trailer-feature-thumbnail" alt="Trailer Thumbnail Loading...">
+                             <button class="btn btn-play trailer-play-button" id="trailer-feature-play-btn" aria-label="Play Featured Trailer" disabled><i class="bi bi-play-fill"></i></button>
                           </div>
                       </div>
-                      <p class="text-center mt-5 text-muted" data-aos="fade-up">Still curious? Check the project <a href="https://github.com/MEDELBOU3/AuraStream-Concept" target="_blank" rel="noopener noreferrer" class="text-gradient fw-bold">on GitHub</a>.</p>
-                  </div>
-             </section>
-
-             <!-- Final CTA Section -->
-             <section id="final-cta" class="section section-lg">
-                 <div class="container text-center" data-aos="zoom-in-up">
-                      <h2>Ready to <span class="text-gradient">Explore</span> Your Entertainment?</h2>
-                     <p class="lead"> Stop searching, start experiencing. Launch the AuraStream concept today for a smarter, more connected way to discover and enjoy the content you love. </p>
-                     <button type="button" class="btn btn-cta-final btn-lg" data-bs-toggle="modal" data-bs-target="#launchAppModal">
-                         Launch Concept App <i class="bi bi-rocket-takeoff-fill ms-2"></i>
-                      </button>
                  </div>
-             </section>
+            </section>
 
-         </main>
-     </div> <!-- /.landing-wrapper -->
-
-     <!-- Footer -->
-     <footer class="landing-footer">
-         <div class="container footer-content">
-              <div class="footer-column">
-                  <a class="navbar-brand-landing d-block mb-3" href="#"> <i class="bi bi-stars"></i> AuraStream </a>
-                  <p style="font-size: 0.85rem;">Your portal to the entertainment universe. Discover, track, and connect.</p>
-              </div>
-              <div class="footer-column">
-                  <h4>Quick Links</h4>
-                  <ul>
-                      <li><a href="#hero"><i class="bi bi-chevron-right"></i> Home</a></li>
-                      <li><a href="#content-showcase"><i class="bi bi-chevron-right"></i> Discover</a></li>
-                      <li><a href="#features"><i class="bi bi-chevron-right"></i> Features</a></li>
-                      <li><a href="#gallery-section"><i class="bi bi-chevron-right"></i> Gallery</a></li>
-                      <li><a href="#faq"><i class="bi bi-chevron-right"></i> FAQ</a></li>
-                  </ul>
-              </div>
-              <div class="footer-column">
-                  <h4>Explore (Conceptual)</h4>
-                  <ul>
-                      <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link"><i class="bi bi-chevron-right"></i> Movies</button></li>
-                      <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link"><i class="bi bi-chevron-right"></i> TV Shows</button></li>
-                      <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link"><i class="bi bi-chevron-right"></i> Community Hub</button></li>
-                      <li><button type="button" class="btn btn-link p-0 conceptual-link footer-link"><i class="bi bi-chevron-right"></i> Blog / News</button></li>
-                  </ul>
-              </div>
-              <div class="footer-column">
-                  <h4>Connect</h4>
-                  <div class="footer-social">
-                      <a href="https://github.com/MEDELBOU3/SM4movies.v2.0.0/tree/main" class="social-icon" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="bi bi-github"></i></a>
-                      <a href="#" class="social-icon conceptual-link" target="_blank" rel="noopener noreferrer" title="Twitter / X"><i class="bi bi-twitter-x"></i></a>
-                      <a href="#" class="social-icon conceptual-link" target="_blank" rel="noopener noreferrer" title="Discord"><i class="bi bi-discord"></i></a>
-                  </div>
-                  <p style="margin-top: 1rem; font-size: 0.85rem;">Follow the project's development.</p>
-              </div>
-         </div>
-          <div class="footer-bottom">
-               <p>© <span id="copy-year"></span> AuraStream Concept by MEDELBOU3. All Rights Reserved.</p>
-               <p>Movie data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDb</a>. This product uses the TMDb API but is not endorsed or certified by TMDb.</p>
-               <p class="mb-2">
-                    <a href="privacy-policy.html" class="btn btn-link p-0  footer-link-bottom">Privacy Policy</a>
-                    <span class="mx-2">|</span>
-                     <a href="terms-of-service.html" class="btn btn-link p-0 footer-link-bottom">Terms of Service</a>
-                </p>
-          </div>
-      </footer>
-
-     <!-- Launch App Modal -->
-     <div class="modal fade" id="launchAppModal" tabindex="-1" aria-labelledby="launchAppModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="launchAppModalLabel"><i class="bi bi-stars me-2"></i> Enter AuraStream</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="auth-modal-close-button"></button>
+            <!-- CSS 3D Gallery Section -->
+            <section id="gallery-section" class="section section-angled-top section-angled-bottom">
+                <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                <div class="galaxy-bg"></div>
+                <div class="container">
+                    <div class="section-heading" data-aos="fade-up">
+                        <h2>Experience <span class="text-gradient">AuraStream</span> UI</h2>
+                        <div class="glow-line"></div>
+                        <p class="lead">Explore our futuristic interface with immersive visuals and seamless integration across all your content.</p>
+                    </div>
+                    <div class="gallery-3d-container" data-aos="fade-up" data-aos-delay="200">
+                        <div class="gallery-3d-stage" id="galleryStage">
+                            <div class="gallery-card" data-index="0" data-name="Home Interface"><div class="card-front"><img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/interface.png?raw=true" alt="AuraStream Home Interface" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">Dashboard</span><h3 class="card-title">Home Interface</h3><p class="card-description">Your personalized hub for discovering content.</p></div></div></div>
+                            <div class="gallery-card" data-index="1" data-name="Smart Recommendations"><div class="card-front"><img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/ai-powered.png?raw=true" alt="AuraStream Recommendations" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">AI Powered</span><h3 class="card-title">Smart Suggestions</h3><p class="card-description">AI algorithms suggest perfect content matches.</p></div></div></div>
+                            <div class="gallery-card" data-index="2" data-name="Watchlist Feature"><div class="card-front"><img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/watchlist.png?raw=true" alt="AuraStream Watchlist" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">Organization</span><h3 class="card-title">Watchlist</h3><p class="card-description">Keep track of everything you want to watch easily.</p></div></div></div>
+                            <div class="gallery-card" data-index="3" data-name="Detailed View"><div class="card-front"><img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/details.png?raw=true" alt="AuraStream Detail View" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">Info</span><h3 class="card-title">Detailed View</h3><p class="card-description">Get all the info, cast, crew, and streaming options.</p></div></div></div>
+                            <div class="gallery-card" data-index="4" data-name="Community Hub"><div class="card-front"><img src="https://raw.githubusercontent.com/MEDELBOU3/SM4movies.v2.0.0/bfa85dcc23eb2e81f159934bfe7ee1f993d05889/images/community.svg" alt="AuraStream Community Hub" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">Connect</span><h3 class="card-title">Community Hub</h3><p class="card-description">Connect with fans, share reviews, and discuss.</p></div></div></div>
+                        </div>
+                    </div>
+                    <div class="gallery-nav" data-aos="fade-up" data-aos-delay="300">
+                        <button class="nav-btn prev-btn" id="prevBtn" aria-label="Previous Gallery Item"><i class="bi bi-chevron-left"></i></button>
+                        <div class="gallery-dots" id="galleryDots">
+                            <button class="dot active" data-index="0" aria-label="Go to slide 1"></button><button class="dot" data-index="1" aria-label="Go to slide 2"></button><button class="dot" data-index="2" aria-label="Go to slide 3"></button><button class="dot" data-index="3" aria-label="Go to slide 4"></button><button class="dot" data-index="4" aria-label="Go to slide 5"></button>
+                        </div>
+                        <button class="nav-btn next-btn" id="nextBtn" aria-label="Next Gallery Item"><i class="bi bi-chevron-right"></i></button>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <!-- Nav tabs -->
-                    <ul class="nav nav-pills nav-fill mb-3" id="authTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-panel" type="button" role="tab" aria-controls="login-panel" aria-selected="true">Login</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup-panel" type="button" role="tab" aria-controls="signup-panel" aria-selected="false">Sign Up</button>
-                        </li>
-                    </ul>
-  
-                    <!-- Tab panes -->
-                    <div class="tab-content" id="authTabsContent">
-                        <!-- Login Panel (Unchanged) -->
-                        <div class="tab-pane fade show active" id="login-panel" role="tabpanel" aria-labelledby="login-tab">
-                            <form id="login-form">
-                                <div class="mb-3">
-                                    <label for="login-email" class="form-label">Email address</label>
-                                    <input type="email" class="form-control form-control-lg" id="login-email" placeholder="name@example.com" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="login-password" class="form-label">Password</label>
-                                    <input type="password" class="form-control form-control-lg" id="login-password" placeholder="Password" required>
-                                </div>
-                                <div class="d-grid mb-3">
-                                     <button type="submit" class="btn btn-primary-gradient btn-lg">Login</button>
-                                </div>
-                            </form>
-                            <div class="text-center text-muted my-3">OR</div>
-                            <div class="d-grid">
-                                <button type="button" class="btn btn-light btn-lg border" id="google-login-button">
-                                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Login with Google
-                                </button>
+                <div class="fullscreen-modal" id="fullscreenModal"><div class="modal-content"><button class="modal-close" id="modalClose" aria-label="Close fullscreen image"><i class="bi bi-x"></i></button><div class="modal-image-container"><img src="" alt="Gallery Image Fullscreen" class="modal-image" id="modalImageFs"></div><div class="modal-caption" id="modalCaptionFs">Image Caption</div></div></div>
+            </section>
+            
+            <!-- Analytics Dashboard Section -->
+            <section id="analytics-dashboard" class="section section-angled-top section-angled-bottom">
+                <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                <div class="container position-relative" style="z-index: 10;">
+                    <h2 class="text-center mb-4" data-aos="fade-up">AuraStream <span class="text-gradient">Insights</span></h2>
+                    <p class="lead text-center mb-5 pb-3" data-aos="fade-up" data-aos-delay="100">Explore the data behind the entertainment universe. See what's trending, popular, and highly-rated.</p>
+                    <div class="analytics-grid">
+                        <div class="analytics-card kpi-card" data-aos="fade-up" data-aos-delay="200">
+                            <h4>Platform Overview</h4>
+                            <div class="kpi-grid">
+                                <div class="kpi-item"><span class="kpi-value" id="kpi-total-titles" data-target="1200000">0</span><span class="kpi-label">Titles Tracked</span></div>
+                                <div class="kpi-item"><span class="kpi-value" id="kpi-active-users" data-target="65000">0</span><span class="kpi-label">Active Users</span></div>
+                                <div class="kpi-item"><span class="kpi-value" id="kpi-avg-rating" data-target="8.2">0.0</span><span class="kpi-label">Avg. Rating</span></div>
+                                <div class="kpi-item"><span class="kpi-value" id="kpi-community-posts" data-target="12000">0</span><span class="kpi-label">Discussions</span></div>
                             </div>
                         </div>
-  
-                        <!-- Sign Up Panel -- MODIFIED -->
-                        <div class="tab-pane fade" id="signup-panel" role="tabpanel" aria-labelledby="signup-tab">
-                             <form id="signup-form">
-                                <!-- ADDED: Full Name -->
-                                <div class="mb-3">
-                                    <label for="signup-name" class="form-label">Full Name</label>
-                                    <input type="text" class="form-control form-control-lg" id="signup-name" placeholder="Your Full Name" required>
-                                </div>
-                                <!-- ADDED: Age -->
-                                <div class="mb-3">
-                                    <label for="signup-age" class="form-label">Age</label>
-                                    <input type="number" class="form-control form-control-lg" id="signup-age" placeholder="Your Age" required min="1"> <!-- Added min="1" for basic validation -->
-                                </div>
-  
-                                <div class="mb-3">
-                                    <label for="signup-email" class="form-label">Email address</label>
-                                    <input type="email" class="form-control form-control-lg" id="signup-email" placeholder="name@example.com" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="signup-password" class="form-label">Password</label>
-                                    <input type="password" class="form-control form-control-lg" id="signup-password" placeholder="Choose a strong password" required minlength="6">
-                                     <div class="form-text">Minimum 6 characters</div>
-                                </div>
-  
-                                 <!-- ADDED: Profile Picture Upload -->
-                                 <div class="mb-3">
-                                     <label for="signup-avatar" class="form-label">Profile Picture (Optional)</label>
-                                     <input type="file" class="form-control form-control-lg" id="signup-avatar" accept="image/png, image/jpeg, image/gif"> <!-- Accept common image types -->
-                                     <div class="form-text">Upload an image for your profile avatar.</div>
-                                 </div>
-  
-                                <div class="d-grid mb-3">
-                                     <button type="submit" class="btn btn-success btn-lg">Sign Up</button>
-                                </div>
-                            </form>
-                             <div class="text-center text-muted my-3">OR</div>
-                             <div class="d-grid">
-                                 <button type="button" class="btn btn-light btn-lg border" id="google-signup-button">
-                                     <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Sign Up with Google
-                                 </button>
-                             </div>
+                        <div class="analytics-card" data-aos="fade-up" data-aos-delay="300">
+                            <h4>Popular Genres (Movies)</h4>
+                            <div class="chart-container simulated-donut-chart"><div class="donut-chart-visual"></div><ul class="chart-legend"><li><span class="legend-color" style="background-color: var(--primary-accent);"></span>Action</li><li><span class="legend-color" style="background-color: var(--secondary-accent);"></span>Sci-Fi</li><li><span class="legend-color" style="background-color: var(--tertiary-accent);"></span>Comedy</li><li><span class="legend-color" style="background-color: #ffc107;"></span>Drama</li><li><span class="legend-color" style="background-color: #4caf50;"></span>Other</li></ul></div>
+                        </div>
+                        <div class="analytics-card" data-aos="fade-up" data-aos-delay="400">
+                             <h4>Weekly Trend Score</h4>
+                             <div class="chart-container simulated-gauge-chart"><div class="gauge-wrap"><div class="gauge-fill" id="gauge-fill-element"></div><div class="gauge-cover"><span class="gauge-value" id="gauge-value-element">0%</span><span class="gauge-label">Trending</span></div></div><p class="chart-subtext">Based on recent activity.</p></div>
+                        </div>
+                        <div class="analytics-card large-card" data-aos="fade-up" data-aos-delay="250">
+                            <h4>Content Releases Over Time (Conceptual)</h4>
+                            <div class="chart-container simulated-area-chart"><div class="area-chart-visual"><svg viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="rgba(var(--primary-accent-rgb), 0.2)" stroke="var(--primary-accent)" stroke-width="0.5" points="0,25 10,20 20,22 30,15 40,18 50,12 60,16 70,10 80,14 90,8 100,12 100,30 0,30" /></svg></div><div class="chart-axis-labels"><span>'20</span><span>'21</span><span>'22</span><span>'23</span><span>'24</span></div></div>
+                        </div>
+                        <div class="analytics-card" data-aos="fade-up" data-aos-delay="350">
+                            <h4>Most Popular Actors</h4>
+                            <div class="list-container scrollable-list" id="top-actors-list"><div class="loading-placeholder">Loading actors...</div></div>
+                        </div>
+                         <div class="analytics-card" data-aos="fade-up" data-aos-delay="450">
+                            <h4>Top Production Networks (Sample)</h4>
+                            <div class="chart-container simulated-bar-chart" id="network-bar-chart"><div class="loading-placeholder">Loading networks...</div></div>
                         </div>
                     </div>
-                     <!-- Error Message Area -->
-                     <div id="auth-error-message" class="alert alert-danger mt-3 d-none" role="alert"></div>
-                </div> <!-- /modal-body -->
-            </div>
-        </div>
-    </div>
-  
-     <!-- Trailer Modal -->
-     <div class="modal fade" id="trailer-modal" style="z-index: 9999;" tabindex="-1" aria-labelledby="trailerModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-xl">
-          <div class="modal-content">
-              <button type="button" class="modal-close-video" data-bs-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button>
-              <div class="modal-body">
-                  <div class="video-container">
-                      <!-- The ID here is also important -->
-                      <iframe id="trailer-iframe" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                  </div>
-              </div>
-          </div>
-      </div>
-    </div>
+                </div>
+            </section>
 
-        <!-- Movie/TV Detail Modal -->
-        <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="detailModalLabel">
-                            <span id="detail-title-placeholder">Loading Details...</span>
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="detail-modal-body">
-                        <div id="detail-loading-spinner" class="text-center py-5">
-                            <div class="loading-spinner large-spinner mx-auto" style="width: 40px; height: 40px;"></div>
-                            <p class="mt-2 text-muted">Fetching details...</p>
+            <!-- Available Everywhere Section -->
+            <section id="available-everywhere" class="section section-angled-top section-angled-bottom">
+                 <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                 <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                 <div class="container position-relative" style="z-index: 10;">
+                     <div class="row align-items-center g-5">
+                        <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                             <h2 class="mb-4">Your Universe, <span class="text-gradient">Everywhere</span>.</h2>
+                             <p class="lead mb-4">Access AuraStream seamlessly on your desktop, tablet, or mobile browser. Dedicated apps are launching soon!</p>
+                             <ul class="platform-list">
+                                 <li><i class="bi bi-display-fill"></i> Web Browser (Current Focus)</li>
+                                 <li><i class="bi bi-tablet-landscape-fill"></i> Tablet Responsive</li>
+                                 <li><i class="bi bi-apple"></i> Native iOS App <span class="coming-soon">Planned</span></li>
+                                 <li><i class="bi bi-android2"></i> Native Android App <span class="coming-soon">Planned</span></li>
+                                  <li><i class="bi bi-tv-fill"></i> TV App Support <span class="coming-soon">Future</span></li>
+                             </ul>
+                             <button type="button" class="btn btn-secondary-outline mt-3 conceptual-link" title="Platform Details (Concept)">View Platform Roadmap</button>
+                         </div>
+                        <div class="col-lg-6 order-lg-1 text-center" data-aos="zoom-in-right">
+                            <div class="device-graphic-placeholder"></div>
                         </div>
-
-                        <div id="detail-content-area" class="d-none">
-                            <div class="row g-4">
-                                <div class="col-lg-4 text-center">
-                                    <img id="detail-poster" src="" alt="Poster" class="img-fluid rounded mb-3" style="max-height: 500px; background-color: var(--bg-tertiary);">
-                                    <button id="detail-trailer-button" class="btn btn-primary-gradient btn-sm mb-2 w-100" disabled>
-                                        <i class="bi bi-play-circle-fill me-1"></i> Watch Trailer
-                                    </button>
-                                    <div id="detail-providers-container" class="mt-3 text-start small">
-                                    </div>
-                                </div>
-    
-                                <div class="col-lg-8">
-                                    <h3 id="detail-title" class="mb-1"></h3>
-                                    <p id="detail-tagline" class="text-muted fst-italic mb-3"></p>
-    
-                                    <div class="detail-meta-info">
-                                        <span id="detail-rating"><i class="bi bi-star-fill text-warning me-1"></i> N/A</span>
-                                        <span id="detail-release-date"><i class="bi bi-calendar3 me-1"></i> N/A</span>
-                                        <span id="detail-runtime-seasons"><i class="bi bi-clock-history me-1"></i> N/A</span>
-                                    </div>
-                                   
-    
-                                    <div id="detail-genres" class="mb-3">
-                                    </div>
-    
-                                    <h4>Overview</h4>
-                                    <p id="detail-overview" style="line-height: 1.8;"></p>
-    
-                                    <div id="detail-cast-section" class="mt-4">
-                                        <h4>Top Cast</h4>
-                                        <div id="detail-cast-container" class="d-flex flex-wrap gap-3">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-    
-                            <div id="detail-recommendations-section" class="mt-5">
-                                <h4 class="mb-3">You Might Also Like</h4>
-                                <div class="horizontal-scroll-wrapper simplified-shelf">
-                                    <button class="btn detail-scroll-btn prev disabled" aria-label="Scroll Previous Recommendations" aria-controls="detail-recommendations-container" disabled>
-                                        <i class="bi bi-chevron-left"></i>
-                                    </button>
-                                    <div id="detail-recommendations-container" class="horizontal-scroll-container">
-
-                                        <div class="loading-shelf-text"><div class="loading-spinner"></div> Loading recommendations...</div>
-                                    </div>
-                                    <button class="btn detail-scroll-btn next" aria-label="Scroll Next Recommendations" aria-controls="detail-recommendations-container">
-                                        <i class="bi bi-chevron-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-              
-                     <div class="modal-footer">
-                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                      </div>
+                 </div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section id="faq" class="section section-angled-top section-angled-bottom">
+                 <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                 <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                 <div class="container position-relative" style="z-index: 10; max-width: 900px;">
+                    <h2 class="text-center mb-5" data-aos="fade-up">Answers to Your <span class="text-gradient">Burning Questions</span></h2>
+                     <div class="accordion faq-accordion" id="faqAccordionLanding" data-aos="fade-up" data-aos-delay="100">
+                         <div class="accordion-item"><h3 class="accordion-header" id="faqH1"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC1" aria-expanded="false" aria-controls="faqC1">What exactly IS AuraStream?</button></h3><div id="faqC1" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLanding"><div class="accordion-body">AuraStream is your ultimate entertainment command center. It helps you discover movies and TV shows across various streaming services using real-time data, track what you've watched, manage your watchlist, and explore related content. Think of it as a super-powered TV guide and discovery tool.</div></div></div>
+                         <div class="accordion-item"><h3 class="accordion-header" id="faqH2"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC2" aria-expanded="false" aria-controls="faqC2">Do I watch movies directly ON AuraStream?</button></h3><div id="faqC2" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLanding"><div class="accordion-body">No, AuraStream itself doesn't host or stream video content. We primarily focus on discovery and tracking. We provide information and links to the actual streaming services where you can watch the content, assuming you have a subscription.</div></div></div>
+                         <div class="accordion-item"><h3 class="accordion-header" id="faqH3"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC3" aria-expanded="false" aria-controls="faqC3">Is AuraStream free to use?</button></h3><div id="faqC3" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLanding"><div class="accordion-body">Yes, the core features of this concept are free, utilizing the publicly available TMDb API. Future development might include premium features, but the goal is to keep core discovery accessible.</div></div></div>
+                         <div class="accordion-item"><h3 class="accordion-header" id="faqH4"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC4" aria-expanded="false" aria-controls="faqC4">What data sources power AuraStream?</button></h3><div id="faqC4" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLanding"><div class="accordion-body">We primarily use The Movie Database (TMDb) API for movie/show metadata, posters, and ratings. This product uses the TMDb API but is not endorsed or certified by TMDb.</div></div></div>
+                         <div class="accordion-item"><h3 class="accordion-header" id="faqH5"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqC5" aria-expanded="false" aria-controls="faqC5">Is the 'Community' feature active?</button></h3><div id="faqC5" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLanding"><div class="accordion-body">The community features are conceptual for this landing page demonstration and are not currently implemented. Building a full community requires significant backend infrastructure.</div></div></div>
+                     </div>
+                     <p class="text-center mt-5 text-muted" data-aos="fade-up">Still curious? Check the project <a href="https://github.com/MEDELBOU3/AuraStream-Concept" target="_blank" rel="noopener noreferrer" class="text-gradient fw-bold">on GitHub</a>.</p>
+                 </div>
+            </section>
+
+            <!-- Final CTA Section -->
+            <section id="final-cta" class="section section-lg">
+                <div class="container text-center" data-aos="zoom-in-up">
+                     <h2>Ready to <span class="text-gradient">Explore</span> Your Entertainment?</h2>
+                    <p class="lead"> Stop searching, start experiencing. Launch the AuraStream concept today for a smarter, more connected way to discover and enjoy the content you love. </p>
+                    <button type="button" class="btn btn-cta-final btn-lg" data-bs-toggle="modal" data-bs-target="#launchAppModal">
+                        Launch Concept App <i class="bi bi-rocket-takeoff-fill ms-2"></i>
+                     </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+        <!-- ================================== -->
+    <!-- ===== NEW & IMPROVED FOOTER ===== -->
+    <!-- ================================== -->
+    <footer class="landing-footer">
+        <div class="container">
+            <div class="footer-main">
+                <!-- Column 1: Brand & Newsletter -->
+                <div class="footer-column">
+                    <a class="navbar-brand-landing text-gradient d-block mb-3" href="#">AuraStream</a>
+                    <p class="footer-tagline">Your portal to the entertainment universe. Discover, track, and connect.</p>
+                    <h4 class="mt-4">Stay Updated</h4>
+                    <p>Get the latest news and feature releases straight to your inbox.</p>
+                    <form class="footer-newsletter-form" id="newsletter-form">
+                        <input type="email" placeholder="Enter your email" required aria-label="Email for newsletter">
+                        <button type="submit" aria-label="Subscribe to newsletter"><i class="bi bi-arrow-right"></i></button>
+                    </form>
+                </div>
+                <!-- Column 2: Quick Links -->
+                <div class="footer-column">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#hero">Home</a></li>
+                        <li><a href="#content-showcase">Discover</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#gallery-section">Gallery</a></li>
+                        <li><a href="#analytics-dashboard">Insights</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <!-- Column 3: Explore -->
+                <div class="footer-column">
+                    <h4>Explore (Conceptual)</h4>
+                    <ul>
+                        <li><a href="#" class="conceptual-link">Movies Database</a></li>
+                        <li><a href="#" class="conceptual-link">TV Shows Hub</a></li>
+                        <li><a href="#" class="conceptual-link">Community Forums</a></li>
+                        <li><a href="#" class="conceptual-link">Developer API</a></li>
+                        <li><a href="#" class="conceptual-link">Blog / News</a></li>
+                    </ul>
+                </div>
+                <!-- Column 4: Connect -->
+                <div class="footer-column">
+                    <h4>Connect</h4>
+                    <p>Follow the project's development and join the community.</p>
+                    <div class="footer-social">
+                        <a href="https://github.com/MEDELBOU3/AuraStream-Concept" class="social-icon" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="bi bi-github"></i></a>
+                        <a href="#" class="social-icon conceptual-link" title="Twitter / X"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="social-icon conceptual-link" title="Discord"><i class="bi bi-discord"></i></a>
+                    </div>
                 </div>
             </div>
+            <div class="footer-bottom">
+                 <p>© <span id="copy-year"></span> AuraStream Concept by MEDELBOU3. All Rights Reserved.</p>
+                 <p class="mb-2">Movie data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDb</a>. This product uses the TMDb API but is not endorsed or certified by TMDb.</p>
+                 <p>
+                      <a href="privacy-policy.html" class="footer-link-bottom conceptual-link">Privacy Policy</a>
+                      <span class="mx-2">|</span>
+                       <a href="terms-of-service.html" class="footer-link-bottom conceptual-link">Terms of Service</a>
+                  </p>
+            </div>
         </div>
+    </footer>
 
-     <!-- === VENDOR LIBRARIES (Ensure these load) === -->
-     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-     <script defer src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-      <script defer src="https://unpkg.com/bs5-toast@1.0.0/dist/bs5-toast.min.js"></script>
-     <!-- THREE.js (Load synchronously as it's needed early for background) -->
-     
-     <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <!-- ===== NEW: BACK TO TOP BUTTON ===== -->
+    <a href="#hero" id="back-to-top" class="back-to-top-btn" aria-label="Scroll to top">
+        <i class="bi bi-arrow-up"></i>
+    </a>
+
+    <!-- Launch App Modal -->
+    <div class="modal fade" id="launchAppModal" tabindex="-1" aria-labelledby="launchAppModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="launchAppModalLabel">Enter AuraStream</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><ul class="nav nav-pills nav-fill mb-3" id="authTabs" role="tablist"><li class="nav-item" role="presentation"><button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-panel" type="button" role="tab">Login</button></li><li class="nav-item" role="presentation"><button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup-panel" type="button" role="tab">Sign Up</button></li></ul><div class="tab-content" id="authTabsContent"><div class="tab-pane fade show active" id="login-panel" role="tabpanel"><form id="login-form"><div class="mb-3"><label for="login-email" class="form-label">Email address</label><input type="email" class="form-control form-control-lg" id="login-email" required></div><div class="mb-3"><label for="login-password" class="form-label">Password</label><input type="password" class="form-control form-control-lg" id="login-password" required></div><div class="d-grid mb-3"><button type="submit" class="btn btn-primary-gradient btn-lg">Login</button></div></form><div class="text-center text-muted my-3">OR</div><div class="d-grid"><button type="button" class="btn btn-light btn-lg border" id="google-login-button"><img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Login with Google</button></div></div><div class="tab-pane fade" id="signup-panel" role="tabpanel"><form id="signup-form"><div class="mb-3"><label for="signup-name" class="form-label">Full Name</label><input type="text" class="form-control form-control-lg" id="signup-name" required></div><div class="mb-3"><label for="signup-age" class="form-label">Age</label><input type="number" class="form-control form-control-lg" id="signup-age" required min="1"></div><div class="mb-3"><label for="signup-email" class="form-label">Email address</label><input type="email" class="form-control form-control-lg" id="signup-email" required></div><div class="mb-3"><label for="signup-password" class="form-label">Password</label><input type="password" class="form-control form-control-lg" id="signup-password" required minlength="6"><div class="form-text">Minimum 6 characters</div></div><div class="mb-3"><label for="signup-avatar" class="form-label">Profile Picture (Optional)</label><input type="file" class="form-control form-control-lg" id="signup-avatar" accept="image/png, image/jpeg, image/gif"></div><div class="d-grid mb-3"><button type="submit" class="btn btn-success btn-lg">Sign Up</button></div></form><div class="text-center text-muted my-3">OR</div><div class="d-grid"><button type="button" class="btn btn-light btn-lg border" id="google-signup-button"><img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" width="20" height="20" class="me-2"> Sign Up with Google</button></div></div></div><div id="auth-error-message" class="alert alert-danger mt-3 d-none" role="alert"></div></div></div></div></div>
+
+    <!-- Trailer Modal -->
+    <div class="modal fade" id="trailer-modal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-xl"><div class="modal-content"><button type="button" class="modal-close-video" data-bs-dismiss="modal" aria-label="Close"><i class="bi bi-x-lg"></i></button><div class="modal-body"><div class="video-container"><iframe id="trailer-iframe" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div></div></div></div></div>
  
-     <!-- === FIREBASE SDKs === -->
-     <!-- Replace with the latest version numbers from the Firebase docs if needed -->
-     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <!-- VENDOR LIBRARIES -->
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script defer src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script defer src="https://unpkg.com/bs5-toast@1.0.0/dist/bs5-toast.min.js"></script>
 
-    <!-- ADD THESE FOR NEW FEATURES -->
+    <!-- FIREBASE SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
-   
-    <!-- Firebase Core -->
-<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-<!-- Firebase Services -->
-<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script> <!-- For Image Upload -->
-<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script> <!-- For Age Storage -->
-
-
-    <!-- Enhanced Landing Page Application JS -->
+    <!-- Main Application Script -->
     <script src="app.js"></script>
-    <script src="js/phone.js"></script>
 </body>
 </html>
