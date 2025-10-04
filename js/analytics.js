@@ -42,7 +42,7 @@ const ChartColors = {
     }
 };
 
-        // --- NEW: Favorites Module ---
+/*
 const Favorites = {
     STORAGE_KEY: 'auraStreamFavorites',
     _list: [], // Internal cache
@@ -130,8 +130,71 @@ const Favorites = {
     getFavorites: () => {
         return Favorites._list;
     }
-};
+};*/
 
+// --- NEW MODULE: Favorites ---
+const Favorites = {
+    STORAGE_KEY: 'auraStreamFavorites',
+    load: () => { 
+        try { 
+            const d = localStorage.getItem(Favorites.STORAGE_KEY); 
+            State.favorites = d ? JSON.parse(d) : []; 
+            // Also ensure Analytics can see the current favorites immediately
+            Analytics.recalculateStatsFromFavorites(); 
+        } catch (e) { 
+            console.error("Favorites load failed:", e); 
+            State.favorites = []; 
+            localStorage.removeItem(Favorites.STORAGE_KEY); 
+        } 
+    },
+    save: () => { 
+        try { 
+            localStorage.setItem(Favorites.STORAGE_KEY, JSON.stringify(State.favorites)); 
+        } catch (e) { 
+            console.error("Favorites save failed:", e); 
+        } 
+    },
+    add: async (d) => { 
+    if (!d?.id || !d?.type || Favorites.isFavorite(d.id, d.type)) return false; 
+    const i = { 
+        id: d.id, 
+        type: d.type, 
+        title: d.title || d.name || 'N/A', 
+        poster_path: d.poster_path, 
+        vote_average: d.vote_average,
+        genre_ids: d.genre_ids || [], 
+        dateAdded: new Date().getTime()
+    }; 
+    State.favorites.push(i); 
+    Favorites.save(); 
+    // Ensure Analytics is defined before calling it
+    if (typeof Analytics !== 'undefined' && Analytics.updateStats) {
+         Analytics.updateStats('add_favorite', i); 
+    }
+    Utils.showToast(`${i.title} added to favorites!`, "success"); 
+    return true; 
+},
+remove: async (id, t) => { 
+    const l = State.favorites.length; 
+    const i = parseInt(id); 
+    const itemToRemove = State.favorites.find(d => d.id === i && d.type === t);
+    State.favorites = State.favorites.filter(d => !(d.id === i && d.type === t)); 
+    if (State.favorites.length < l) { 
+        Favorites.save(); 
+        if (itemToRemove && typeof Analytics !== 'undefined' && Analytics.updateStats) {
+             Analytics.updateStats('remove_favorite', itemToRemove);
+        }
+        Utils.showToast("Item removed from favorites.", "info"); 
+        return true; 
+    } 
+    return false; 
+},
+    isFavorite: (id, t) => { 
+        const i = parseInt(id); 
+        return State.favorites.some(d => d.id === i && d.type === t); 
+    },
+    getList: () => State.favorites // Getter function
+};
 
         // --- NEW: Analytics Module ---
 const Analytics = {
