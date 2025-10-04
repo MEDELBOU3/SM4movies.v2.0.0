@@ -136,6 +136,7 @@
                             <li><a class="dropdown-item" href="#profile"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
                             <li><a class="dropdown-item" href="#account-settings"><i class="bi bi-gear-fill me-2"></i>Account Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#notifications"><i class="bi bi-bell-fill me-2"></i>My Notifications</a></li> <!-- NEW LINE -->
                             <li><hr class="dropdown-divider"></li>
                             <li>
@@ -283,34 +284,14 @@
                 </div>
             </section>
 
-            <!-- Notifications View -->
-<section id="notifications-view" class="view content-wrapper">
-    <div class="container">
-        <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
-        <h1 class="display-5 mb-4 text-white">My Notifications</h1>
-
-        <div class="alert alert-info small" role="alert">
-            <i class="bi bi-info-circle-fill me-2"></i> This page lists your active notification subscriptions. Actual push notifications rely on browser settings and a backend service.
-        </div>
-
-        <div id="notification-subscriptions-list" class="mt-4">
-            <!-- Notification items will be loaded here -->
-            <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
-        </div>
-
-        <div class="text-center mt-5">
-            <button id="request-notification-permission-btn" class="btn btn-primary btn-lg"><i class="bi bi-bell-fill me-2"></i> Enable Browser Notifications</button>
-            <p id="notification-permission-status" class="text-muted small mt-2">Checking permission...</p>
-        </div>
-    </div>
-</section>
+          
 
             <!-- PROFILE VIEW -->
-<section id="profile-view" class="view content-wrapper">
-    <div class="container">
-        <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+            <section id="profile-view" class="view content-wrapper">
+                <div class="container">
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
 
-        <h1 class="display-5 mb-4 text-white">My Profile</h1>
+                    <h1 class="display-5 mb-4 text-white">My Profile</h1>
 
         <div id="profile-content" class="row g-4">
             <!-- User Info & Account Management (Left Column) -->
@@ -384,6 +365,47 @@
         </div>
     </div>
 </section>
+
+              <!-- ACCOUNT SETTINGS VIEW -->
+            <section id="account-settings-view" class="view content-wrapper">
+    <div class="container">
+        <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+        <h1 class="display-5 mb-4 text-white">Account Settings</h1>
+        
+        <!-- Spinner is visible initially -->
+        <div id="settings-loading-spinner" class="loading-spinner vh-50">
+            <div class="spinner-border text-primary spinner-border-lg" role="status"></div>
+        </div>
+
+        <!-- CONTENT WRAPPER: Remove the redundant inline style="display: none;" -->
+        <div id="settings-content-wrapper" class="row g-4 d-none">
+            <!-- Settings content loaded dynamically by JS -->
+        </div>
+    </div>
+            </section>
+
+
+            <!-- Notifications View -->
+            <section id="notifications-view" class="view content-wrapper">
+                <div class="container">
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                    <h1 class="display-5 mb-4 text-white">My Notifications</h1>
+
+                    <div class="alert alert-info small" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i> This page lists your active notification subscriptions. Actual push notifications rely on browser settings and a backend service.
+                    </div>
+
+                    <div id="notification-subscriptions-list" class="mt-4">
+                        <!-- Notification items will be loaded here -->
+                        <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <button id="request-notification-permission-btn" class="btn btn-primary btn-lg"><i class="bi bi-bell-fill me-2"></i> Enable Browser Notifications</button>
+                        <p id="notification-permission-status" class="text-muted small mt-2">Checking permission...</p>
+                    </div>
+                </div>
+            </section>
 
             <!-- NETWORK RESULTS VIEW -->
             <section id="network-results-view" class="view content-wrapper">
@@ -520,12 +542,6 @@
             <section>
                 <div id="analytics-view" class="view container py-5" style="display: none;">
                     <h1 class="mb-4 text-gradient">Your Favorites Analytics</h1>
-                    <section class="details-section mt-5">
-                        <h2 class="details-section-title">Your Achievements</h2>
-                        <div id="achievements-grid" class="achievements-grid">
-                            <!-- Achievements will be rendered here by JS -->
-                        </div>
-                    </section>
                     <div id="analytics-content" class="row g-4">
                         <!-- Content Loaded by JS -->
                         <div class="col-12 text-center py-5">
@@ -534,6 +550,12 @@
                             </div>
                         </div>
                     </div>
+                     <section class="details-section mt-5">
+                        <h2 class="details-section-title">Your Achievements</h2>
+                        <div id="achievements-grid" class="achievements-grid">
+                            <!-- Achievements will be rendered here by JS -->
+                        </div>
+                    </section>
                 </div>
             </section>
              <!-- ====================================================== -->
@@ -619,35 +641,7 @@
 
         
 
-        <!-- Modal for Creating New Thread (Bootstrap) -->
-        <div class="modal fade" id="createThreadModal" tabindex="-1" aria-labelledby="createThreadModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content bg-dark text-light">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="createThreadModalLabel">Create New Discussion Thread</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="create-thread-form">
-                            <div class="mb-3">
-                                <label for="threadTitle" class="form-label">Thread Title</label>
-                                <input type="text" class="form-control form-control-dark" id="threadTitle" required maxlength="150">
-                            </div>
-                            <div class="mb-3">
-                                <label for="threadFirstPost" class="form-label">Your First Post</label>
-                                <textarea class="form-control form-control-dark" id="threadFirstPost" rows="5" required maxlength="5000"></textarea>
-                            </div>
-                           
-                            <div class="mb-3">
-                                <label for="threadLinkMovieId" class="form-label">Link to Movie (TMDB ID - Optional)</label>
-                                <input type="number" class="form-control form-control-dark" id="threadLinkMovieId" placeholder="e.g., 157336">
-                            </div>
-                            <button type="submit" class="btn btn-primary">Create Thread</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+     
     </div>
 </section>
         </div> <!-- End View Container -->
@@ -721,7 +715,7 @@
       <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
   
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <script src="js/script-v2.1.js"></script>
+    <script src="js/script-v2.js"></script>
     <script  defer  src="js/firebase-backup.js"></script>
     <script src="js/analytics.js"></script>
 </body>
