@@ -1,5 +1,5 @@
    // --- Configuration ---
-        const config = {
+        /*const config = {
             TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
             TMDB_BASE_URL: 'https://api.themoviedb.org/3',
             IMAGE_BASE_URL: 'https://image.tmdb.org/t/p/w500',
@@ -9,6 +9,7 @@
             PROFILE_BASE_URL: 'https://image.tmdb.org/t/p/h632', // Larger profile pic for person page
             GEMINI_API_KEY: 'AIzaSyC581OIEWWS2Op7wUPtIVRGCSe0hr9btAg', // YOUR ACTUAL KEY HERE
             GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash', 
+            SPECIAL_DISCOVERY_PROVIDERS: [203], 
             STREAMING_PROVIDERS: [ // Providers for the player view iframe
                 { name: 'VidSrc.to', urlFormat: (id, type, season, episode) => `https://vidsrc.to/embed/${type}/${id}${type==='tv'&&season?`/${season}-${episode||1}`:''}` },
                 { name: 'SuperEmbed', urlFormat: (id, type, season, episode) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type==='tv'&&season?`&s=${season}&e=${episode||1}`:''}` },
@@ -103,14 +104,229 @@
                 { id: 2, name: 'Apple TV', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/bnlD5KJ5oSzBYbEpDkwi6w8SoBO.png' }, // Rent/Buy
                 { id: 221, name: 'HBO Max', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/tHZkDWta1FJBG2stKi2aXqwqKYt.png' }, 
                 { id: 10, name: 'Amazon Video', logo: '/5NyLm42TmCqCMOZFvH4fcoSNKEW.jpg' }, // Rent/Buy
+                { id: 3, name: 'Google Play Movies', logo: 'https://www.gstatic.com/android/market_images/web/play_prism_hlock_v2_2x.png' }, // Rent/Buy
+                { id: 4, name: 'YouTube', logo: 'https://www.gstatic.com/youtube/img/branding/youtubelogo/svg/youtubelogo.svg' }, // Rent/Buy
                 { id: 203, name: 'Crunchyroll', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/gNZh44MgDBwipGA9LwozlALjSdE.png' }, // Rent/Buy
             ],
             TARGET_REGION: 'US', // For watch providers and release dates
             // Add bg-primary RGB for overlay gradient
             BG_PRIMARY_RGB: '11, 12, 16', 
             MIN_SKELETON_DISPLAY_TIME: 5000,
-        };
+        };*/
 
+        // --- REPLACE YOUR ENTIRE config OBJECT WITH THIS REVISED VERSION ---
+        // --- REPLACE YOUR ENTIRE config OBJECT WITH THIS REVISED VERSION ---
+
+const config = {
+    TMDB_API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // Replace with your actual TMDB API Key
+    TMDB_BASE_URL: 'https://api.themoviedb.org/3',
+    IMAGE_BASE_URL: 'https://image.tmdb.org/t/p/w500',
+    BACKDROP_BASE_URL: 'https://image.tmdb.org/t/p/original',
+    STILL_BASE_URL: 'https://image.tmdb.org/t/p/w300',
+    LOGO_BASE_URL: 'https://image.tmdb.org/t/p/w185',
+    PROFILE_BASE_URL: 'https://image.tmdb.org/t/p/h632',
+    TRAKT_CLIENT_ID: "e6b33f5961a09e5ae3b7cf91d473c40a55f6152e897ceba91f4721203f3fe112",
+    TRAKT_CLIENT_SECRET: "348c65a02440c8c7b200d87fc8f9402288fa4a0272ca6fb9016d31086b32149e",
+    TRAKT_REDIRECT_URI: "https://yourapp.com/auth/trakt/callback",
+    TRAKT_API_BASE: "https://api.trakt.tv",
+
+    DISCORD_DEFAULT_WEBHOOK: null,
+    
+    // WARNING: For production, this key should be secured on a backend server.
+    GEMINI_API_KEY: 'AIzaSyC581OIEWWS2Op7wUPtIVRGCSe0hr9btAg', 
+    GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash', 
+    
+    SPECIAL_DISCOVERY_PROVIDERS: [203], // Correctly identifies Crunchyroll for special handling
+
+    // --- CRITICAL FIXES APPLIED TO STREAMING PROVIDERS ---
+     STREAMING_PROVIDERS: [
+        { 
+            name: 'VidSrc.to', 
+            // FIX: Changed 'season-episode' to the correct 'season/episode' format for TV shows.
+            urlFormat: (id, type, season, episode) => `https://vidsrc.to/embed/${type}/${id}${type==='tv'&&season?`/${season}/${episode||1}`:''}` 
+        },
+
+        { 
+            name: 'Vidrock', 
+            urlFormat: (id, type, season, episode) => {
+                if (type === 'movie') {
+                    // Movie embed (TMDB ID by default)
+                    return `https://vidrock.net/movie/${id}`;
+                } else if (type === 'tv' && season) {
+                    // TV embed (needs season + episode)
+                    return `https://vidrock.net/tv/${id}/${season}/${episode || 1}`;
+                } else {
+                    return null; // Invalid context
+                }
+            }
+        },
+        {
+            name: 'VidSrc.pro',
+            // A popular alternative/mirror to vidsrc.to.
+            urlFormat: (id, type, season, episode) => `https://vidsrc.pro/embed/${type}/${id}${type==='tv'&&season?`/${season}/${episode||1}`:''}`
+        },
+        {
+            name: 'SuperEmbed', 
+            urlFormat: (id, type, season, episode) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type==='tv'&&season?`&s=${season}&e=${episode||1}`:''}` 
+        },
+        { 
+            name: '2Embed',
+            // FIX: Changed ' películas' to the correct 'movie' path.
+            urlFormat: (id, type, season, episode) => `https://www.2embed.cc/embed/${type==='tv'?'tv':'movie'}/${id}${type==='tv'&&season?`?s=${season}&e=${episode||1}`:''}` 
+        },
+           {
+        name: 'Movies7',
+        // A new provider that uses TMDb ID.
+        urlFormat: (id, type, season, episode) => `https://movies7.to/embed/${type}/${id}${type === 'tv' && season ? `/${season}-${episode || 1}` : ''}`
+    },
+  {
+    name: '2Embed (4K)',
+    urlFormat: (id, type, season, episode) => {
+        if (type === 'movie') {
+            return `https://www.2embed.cc/embed/movie/${id}`;
+        }
+        if (type === 'tv' && season) {
+            return `https://www.2embed.cc/embed/tv/${id}?s=${season}&e=${episode || 1}`;
+        }
+        return null;
+    }
+}
+,
+
+{
+    name: 'ShowBox (4K)',
+    urlFormat: (id, type, season, episode, itemData) => {
+        const imdbId = itemData?.external_ids?.imdb_id;
+        if (!imdbId) return null;
+        if (type === 'tv' && season) {
+            return `https://showbox.show/embed/tv/${imdbId}/${season}/${episode || 1}`;
+        }
+        return `https://showbox.show/embed/movie/${imdbId}`;
+    }
+},
+
+
+{
+    name: 'VidSrc (4K)',
+    urlFormat: (id, type, season, episode) => {
+        if (type === 'movie') {
+            return `https://vidsrc.pro/embed/movie/${id}?tmdb=1`;
+        }
+        if (type === 'tv' && season) {
+            return `https://vidsrc.pro/embed/tv/${id}?tmdb=1&s=${season}&e=${episode || 1}`;
+        }
+        return null;
+    }
+},
+
+
+    {
+    name: 'SmashyStream',
+        // A new provider with a slightly different TV show URL structure.
+        urlFormat: (id, type, season, episode) => {
+            if (type === 'movie') {
+                return `https://embed.smashystream.com/playere.php?tmdb=${id}`;
+            }
+            // For TV shows, it needs season and episode numbers.
+            if (type === 'tv' && season) {
+                return `https://embed.smashystream.com/playere.php?tmdb=${id}&season=${season}&episode=${episode || 1}`;
+            }
+            return null;
+        }
+    },
+
+    // Add more player sources if desired
+
+    ],
+   
+
+    // --- ADDED: The complete master list for the Gamification system ---
+    ACHIEVEMENTS: {
+        'movie_buff_1': {
+            title: "Movie Buff I",
+            description: "Rate 10 different movies.",
+            icon: '<i class="bi bi-film"></i>',
+            criteria: { type: 'ratings', subType: 'movie', count: 10 }
+        },
+        'critic_1': {
+            title: "The Critic",
+            description: "Write 5 reviews for any movie or TV show.",
+            icon: '<i class="bi bi-pencil-square"></i>',
+            criteria: { type: 'reviews', count: 5 }
+        },
+        'genre_explorer': {
+            title: "Genre Explorer",
+            description: "Rate titles from at least 5 different genres.",
+            icon: '<i class="bi bi-compass"></i>',
+            criteria: { type: 'genres', count: 5 }
+        },
+        'decade_traveler': {
+            title: "Decade Traveler",
+            description: "Rate movies from the 80s, 90s, 2000s, and 2010s.",
+            icon: '<i class="bi bi-calendar3-range"></i>',
+            criteria: { type: 'decades', decades: ['1980', '1990', '2000', '2010'] }
+        },
+        'auteur_1': {
+            title: "Auteur",
+            description: "Rate 3 movies from the same director.",
+            icon: '<i class="bi bi-camera-reels-fill"></i>',
+            criteria: { type: 'director', count: 3 }
+        },
+        'movie_buff_2': {
+            title: "Movie Buff II",
+            description: "Rate 50 different movies.",
+            icon: '<i class="bi bi-film"></i>',
+            criteria: { type: 'ratings', subType: 'movie', count: 50 }
+        }
+    },
+
+    HOME_SECTIONS: [
+        { id: 'most-viewed', title: "Popular on AuraStream", display_style: 'horizontal_poster', max_items: 15 },
+        { id: 'continue-watching', title: "Continue Watching", display_style: 'horizontal_backdrop' },
+        { id: 'latest-trailers', title: "Latest Trailers", endpoint: "/movie/now_playing", type: 'movie', display_style: 'horizontal_backdrop', show_trailer_button: true },
+        { id: 'trending-today', title: "Trending Today", endpoint: "/trending/all/day" },
+        { id: 'top-movies', title: "Top Movies", endpoint: "/movie/top_rated", type: 'movie', display_style: 'horizontal_backdrop' },
+        { id: 'popular-movies', title: "Popular Movies", endpoint: "/movie/popular", type:'movie' },
+        { id: 'top-tv', title: "Top TV Shows", endpoint: "/tv/top_rated", type: 'tv', display_style: 'horizontal_backdrop' },
+        { id: 'new-releases', title: "New Releases", endpoint: "/movie/upcoming", type: 'movie', display_style: 'horizontal_backdrop' }
+    ],
+
+    // Notification placeholders (no changes needed)
+    VAPID_PUBLIC_KEY: 'BHxnfKBkk1FQKPerLOSdUucEGpZYuonj-pbX7k9ihm3YgxPWjw3iGmy_82BbeogwQ2qAgc1fLmHizfX439Nkk80',
+    PUSH_SUBSCRIPTION_ENDPOINT: 'YOUR_BACKEND_PUSH_SUBSCRIPTION_URL',
+    
+    SPORTRADAR_BASE_URL: 'https://api.sportradar.com/soccer/trial/v4/en',
+    SPORTRADAR_API_KEY: 'VEv4okaElakk1DyeLIAWsojBisfHllWzPRx3ARjI',
+
+    // WARNING: For production, these keys should be secured on a backend server.
+    SPOTIFY_CLIENT_ID: '414c70fe6b3e4d5f9a8fe0fc8d91a86d',
+    SPOTIFY_CLIENT_SECRET: 'bf45a79db80444cca0a5e9d85d6cb62f',
+    SPOTIFY_TOKEN_URL: 'https://accounts.spotify.com/api/token',
+    SPOTIFY_API_BASE_URL: 'https://api.spotify.com/v1',
+    
+    CURATED_WATCH_PROVIDERS: [
+        { id: 8, name: 'Netflix', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/wwemzKWzjKYJFfCeiB57q3r4Bcm.png' },
+        { id: 9, name: 'Amazon Prime', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/w7HfLNm9CWwRmAMU58udl2L7We7.png' },
+        { id: 337, name: 'Disney+', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/gJ8VX6JSu3ciXHuC2dDGAo2lvwM.png' },
+        { id: 1899, name: 'Max', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/rAb4M1LjGpWASxpk6Va791A7Nkw.png' },
+        { id: 15, name: 'Hulu', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/pqUTCleNUiTLAVlelGxUgWn1ELh.png' },
+        { id: 350, name: 'Apple TV+', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/4KAy34EHvRM25Ih8wb82AuGU7zJ.png' },
+        { id: 531, name: 'Paramount+', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/fi83B1oztoS47xxcemFdPMhIzK.png' },
+        { id: 384, name: 'Peacock', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/8VCVd_S2Z3GS1v5hD3S2To2g5Tj.png' },
+        { id: 358, name: 'Showtime', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/x7SgXQ252V3a12OCeO3sK3d25wU.png' },
+        { id: 33, name: 'Starz', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/k900263sR22S0O5hS3xBS225V30.png' },
+        { id: 2, name: 'Apple TV', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/bnlD5KJ5oSzBYbEpDkwi6w8SoBO.png' },
+        { id: 221, name: 'HBO Max', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/tHZkDWta1FJBG2stKi2aXqwqKYt.png' },
+        { id: 10, name: 'Amazon Video', logo: '/5NyLm42TmCqCMOZFvH4fcoSNKEW.jpg' },
+        { id: 203, name: 'Crunchyroll', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/gNZh44MgDBwipGA9LwozlALjSdE.png' },
+          { id: 257, name: 'Fandor', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/m24659i02m6p4PVo2s4gZNa1o2d.png' }, // For classic/indie films
+    { id: 269, name: 'Shudder', logo: 'https://media.themoviedb.org/t/p/h100_filter(negate,000,666)/22h5bxwZW2YAg5s30Djs22i545s.png' },
+    ],
+    
+    TARGET_REGION: 'US',
+    BG_PRIMARY_RGB: '11, 12, 16', 
+    MIN_SKELETON_DISPLAY_TIME: 1500, // Reduced for a faster feel
+};
         const DOM = {
         // Views
         views: {
@@ -125,6 +341,11 @@
             person: document.getElementById('person-view'),
             watchlist: document.getElementById('watchlist-view'),
             analytics: document.getElementById('analytics-view'),
+            accountSettings: document.getElementById('account-settings-view'), 
+            profile: document.getElementById('profile-view'),         // <-- CRITICAL: Check this mapping
+            notifications: document.getElementById('notifications-view'), // <-- CRITICAL: Check this mapping
+            community: document.getElementById('community-view'),       // (If community view is being routed)
+            communityThreadDetail: document.getElementById('community-thread-detail-view'), // (If community view is being routed)
         },
         // Navbar
         navbarMenu: document.getElementById('navbarNav'),
@@ -221,6 +442,7 @@
         profileWatchlistGrid: document.getElementById('profile-watchlist-grid'),
         profileFavoritesGrid: document.getElementById('profile-favorites-grid'),
 
+      
         // Upcoming Section Elements
         upcomingSection: document.getElementById('upcoming-section'),
         upcomingContainer: document.getElementById('upcoming-container'),
@@ -286,7 +508,8 @@
         add: (d) => { if (!d?.id || !d?.type || Watchlist.isInWatchlist(d.id, d.type)) return false; const i = { id: d.id, type: d.type, title: d.title || d.name || 'N/A', poster_path: d.poster_path, backdrop_path: d.backdrop_path, vote_average: d.vote_average }; State.watchlist.push(i); Watchlist.save(); Utils.showToast(`${i.title} added to watchlist!`, "success"); return true; },
         remove: (id, t) => { const l = State.watchlist.length; const i = parseInt(id); State.watchlist = State.watchlist.filter(d => !(d.id === i && d.type === t)); if (State.watchlist.length < l) { Watchlist.save(); Utils.showToast("Item removed from watchlist.", "info"); return true; } return false; },
         clear: () => { State.watchlist = []; Watchlist.save(); Utils.showToast("Watchlist cleared.", "info"); },
-        isInWatchlist: (id, t) => { const i = parseInt(id); return State.watchlist.some(d => d.id === i && d.type === t); }
+        isInWatchlist: (id, t) => { const i = parseInt(id); return State.watchlist.some(d => d.id === i && d.type === t); },
+        getList: () => State.watchlist 
     };
 
  
@@ -396,6 +619,7 @@ const ContinueWatching = {
         }
     },
 
+
     /**
      * Internal function to calculate progress and save it to Firestore.
      */
@@ -479,29 +703,36 @@ const ContinueWatching = {
             },
 
             formatCurrency: (number) => {
-    if (typeof number !== 'number' || number <= 0) {
-        return 'N/A';
-    }
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(number);
-},
+                if (typeof number !== 'number' || number <= 0) {
+                    return 'N/A';
+                }
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                }).format(number);
+            },
 
-// Gets the full name of a language from its ISO 639-1 code.
-getLanguageName: (code) => {
-    if (!code) return 'N/A';
-    try {
-        // Use Intl.DisplayNames to get the full language name.
-        const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
-        return languageNames.of(code);
-    } catch (e) {
-        console.warn(`Could not find language name for code: ${code}`);
-        return code.toUpperCase(); // Fallback to the code itself if lookup fails
-    }
-},
+            // Gets the full name of a language from its ISO 639-1 code.
+            getLanguageName: (code) => {
+                if (!code) return 'N/A';
+                try {
+                    // Use Intl.DisplayNames to get the full language name.
+                    const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
+                    return languageNames.of(code);
+                } catch (e) {
+                    console.warn(`Could not find language name for code: ${code}`);
+                    return code.toUpperCase(); // Fallback to the code itself if lookup fails
+                }
+            },
+
+            formatDurationToTime: (totalSeconds) => {
+                if (typeof totalSeconds !== 'number' || totalSeconds < 0) return '0:00';
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = Math.floor(totalSeconds % 60);
+                return `${minutes}:${seconds.toString().padStart(2, '0')} min`;
+            },
 
             // Generate HTML for a loading spinner
             getSpinnerHTML: (text = 'Loading...', large = false) => `
@@ -915,14 +1146,15 @@ getLanguageName: (code) => {
                     .replace(/'/g, "&#039;");
             },*/
 
-             escapeHtml: (unsafe) => {
-        return unsafe === null || unsafe === undefined ? '' : String(unsafe)
-            .replace(/&/g, "&")
-            .replace(/</g, "<")
-            .replace(/>/g, ">")
-            .replace(/"/g, '"')
-            .replace(/'/g, "'");
-    },
+            escapeHtml: (unsafe) => {
+                // CORRECTED: Escape all critical entities
+                return unsafe === null || unsafe === undefined ? '' : String(unsafe)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            },
         };
 
         // --- API Fetching ---
@@ -1047,7 +1279,8 @@ getLanguageName: (code) => {
                     return null; // Indicate failure
                 }
             },*/
-    
+
+            
             
             fetchSportradar: async (endpoint, params = {}) => {
                 // Check configuration
@@ -1322,8 +1555,9 @@ getLanguageName: (code) => {
                 Visualizer.stop();
 
                  // Hide all views and deactivate nav links
-                 Object.values(DOM.views).forEach(view => { if(view) { view.classList.remove('active'); view.style.display = 'none';} });
-                 document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                //Object.values(DOM.views).forEach(view => { if(view) { view.classList.remove('active'); view.style.display = 'none';} });
+                Object.values(DOM.views).forEach(view => { if(view) { view.classList.remove('active'); view.style.display = 'none';} });
+                document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
 
                  let targetViewElement = null;
                  let activeNavLinkHref = '#home'; // Default active nav link
@@ -1396,7 +1630,7 @@ getLanguageName: (code) => {
                          return;
                      }
                  }
-                 else if (hash.startsWith('#network=')) {
+                 /*else if (hash.startsWith('#network=')) {
                      targetViewElement = DOM.views.network;
                      activeNavLinkHref = '#home';
 
@@ -1447,13 +1681,73 @@ getLanguageName: (code) => {
                          // loadNetworkResultsPage itself doesn't need to be async for this part
                          App.loadNetworkResultsPage(1);
                      };
-                }
+                }*/
+
+                // --- REPLACE THIS ENTIRE BLOCK IN YOUR Router.updateView FUNCTION ---
+                else if (hash.startsWith('#network=')) {
+                    targetViewElement = DOM.views.network;
+                    activeNavLinkHref = '#home'; // Keep home nav link active
+
+                    const providerIdString = hash.substring('#network='.length);
+                    const providerId = parseInt(providerIdString);
+
+                    // Validate the ID from the URL
+                    if (isNaN(providerId) || providerId <= 0) {
+                        console.error("Invalid network ID in hash:", providerIdString);
+                        Utils.showToast("Invalid network link.", "warning");
+                        location.hash = '#home';
+                        return; // Stop execution
+                    }
+
+                 console.log(`Routing to network page for Provider ID: ${providerId}`);
+
+                // This function will run after the view is made visible
+                runOnViewLoad = async () => {
+                    // First, ensure all necessary DOM elements for this view exist
+                    if (!DOM.networkResultsGrid || !DOM.networkResultsTitle || !DOM.loadMoreNetworkBtn || !DOM.networkLoadingSpinner) {
+                       console.error("Network view elements are missing from the DOM. Cannot load results.");
+                       Utils.showToast("Error displaying network results page.", "danger");
+                       location.hash = '#home'; // Redirect if the page is broken
+                        return;
+                    }
+
+                    // 1. Ensure the master lists of all watch providers are loaded and cached.
+                    // This only fetches from the API on the very first time it's called.
+                    const providersLoaded = await App.ensureTmdbWatchProvidersLoaded();
+
+                    // If loading the master lists failed, we cannot proceed.
+                    if (!providersLoaded) {
+                        DOM.networkResultsGrid.innerHTML = Utils.getErrorHTML("Could not load required provider information from TMDb.");
+                        Utils.setElementVisibility(DOM.networkLoadingSpinner, false);
+                        Utils.setElementVisibility(DOM.loadMoreNetworkBtn, false);
+                        DOM.networkResultsTitle.textContent = "Error";
+                        return;
+                    }
+
+                    // 2. Get the specific details (name, logo) for the requested provider ID.
+                    const providerInfo = App.getProviderDetails(providerId);
+
+                    // 3. Store this provider's info in the global state so other functions can access it.
+                    State.currentNetwork = providerInfo;
+
+                   // 4. Finally, call the function to load and display the movies/shows for this specific provider.
+                   App.loadNetworkResultsPage(1); // Load the first page of results
+                };
+               }
             
                 else if (hash === '#profile') { // NEW ROUTE
                     targetViewElement = DOM.profileView;
                     activeNavLinkHref = '#profile-settings'; // Assuming your dropdown link has this href
                     runOnViewLoad = () => App.loadProfilePage();
                 }
+
+                else if (hash === '#account-settings') {
+                    // CRITICAL CHECK: Ensure the DOM element is retrieved correctly
+                    targetViewElement = DOM.views.accountSettings || document.getElementById('account-settings-view'); 
+                    activeNavLinkHref = '#account-settings';
+                    runOnViewLoad = () => App.loadAccountSettingsPage();
+                }
+
 
                  // NEW: Handle Person Route
                  else if (hash.startsWith('#person=')) {
@@ -1512,12 +1806,29 @@ getLanguageName: (code) => {
                     runOnViewLoad = () => App.loadLiveSportsPage();
                  }
                 else if (hash === '#analytics') {
+                    // --- NEW LOGIC ---
+                    // This route requires the user to be logged in.
+                    if (!appAuth.currentUser) {
+                       Utils.showToast("You must be logged in to view your analytics and achievements.", "info");
+                       location.hash = '#home'; // Redirect guests to the homepage
+                       return; // Stop further execution
+                    }
+
                     targetViewElement = DOM.views.analytics;
-                    activeNavLinkHref = '#analytics'; // Highlight the analytics link
+                    activeNavLinkHref = '#analytics'; // Highlight the analytics link in the navbar
+    
                     runOnViewLoad = () => {
-                        // Ensure analytics content area exists
-                        Analytics.dom.content = document.getElementById('analytics-content'); // Re-select in case view was removed/re-added
-                        Analytics.updateAnalyticsDisplay(); // Calculate and render/update stats & charts
+                        // This function runs after the view is made visible.
+                        // It's the perfect place to load the dynamic content for the page.
+        
+                        console.log("[Router] Analytics view is active. Rendering achievements and other stats.");
+        
+                        // Call the function to render the achievements grid.
+                        App.renderAchievements(); 
+        
+                        // You can also call your other analytics functions here if you have them.
+                        // For example:
+                        // Analytics.updateAnalyticsDisplay(); 
                     };
                 }
                  else {
@@ -1529,10 +1840,10 @@ getLanguageName: (code) => {
 
 
                  // --- Show Target View(s) ---
-                 const viewsToShow = Array.isArray(targetViewElement) ? targetViewElement : [targetViewElement];
-                 viewsToShow.forEach(view => {
+                const viewsToShow = Array.isArray(targetViewElement) ? targetViewElement : [targetViewElement];
+                viewsToShow.forEach(view => {
                      if (view) {
-                         // Special display 'flex' for hero view, 'block' for others
+                         // FIX: Use 'block' display for settings view
                          view.style.display = (view === DOM.views.hero) ? 'flex' : 'block';
                          // Use requestAnimationFrame to ensure display change is applied before adding class
                          requestAnimationFrame(() => view.classList.add('active'));
@@ -1541,8 +1852,8 @@ getLanguageName: (code) => {
                          Utils.showToast("Navigation error: View not found.", "danger");
                          if (location.hash !== '#home') location.hash = '#home'; // Redirect if error occurs
                      }
-                 });
-
+                });
+               
 
                  // --- Activate Correct Nav Link ---
                  // Handle dropdown link activation separately
@@ -2563,7 +2874,7 @@ getLanguageName: (code) => {
             },
 
             // NEW: Handler for Like/Favorite Button Click
-            handleAddOrRemoveFavorite: async (button) => {
+            /*handleAddOrRemoveFavorite: async (button) => {
                 const { itemId, itemType, itemTitle, itemPoster, itemRating, itemGenres } = button.dataset;
                 const idNum = parseInt(itemId);
                 if (!idNum || !itemType) return;
@@ -2624,7 +2935,7 @@ getLanguageName: (code) => {
                        button.innerHTML = '<i class="bi bi-heart-fill"></i>'; // Filled heart
                        button.title = "Favorited (Click to unfavorite)";
                     }
-                }*/
+                }
 
                 // --- IMPORTANT: Update Analytics Display ---
                 // Only update if the analytics view exists (or maybe always update in background?)
@@ -2635,8 +2946,76 @@ getLanguageName: (code) => {
                     // Optionally, you could still recalculate data in the background
                     // without rendering if needed for other features.
                 }
-            },
+            },*/
        
+             handleAddOrRemoveFavorite: async (button) => {
+                const { itemId, itemType, itemTitle, itemPoster, itemRating, itemGenres } = button.dataset;
+                const idNum = parseInt(itemId);
+                if (!idNum || !itemType) return;
+
+                let genreIds = [];
+                try {
+                    genreIds = JSON.parse(itemGenres || '[]');
+                    if (!Array.isArray(genreIds)) genreIds = [];
+                } catch (e) {
+                    console.error("Failed to parse genre IDs from button data:", itemGenres, e);
+                    genreIds = [];
+                }
+
+                const itemData = {
+                    id: idNum,
+                    type: itemType,
+                    title: itemTitle,
+                    poster_path: itemPoster !== 'null' ? itemPoster : null,
+                    vote_average: itemRating !== 'null' ? parseFloat(itemRating) : null,
+                    genre_ids: genreIds
+                };
+
+                // Disable button during the async operation
+                button.disabled = true;
+                const originalIcon = button.querySelector('i')?.className || 'bi bi-heart';
+                button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span>`;
+
+                try {
+                    let success = false;
+                    
+                    if (Favorites.isFavorite(idNum, itemType)) {
+                        success = await Favorites.remove(idNum, itemType); // Await the result
+                        if (success) {
+                            button.classList.remove('is-favorite');
+                            button.innerHTML = '<i class="bi bi-heart"></i>';
+                            button.title = "Add to Favorites";
+                        }
+                    } else {
+                        success = await Favorites.add(itemData); // Await the result
+                        if (success) {
+                            button.classList.add('is-favorite');
+                            button.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                            button.title = "Favorited (Click to unfavorite)";
+                        }
+                    }
+                    
+                    if (success && typeof Gamification !== 'undefined' && Gamification.checkForAchievements) {
+                         // Check for achievements based on the action performed
+                         Gamification.checkForAchievements(
+                             success && button.classList.contains('is-favorite') ? 'favorite_added' : 'favorite_removed', 
+                             itemData
+                         );
+                    }
+                    
+                    // --- IMPORTANT: Update Profile Summary if visible ---
+                    if (location.hash === '#profile') {
+                        App.loadProfilePage();
+                    }
+
+                } catch (e) {
+                    console.error("Error toggling favorite status:", e);
+                    Utils.showToast("Failed to update favorites.", "danger");
+                    button.innerHTML = `<i class="${originalIcon}"></i>`; // Revert icon on failure
+                } finally {
+                    button.disabled = false; // Re-enable the button
+                }
+            },
             // --- TMDB Methods ---
             loadTmdbGenres: async () => {
         let success = false; // Flag to track success
@@ -3825,7 +4204,7 @@ getLanguageName: (code) => {
     },
         
 
-    // V V V REPLACE the entire `loadContinueWatchingSection` function with this one V V V
+   /* // V V V REPLACE the entire `loadContinueWatchingSection` function with this one V V V
 loadContinueWatchingSection: (sectionDiv) => {
     if (!sectionDiv) return;
 
@@ -3886,97 +4265,105 @@ loadContinueWatchingSection: (sectionDiv) => {
         prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
         nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
     }
+},*/
+
+
+
+loadContinueWatchingSection: (sectionDiv) => {
+    if (!sectionDiv) return;
+
+    const resultsContainer = sectionDiv.querySelector('.continue-watching-container');
+    const prevBtn = sectionDiv.querySelector('.h-scroll-btn.prev');
+    const nextBtn = sectionDiv.querySelector('.h-scroll-btn.next');
+    if (!resultsContainer || !prevBtn || !nextBtn) return;
+
+    const continueWatchingList = ContinueWatching.getCache(); // Use the cache
+
+    if (continueWatchingList.length === 0) {
+        Utils.setElementVisibility(sectionDiv, false); // Hide the whole section if empty
+        return;
+    }
+
+    Utils.setElementVisibility(sectionDiv, true); // Ensure section is visible
+    resultsContainer.innerHTML = ''; // Clear any skeletons or old content
+
+    continueWatchingList.forEach(item => {
+        const title = Utils.escapeHtml(item.title);
+        const imagePath = item.backdrop_path || item.poster_path;
+        const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+        const progressPercent = item.progressPercent || 0;
+        
+        // --- NEW: Calculate and Format Duration ---
+        // Assuming item.estimatedDurationWatchedSeconds or similar is available in the cache/Firestore payload
+        // If not available, it defaults to 0.
+        const durationWatched = item.estimatedDurationWatchedSeconds || 0; 
+        const formattedTime = Utils.formatDurationToTime(durationWatched);
+        
+        // --- NEW: Determine Status Message ---
+        let statusMessage = `${formattedTime} watched`;
+        if (progressPercent >= 95) {
+            statusMessage = "Ready for completion";
+        } else if (item.type === 'tv' && item.episodeTitle) {
+            statusMessage = `Resume S${item.seasonNumber} E${item.episodeNumber}`;
+        }
+
+
+        let cardHref = `#player=${item.type}/${item.id}`;
+        if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
+            cardHref += `/${item.seasonNumber}/${item.episodeNumber}`;
+        }
+        
+        const cardLink = document.createElement('a');
+        cardLink.href = cardHref;
+        cardLink.className = 'h-card continue-watching-card'; // Add specific class
+        cardLink.title = `Resume: ${title}`;
+
+        const imageHtml = imageUrl
+            ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+            : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
+            
+        // --- IMPROVED OVERLAY HTML ---
+        const overlayHtml = `
+            <div class="h-card-overlay">
+                <h3 class="h-card-title">${title}</h3>
+                ${item.type === 'tv' && item.episodeTitle ? `<span class="h-card-episode-title">S${item.seasonNumber} E${item.episodeNumber} - ${Utils.escapeHtml(item.episodeTitle)}</span>` : ''}
+                
+                <p class="h-card-meta continue-status mt-auto">
+                    ${statusMessage}
+                </p>
+                
+                <div class="progress-bar-container">
+                    <small class="progress-label">${progressPercent}%</small>
+                    <div class="progress-bar-fill" style="width: ${progressPercent}%;" title="${progressPercent}% Watched"></div>
+                </div>
+                
+                <button class="h-card-resume-btn" aria-label="Resume ${title}" title="Resume Watching">
+                    <i class="bi bi-play-circle-fill"></i>
+                </button>
+            </div>
+        `;
+        
+        cardLink.innerHTML = imageHtml + overlayHtml;
+        resultsContainer.appendChild(cardLink);
+        
+        // Add listener for the resume button (only if using the resume button idea)
+        cardLink.querySelector('.h-card-resume-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.hash = cardHref; // Trigger navigation
+        });
+    });
+
+    // Setup horizontal scrolling
+    App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
+    if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
+        State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
+        resultsContainer.addEventListener('scroll', Utils.debounce(() => App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn), 100));
+        prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
+        nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
+    }
 },
-    
-            /*loadContinueWatchingSection: (sectionDiv) => {
-                if (!sectionDiv) {
-                    sectionDiv = document.getElementById('continue-watching-section'); // Try to find it if not passed
-                }
-                 if (!sectionDiv) return; // Section doesn't exist
-
-                 const resultsContainer = sectionDiv.querySelector('.horizontal-card-container');
-                 const prevBtn = sectionDiv.querySelector('.h-scroll-btn.prev');
-                 const nextBtn = sectionDiv.querySelector('.h-scroll-btn.next');
-                 const scrollWrapper = sectionDiv.querySelector('.horizontal-scroll-wrapper');
-
-
-                 if (!resultsContainer || !prevBtn || !nextBtn || !scrollWrapper) return; // Needed elements missing
-
-                 const continueWatchingList = ContinueWatching.getList();
-
-                 if (continueWatchingList.length === 0) {
-                    sectionDiv.remove();
-                    State.horizontalScrollContainers = State.horizontalScrollContainers.filter(c => c.container !== resultsContainer);
-                    return;
-                }
-
-                 // Render cards using a modified horizontal renderer or directly build HTML
-                 resultsContainer.innerHTML = ''; // Clear spinner
-                 continueWatchingList.forEach(item => {
-                     const title = Utils.escapeHtml(item.title);
-                     const imagePath = item.backdrop_path || item.poster_path; // Prefer backdrop
-                     const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
-                     const year = item.lastWatchedTimestamp ? new Date(item.lastWatchedTimestamp).getFullYear() : ''; // Or fetch year if needed
-                     const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
-                     const progressPercent = item.progressPercent || 0; // Use stored dummy progress
-                     resultsContainer.appendChild(cardLink);
-                     // Determine link based on type
-                     let cardHref = `#player=${item.type}/${item.id}`;
-                     if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
-                         cardHref += `/${item.seasonNumber}/${item.episodeNumber}`;
-                     }
-
-                     const cardLink = document.createElement('a');
-                     cardLink.href = cardHref;
-                     cardLink.className = 'h-card';
-                     cardLink.title = title + (item.episodeTitle ? ` - ${item.episodeTitle}` : '');
-
-                     const imageHtml = imageUrl
-                        ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
-                        : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
-
-                     const overlayHtml = `
-                         <div class="h-card-overlay">
-                             <h3 class="h-card-title">${title}</h3>
-                              ${item.type === 'tv' && item.episodeTitle ? `<span class="h-card-episode-title">S${item.seasonNumber} E${item.episodeNumber} - ${Utils.escapeHtml(item.episodeTitle)}</span>` : ''}
-                             <p class="h-card-meta small opacity-80">
-                                 ${rating ? `<span class="me-2"><i class="bi bi-star-fill text-warning"></i> ${rating}</span>` : ''}
-                                 <span>Last watched: ${new Date(item.lastWatchedTimestamp).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'})}</span>
-                             </p>
-                             ${ ''}
-                             <div class="progress-bar-container">
-                                 <div class="progress-bar-fill" style="width: ${progressPercent}%;"></div>
-                             </div>
-                         </div>
-                     `;
-
-                     // Add Watchlist button (optional, maybe remove from here?)
-                     // const isInList = Watchlist.isInWatchlist(item.id, item.type);
-                     // const watchlistBtnHtml = `...`; // Copied from renderHorizontalCards if needed
-
-                     cardLink.innerHTML = imageHtml + overlayHtml; // + watchlistBtnHtml;
-
-                    // Add remove from continue watching button? (Maybe better elsewhere)
-
-                    resultsContainer.appendChild(cardLink);
-                 });
-
-                 // --- Add Listeners and Update Buttons ---
-                  // Store container for resize listener
-                  // Avoid duplicates if already added
-                  if (!State.horizontalScrollContainers.some(c => c.container === resultsContainer)) {
-                      State.horizontalScrollContainers.push({ container: resultsContainer, prevBtn, nextBtn });
-                  }
-
-                 App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);
-                 resultsContainer.removeEventListener('scroll', App.updateHScrollButtonsForContainer); // Remove old listener if any
-                 resultsContainer.addEventListener('scroll', Utils.debounce(() => { App.updateHScrollButtons(resultsContainer, prevBtn, nextBtn);}, 100), { passive: true });
-                 prevBtn.removeEventListener('click', App.handleHScrollPrevForContainer);
-                 prevBtn.addEventListener('click', () => App.handleHScrollPrev(resultsContainer));
-                 nextBtn.removeEventListener('click', App.handleHScrollNextForContainer);
-                 nextBtn.addEventListener('click', () => App.handleHScrollNext(resultsContainer));
-
-            },*/
+   
 
             handleHScrollPrev: (container) => {
                 if (!container) return;
@@ -4305,7 +4692,7 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                 }
          },
 
-           /**
+    /**
      * Loads and renders the user's profile dashboard page.
      * Fetches user info, watch history, watchlist, and favorites.
      */
@@ -4403,61 +4790,65 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
         // --- Load User Activity & Lists ---
 
         // 1. Recently Watched (from Firebase watchHistory)
-        DOM.profileRecentWatchedContainer.innerHTML = Utils.getSkeletonHorizontalCardHTML(5); // Skeletons
+        // Set the container to skeletons initially
+        DOM.profileRecentWatchedContainer.innerHTML = Utils.getSkeletonHorizontalCardHTML(5); 
         try {
+            if (!appAuth.currentUser || !appDb) {
+                 throw new Error("User not authenticated or database not ready.");
+            }
+
             const recentWatchedSnapshot = await appDb.collection("users").doc(userId).collection("watchHistory")
                 .orderBy("lastWatchedTimestamp", "desc")
-                .limit(10) // Limit to 10 most recent
+                .limit(10)
                 .get();
 
             const recentWatchedItems = recentWatchedSnapshot.docs.map(doc => {
                 const data = doc.data();
+                // Map Firebase fields to what the CW renderer expects
                 return {
-                    id: data.tmdbId,
+                    id: data.tmdbId, 
                     type: data.type,
                     title: data.title,
-                    name: data.title, // For renderHorizontalCards compatibility
+                    name: data.title, 
                     poster_path: data.poster_path,
                     backdrop_path: data.backdrop_path,
                     vote_average: data.vote_average,
+                    
+                    // Essential CW fields
                     lastWatchedTimestamp: data.lastWatchedTimestamp?.toDate().getTime(),
-                    progressPercent: data.estimatedProgressPercent,
+                    progressPercent: data.progressPercent, 
                     seasonNumber: data.seasonNumber,
                     episodeNumber: data.episodeNumber,
                     episodeTitle: data.episodeTitle,
+                    estimatedDurationWatchedSeconds: data.estimatedDurationWatchedSeconds || 0, // Ensure numeric fallback
                 };
             }).filter(item => item.lastWatchedTimestamp);
 
             if (recentWatchedItems.length > 0) {
-                App.renderHorizontalCards(recentWatchedItems, DOM.profileRecentWatchedContainer, null, false);
-                // Update scroll buttons
-                App.updateHScrollButtons(
-                    DOM.profileRecentWatchedContainer,
-                    DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.prev'),
-                    DOM.profileRecentWatchedWrapper.querySelector('.h-scroll-btn.next')
-                );
+                // FIX A: Call a new, dedicated profile renderer for CW items
+                // This function uses the same rendering logic as App.loadContinueWatchingSection
+                // but targets the specific profile container.
+                App._renderProfileRecentWatched(recentWatchedItems, DOM.profileRecentWatchedContainer);
+
             } else {
                 DOM.profileRecentWatchedContainer.innerHTML = '<p class="text-muted text-center col-12 py-4">No recent viewing activity.</p>';
             }
         } catch (error) {
             console.error("Error loading profile recent watched:", error);
-            DOM.profileRecentWatchedContainer.innerHTML = Utils.getErrorHTML("Failed to load recent activity.");
+            DOM.profileRecentWatchedContainer.innerHTML = Utils.getErrorHTML(`Failed to load recent activity. Error: ${error.message}`);
         }
-
-
+     
         // 2. Watchlist (from local storage, or migrate to Firebase)
         DOM.profileWatchlistGrid.innerHTML = Utils.getSkeletonCardHTML(4); // Skeletons
         try {
-            // For simplicity, we'll use local storage version directly for now
-            // For multi-device sync, you'd load from Firebase here similar to watchHistory
-            const userWatchlist = Watchlist.getList(); // This gets from State.watchlist (populated from local storage)
+            // FIX: Use the new getter
+            const userWatchlist = Watchlist.getList(); 
 
             if (userWatchlist.length > 0) {
-                // Render a subset for summary, provide link to full watchlist page
                 const itemsToRender = userWatchlist.slice(0, 4); // Show first 4
                 App.renderTmdbCards(itemsToRender, DOM.profileWatchlistGrid, null, false);
-                // Watchlist cards have their own remove buttons
             } else {
+                // FIX: Ensure clean empty message display
                 DOM.profileWatchlistGrid.innerHTML = '<p class="text-muted text-center col-12 py-4">Your watchlist is empty.</p>';
             }
         } catch (error) {
@@ -4465,18 +4856,17 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
             DOM.profileWatchlistGrid.innerHTML = Utils.getErrorHTML("Failed to load watchlist.");
         }
 
-
-        // 3. Favorites (from local storage, or migrate to Firebase)
+        // 3. Favorites (from local storage, now using getList)
         DOM.profileFavoritesGrid.innerHTML = Utils.getSkeletonCardHTML(4); // Skeletons
         try {
-            // Similar to watchlist, currently local storage
-            const userFavorites = Favorites.getList(); // Assuming Favorites.getList() exists and works
+            // FIX: Use the new getter
+            const userFavorites = Favorites.getList(); 
 
             if (userFavorites.length > 0) {
-                // Render a subset for summary, provide link to full analytics/favorites page
                 const itemsToRender = userFavorites.slice(0, 4); // Show first 4
                 App.renderTmdbCards(itemsToRender, DOM.profileFavoritesGrid, null, false);
             } else {
+                // FIX: Ensure clean empty message display
                 DOM.profileFavoritesGrid.innerHTML = '<p class="text-muted text-center col-12 py-4">You have no favorites yet.</p>';
             }
         } catch (error) {
@@ -4505,6 +4895,687 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
         App.initializeTooltips(DOM.profileView); // Initialize tooltips for the new content
     },
 
+    // --- Locate App.loadAccountSettingsPage ---
+
+    /**
+     * Loads and renders the comprehensive Account Settings page.
+     */
+    loadAccountSettingsPage: async () => {
+        if (!DOM.accountSettings || !DOM.settingsContentWrapper || !DOM.settingsLoadingSpinner) return;
+
+        // Show spinner and hide content wrapper initially
+        Utils.setElementVisibility(DOM.settingsLoadingSpinner, true);
+        Utils.setElementVisibility(DOM.settingsContentWrapper, false);
+
+        // Fetch data (optional, just simulate a quick load)
+        await new Promise(resolve => setTimeout(resolve, 300)); 
+
+        const currentUser = appAuth.currentUser;
+        if (!currentUser) {
+            DOM.settingsContentWrapper.innerHTML = Utils.getErrorHTML("You must be logged in to view settings.");
+            Utils.setElementVisibility(DOM.settingsLoadingSpinner, false);
+            Utils.setElementVisibility(DOM.settingsContentWrapper, true);
+            return;
+        }
+
+        // --- FULL HTML CONTENT DEFINITION ---
+        const settingsHtml = `
+            <!-- Navigation Tabs (col-lg-3) -->
+            <div class="col-lg-3">
+                <div class="list-group list-group-flush" id="settings-tablist" role="tablist">
+                    <a class="list-group-item list-group-item-action active" data-bs-toggle="list" href="#general-settings" role="tab">
+                        <i class="bi bi-gear-fill me-2"></i> General
+                    </a>
+                    <a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#appearance-settings" role="tab">
+                        <i class="bi bi-palette-fill me-2"></i> Appearance
+                    </a>
+                    <a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#data-management-settings" role="tab">
+                        <i class="bi bi-database-fill me-2"></i> Data & Privacy
+                    </a>
+                    <a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#advanced-controls" role="tab">
+                        <i class="bi bi-tools me-2"></i> Advanced
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tab Content (col-lg-9) -->
+            <div class="col-lg-9">
+                <div class="tab-content">
+
+                    <!-- General Settings Tab -->
+                    <div class="tab-pane fade show active" id="general-settings" role="tabpanel">
+                        <h3 class="text-white mb-4">General Preferences</h3>
+                        
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Profile Shortcuts</h5>
+                            <p class="text-muted small">Quick links to your primary account pages.</p>
+                            <a href="#profile" class="btn btn-outline-info btn-sm w-auto me-2"><i class="bi bi-person-circle"></i> Go to Profile Editor</a>
+                        </div>
+                        
+                        <!-- Streaming Region -->
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Streaming Region & Language</h5>
+                            <p class="text-muted small">Used to filter TMDB content and streaming providers.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="setting-region" class="form-label text-light">Region</label>
+                                    <select id="setting-region" class="form-select form-select-dark">
+                                        <option value="US">United States (US)</option>
+                                        <option value="CA">Canada (CA)</option>
+                                        <option value="GB">United Kingdom (GB)</option>
+                                        <option value="FR">France (FR)</option>
+                                        <!-- Add more regions dynamically -->
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="setting-language" class="form-label text-light">Language</label>
+                                    <select id="setting-language" class="form-select form-select-dark">
+                                        <option value="en-US">English (US)</option>
+                                        <option value="fr-FR">French (FR)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="save-general-settings" class="btn btn-primary mt-3 w-auto"><i class="bi bi-save"></i> Save Preferences</button>
+                        </div>
+                        
+                        <!-- Adult Content Toggle -->
+                         <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Content Filtering</h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label for="setting-adult" class="form-label mb-0 text-white-50">Filter Adult Content</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="setting-adult" checked>
+                                </div>
+                            </div>
+                            <small class="text-muted mt-2">Disabling this filter requires explicit confirmation.</small>
+                        </div>
+                    </div>
+
+                    <!-- Appearance Settings Tab -->
+                    <div class="tab-pane fade" id="appearance-settings" role="tabpanel">
+                        <h3 class="text-white mb-4">Appearance</h3>
+
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Theme Selector</h5>
+                            <p class="text-muted small">Change the primary color scheme of the application.</p>
+                            <!-- Theme selection logic relies on the existing navbar dropdown or external controls -->
+                            <a href="#" class="btn btn-outline-info w-auto" data-bs-toggle="dropdown" data-bs-target="#themeDropdownLink"><i class="bi bi-palette"></i> Open Theme Menu</a>
+                        </div>
+                        
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">UI Density</h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label for="setting-density" class="form-label mb-0 text-white-50">Content Card Size</label>
+                                <select id="setting-density" class="form-select w-auto form-select-dark">
+                                    <option value="compact">Compact (More items)</option>
+                                    <option value="default" selected>Default</option>
+                                    <option value="spacious">Spacious (Larger cards)</option>
+                                </select>
+                            </div>
+                        </div>
+                         <!-- New Motion Toggle -->
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Reduce Motion</h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label for="setting-motion" class="form-label mb-0 text-white-50">Disable large animations and transitions</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="setting-motion">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Management Tab -->
+                    <div class="tab-pane fade" id="data-management-settings" role="tabpanel">
+                        <h3 class="text-white mb-4">Data & Privacy</h3>
+                        
+                        <!-- Clear Watch History -->
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Watch History (Firebase)</h5>
+                            <p class="text-muted small">Clear all records of what you have watched and your progress (Firebase only).</p>
+                            <button id="clear-watch-history-btn" class="btn btn-outline-danger w-auto"><i class="bi bi-trash3"></i> Clear History</button>
+                        </div>
+
+                         <!-- Clear Local Data -->
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Local Storage Cache</h5>
+                            <p class="text-muted small">Clears locally stored data: Watchlist, Favorites, and Theme preference.</p>
+                            <button id="clear-local-data-btn" class="btn btn-outline-danger w-auto"><i class="bi bi-trash3"></i> Clear Local Data</button>
+                        </div>
+
+                        <!-- Export Data -->
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Export Data</h5>
+                            <p class="text-muted small">Download a JSON file containing your Watchlist, Favorites, and Ratings.</p>
+                            <button id="export-user-data-btn" class="btn btn-outline-success w-auto"><i class="bi bi-download"></i> Export My Data</button>
+                        </div>
+
+                        <!-- Trakt.tv Integration (NEW) -->
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Trakt.tv Sync</h5>
+                            <p class="text-muted small">Link your Trakt account to synchronize watch history, progress, and collections.</p>
+                            <div id="trakt-status-area" class="alert alert-warning small d-flex align-items-center mb-3">
+                                <i class="bi bi-hourglass-split me-2"></i> 
+                                <span id="trakt-sync-status">Checking sync status...</span>
+                            </div>
+                            <button id="trakt-auth-btn" class="btn btn-outline-primary w-auto">
+                                <i class="bi bi-link-45deg me-2"></i> Link Trakt Account
+                            </button>
+                            <button id="trakt-unlink-btn" class="btn btn-outline-danger w-auto d-none mt-2">
+                                <i class="bi bi-x-circle me-2"></i> Unlink Trakt
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Controls Tab -->
+                     <div class="tab-pane fade" id="advanced-controls" role="tabpanel">
+                        <h3 class="text-white mb-4">Advanced Controls</h3>
+                        
+                        <!-- Discord Webhook (NEW) -->
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Discord Notifications</h5>
+                            <p class="text-muted small">Post your new ratings and achievements to Discord via Webhook.</p>
+                            <form id="discord-webhook-form">
+                                <label for="setting-discord-webhook" class="form-label text-light">Webhook URL</label>
+                                <div class="input-group">
+                                    <input type="url" id="setting-discord-webhook" class="form-control form-control-dark" placeholder="https://discord.com/api/webhooks/...">
+                                    <button class="btn btn-primary" type="submit" id="save-discord-webhook-btn">Save</button>
+                                </div>
+                            </form>
+                            <button id="test-discord-webhook-btn" class="btn btn-outline-info w-auto mt-2 d-none"><i class="bi bi-send-fill me-2"></i> Test Webhook</button>
+                            <small class="text-warning mt-2">Requires secure backend communication. Functionality is conceptual.</small>
+                        </div>
+
+                        <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Developer / Debug Mode</h5>
+                            <p class="text-muted small">Enables extended logging and visual aids in the console.</p>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="setting-debug">
+                                <label class="form-check-label text-white-50" for="setting-debug">Enable Debug Mode</label>
+                            </div>
+                        </div>
+                         <div class="card bg-secondary p-4 mb-3">
+                            <h5 class="card-title text-light">Clear All Analytics Data</h5>
+                            <p class="text-muted small">Deletes all saved analytics preferences, ratings, and achievements (requires refreshing stats).</p>
+                            <button id="clear-analytics-data-btn" class="btn btn-outline-danger w-auto"><i class="bi bi-bar-chart-fill me-2"></i> Clear Analytics Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        // --- END FULL HTML CONTENT DEFINITION ---
+
+         // 1. Inject HTML
+         DOM.settingsContentWrapper.innerHTML = settingsHtml;
+        
+        // 2. Show Content Wrapper
+        Utils.setElementVisibility(DOM.settingsLoadingSpinner, false);
+        Utils.setElementVisibility(DOM.settingsContentWrapper, true); 
+        
+        // 3. Attach Listeners (Must run before initializing inputs)
+        App.attachSettingsListeners();
+
+        // 4. Initialize Bootstrap Tabs
+        const settingsTabList = document.getElementById('settings-tablist');
+        if (settingsTabList) {
+            // FIX: Use a timeout to ensure Bootstrap JS runs AFTER all the inner HTML is parsed
+            setTimeout(() => {
+                const firstActiveTabLink = settingsTabList.querySelector('.list-group-item.active');
+                
+                if (firstActiveTabLink) {
+                    try {
+                        // Manually trigger the tab show to activate the content pane
+                        const tabInstance = new bootstrap.Tab(firstActiveTabLink);
+                        tabInstance.show(); 
+                    } catch (e) {
+                         console.error("[Settings] Bootstrap Tab initialization failed, check Bootstrap JS link and HTML structure:", e);
+                         Utils.showToast("Settings UI error: Tabs failed to initialize.", "danger");
+                    }
+                }
+                
+                // 5. CRITICAL: Run Trakt status update after DOM is fully ready
+                App.updateTraktStatusUI();
+                
+            }, 100); 
+        }
+    },
+  
+
+    /**
+     * Attaches listeners for all settings buttons and saves data to localStorage or Firebase.
+     */
+    attachSettingsListeners: () => {
+        const currentUser = appAuth.currentUser;
+        if (!currentUser) return;
+        
+        // --- General Settings ---
+        document.getElementById('save-general-settings')?.addEventListener('click', () => {
+            const region = document.getElementById('setting-region').value;
+            const lang = document.getElementById('setting-language').value;
+            const adult = document.getElementById('setting-adult').checked;
+            
+            // In a real app, these preferences would be saved to Firebase/Local Storage
+            localStorage.setItem('user_pref_region', region);
+            localStorage.setItem('user_pref_lang', lang);
+            localStorage.setItem('user_pref_adult', adult);
+            Utils.showToast("General preferences saved!", "success");
+        });
+        
+        // --- Appearance Settings ---
+        document.getElementById('setting-density')?.addEventListener('change', (e) => {
+             localStorage.setItem('user_pref_density', e.target.value);
+             Utils.showToast("UI density preference saved!", "success");
+             // Note: Applying density requires global CSS/JS changes
+        });
+        document.getElementById('setting-motion')?.addEventListener('change', (e) => {
+             localStorage.setItem('user_pref_motion', e.target.value);
+             Utils.showToast("Motion preference saved! Reload to take effect.", "success");
+        });
+
+        // --- Data Management LISTENERS (NEW/FIXED) ---
+
+        // 1. Trakt.tv Listeners
+        document.getElementById('trakt-auth-btn')?.addEventListener('click', App.handleTraktAuth);
+        document.getElementById('trakt-unlink-btn')?.addEventListener('click', App.handleTraktUnlink);
+        
+        // 2. Data Management (Rest remains the same)
+        document.getElementById('clear-watch-history-btn')?.addEventListener('click', async () => {
+             if (confirm("Are you sure you want to delete all your Firebase Watch History? This cannot be undone.")) {
+                 App.clearFirebaseWatchHistory(currentUser.uid); 
+             }
+        });
+        
+
+        document.getElementById('clear-local-data-btn')?.addEventListener('click', () => {
+            if (confirm("Clear local Watchlist, Favorites, and Theme?")) {
+                localStorage.removeItem(Watchlist.STORAGE_KEY);
+                localStorage.removeItem(Favorites.STORAGE_KEY);
+                localStorage.removeItem(App.THEME_STORAGE_KEY);
+                Utils.showToast("Local data cleared. Please refresh the page.", "success");
+            }
+        });
+        
+        document.getElementById('export-user-data-btn')?.addEventListener('click', () => {
+            App.exportUserData(currentUser.uid);
+        });
+
+        // --- Advanced Controls LISTENERS (NEW) ---
+
+        // 1. Discord Webhook Save
+        document.getElementById('discord-webhook-form')?.addEventListener('submit', App.handleDiscordWebhookSave);
+        document.getElementById('test-discord-webhook-btn')?.addEventListener('click', App.handleDiscordWebhookTest);
+
+        document.getElementById('setting-debug')?.addEventListener('change', (e) => {
+             const isDebug = e.target.checked;
+             localStorage.setItem('developer_debug_mode', isDebug);
+             Utils.showToast(`Debug mode set to ${isDebug}. Refresh page to apply.`, "info");
+        });
+
+        // Add handler for Clear Analytics Data button
+        document.getElementById('clear-analytics-data-btn')?.addEventListener('click', () => {
+             if (confirm("WARNING: This deletes ALL your saved ratings, reviews, and achievements. Are you sure?")) {
+                 App.clearFirebaseAnalyticsData(currentUser.uid); 
+             }
+        });
+        
+        // --- Load existing values into inputs (Run once settings content is rendered) ---
+        document.getElementById('setting-region').value = localStorage.getItem('user_pref_region') || config.TARGET_REGION;
+        document.getElementById('setting-language').value = localStorage.getItem('user_pref_lang') || 'en-US';
+        document.getElementById('setting-density').value = localStorage.getItem('user_pref_density') || 'default';
+        document.getElementById('setting-adult').checked = localStorage.getItem('user_pref_adult') !== 'false';
+        document.getElementById('setting-debug').checked = localStorage.getItem('developer_debug_mode') === 'true';
+        document.getElementById('setting-motion').checked = localStorage.getItem('user_pref_motion') === 'true';
+
+        const savedWebhook = localStorage.getItem('user_pref_discord_webhook');
+        const webhookInput = document.getElementById('setting-discord-webhook');
+        const webhookTestBtn = document.getElementById('test-discord-webhook-btn');
+        if (webhookInput) {
+             webhookInput.value = savedWebhook || '';
+             Utils.setElementVisibility(webhookTestBtn, !!savedWebhook);
+        }
+        
+        // Load Trakt Status
+        App.updateTraktStatusUI();
+        App.initializeTooltips(DOM.accountSettings);
+    },
+
+    // --- NEW: TRAKT HANDLERS ---
+    
+    /**
+     * Updates the Trakt integration UI based on locally stored status (conceptual token check).
+     */
+    updateTraktStatusUI: () => {
+        const statusArea = document.getElementById('trakt-status-area');
+        const statusSpan = document.getElementById('trakt-sync-status');
+        const authBtn = document.getElementById('trakt-auth-btn');
+        const unlinkBtn = document.getElementById('trakt-unlink-btn');
+
+        if (!statusArea || !statusSpan || !authBtn || !unlinkBtn) return;
+
+        const hasToken = localStorage.getItem('trakt_access_token');
+
+        if (hasToken) {
+            statusArea.classList.replace('alert-warning', 'alert-success');
+            statusArea.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i> <span id="trakt-sync-status">Sync Active with Trakt!</span>`;
+            Utils.setElementVisibility(authBtn, false);
+            Utils.setElementVisibility(unlinkBtn, true);
+        } else {
+            statusArea.classList.replace('alert-success', 'alert-warning');
+            statusArea.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i> <span id="trakt-sync-status">Disconnected. Link account to enable sync.</span>`;
+            Utils.setElementVisibility(authBtn, true);
+            Utils.setElementVisibility(unlinkBtn, false);
+        }
+    },
+
+    /**
+     * Initiates the Trakt OAuth process (client-side redirect).
+     */
+    handleTraktAuth: () => {
+        // NOTE: This initiates the client-side redirect. 
+        // The callback logic (checking for the 'code' parameter) must be handled 
+        // by a server or by the initial App load if TRAKT_REDIRECT_URI points back here.
+        if (!config.TRAKT_CLIENT_ID || !config.TRAKT_REDIRECT_URI) {
+            Utils.showToast("Trakt configuration missing.", "danger");
+            return;
+        }
+
+        const scope = 'public,activity'; // Required scopes
+        const authUrl = `https://trakt.tv/oauth/authorize?response_type=code&client_id=${config.TRAKT_CLIENT_ID}&redirect_uri=${config.TRAKT_REDIRECT_URI}&scope=${scope}`;
+        
+        Utils.showToast("Redirecting to Trakt for authorization...", "info");
+        window.location.href = authUrl;
+    },
+
+    /**
+     * Clears local Trakt tokens (conceptual unlink).
+     */
+    handleTraktUnlink: () => {
+        if (confirm("Are you sure you want to unlink your Trakt account?")) {
+            localStorage.removeItem('trakt_access_token');
+            localStorage.removeItem('trakt_refresh_token');
+            App.updateTraktStatusUI();
+            Utils.showToast("Trakt account unlinked.", "success");
+        }
+    },
+    
+    // --- NEW: DISCORD HANDLERS ---
+
+    /**
+     * Saves the Discord Webhook URL to local storage.
+     */
+    handleDiscordWebhookSave: (e) => {
+        e.preventDefault();
+        const webhookInput = document.getElementById('setting-discord-webhook');
+        const webhookUrl = webhookInput.value.trim();
+        const webhookTestBtn = document.getElementById('test-discord-webhook-btn');
+
+        if (!webhookUrl || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+            localStorage.removeItem('user_pref_discord_webhook');
+            Utils.setElementVisibility(webhookTestBtn, false);
+            Utils.showToast("Invalid webhook URL cleared.", "warning");
+            return;
+        }
+
+        localStorage.setItem('user_pref_discord_webhook', webhookUrl);
+        Utils.setElementVisibility(webhookTestBtn, true);
+        Utils.showToast("Discord Webhook saved successfully!", "success");
+    },
+    
+    /**
+     * Sends a test message to the saved Discord Webhook.
+     */
+    handleDiscordWebhookTest: async () => {
+        const webhookUrl = localStorage.getItem('user_pref_discord_webhook');
+        if (!webhookUrl) {
+            Utils.showToast("Please save a Webhook URL first.", "warning");
+            return;
+        }
+
+        const testBtn = document.getElementById('test-discord-webhook-btn');
+        testBtn.disabled = true;
+        const originalIcon = testBtn.querySelector('i')?.className || 'bi bi-send-fill';
+        testBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Sending...`;
+
+        try {
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: "AuraStream Webhook Test Successful!",
+                    embeds: [{
+                        title: "AuraStream Integration Test",
+                        description: "Your Discord webhook is correctly receiving notifications from AuraStream.",
+                        color: 16894071, // Primary Accent Color (Purple)
+                        footer: { text: `Test initiated by ${appAuth.currentUser.displayName || 'User'}` }
+                    }]
+                }),
+            });
+
+            if (response.ok) {
+                Utils.showToast("Test message sent to Discord!", "success");
+            } else {
+                Utils.showToast(`Test failed. Discord returned status ${response.status}.`, "danger");
+            }
+        } catch (error) {
+            console.error("Discord webhook test failed:", error);
+            Utils.showToast("Failed to connect to Discord API.", "danger");
+        } finally {
+            testBtn.disabled = false;
+            testBtn.innerHTML = `<i class="${originalIcon}"></i> Test Webhook`;
+        }
+    },
+
+    /**
+     * Iterates through and deletes a user's entire Watch History subcollection in Firestore.
+     * @param {string} userId
+     */
+    clearFirebaseWatchHistory: async (userId) => {
+        if (!appDb) {
+            Utils.showToast("Database not available.", "danger");
+            return;
+        }
+        
+        Utils.showToast("Deleting history... This may take a moment.", "info");
+        
+        try {
+            const historyRef = appDb.collection("users").doc(userId).collection("watchHistory");
+            const snapshot = await historyRef.get();
+            
+            if (snapshot.empty) {
+                Utils.showToast("Watch History is already empty.", "success");
+                return;
+            }
+            
+            const batch = appDb.batch();
+            snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+            
+            await batch.commit();
+            
+            // Clear local cache state too
+            ContinueWatching._cache = []; 
+            
+            Utils.showToast(`Successfully deleted ${snapshot.size} history records!`, "success");
+
+        } catch (error) {
+            console.error("Error deleting watch history:", error);
+            Utils.showToast(`Failed to delete history: ${error.message}`, "danger");
+        }
+    },
+
+    /**
+     * NEW: Clears user ratings, reviews, and achievements for analytics.
+     * @param {string} userId
+     */
+     clearFirebaseAnalyticsData: async (userId) => {
+        if (!appDb) {
+            Utils.showToast("Database not available.", "danger");
+            return;
+        }
+        
+        Utils.showToast("Deleting all ratings, reviews, and achievements...", "info");
+        
+        try {
+            // 1. Delete Ratings (stored under 'ratings/{uid}/userRatings')
+            const ratingsRef = appDb.collection("ratings").doc(userId).collection("userRatings");
+            const ratingsSnapshot = await ratingsRef.get();
+            const ratingsBatch = appDb.batch();
+            ratingsSnapshot.docs.forEach(doc => ratingsBatch.delete(doc.ref));
+            await ratingsBatch.commit();
+            
+            // 2. Delete Achievements (stored under 'users/{uid}/achievements')
+            const achievementsRef = appDb.collection("users").doc(userId).collection("achievements");
+            const achievementsSnapshot = await achievementsRef.get();
+            const achievementsBatch = appDb.batch();
+            achievementsSnapshot.docs.forEach(doc => achievementsBatch.delete(doc.ref));
+            await achievementsBatch.commit();
+            
+            // NOTE: Reviews are stored under item_ratings. Deleting these requires querying 
+            // item_ratings collection group, which is highly complex and slow. 
+            // For a robust frontend solution, we skip deleting *other users'* review data, 
+            // but the user's *contributions* will still be visible until manually deleted by admin 
+            // or by triggering the delete handler on every review document. 
+            // We just focus on deleting user-specific data (ratings/achievements).
+
+            Utils.showToast(`Analytics data (ratings & achievements) successfully cleared!`, "success");
+
+        } catch (error) {
+            console.error("Error deleting analytics data:", error);
+            Utils.showToast(`Failed to clear analytics data: ${error.message}`, "danger");
+        }
+    },
+
+
+    /**
+     * Exports user data (Watchlist, Favorites, Ratings) as a JSON file.
+     * @param {string} userId
+     */
+    exportUserData: async (userId) => {
+        if (!appDb) {
+            Utils.showToast("Database not available for export.", "danger");
+            return;
+        }
+
+        Utils.showToast("Preparing data for export...", "info");
+        
+        try {
+            const [ratingsSnapshot, watchHistorySnapshot] = await Promise.all([
+                appDb.collection("ratings").doc(userId).collection("userRatings").get(),
+                appDb.collection("users").doc(userId).collection("watchHistory").get()
+            ]);
+
+            const exportedData = {
+                metadata: {
+                    exportDate: new Date().toISOString(),
+                    userId: userId,
+                    appVersion: "AuraStream v2.0"
+                },
+                localWatchlist: Watchlist.getList(),
+                localFavorites: Favorites.getList(),
+                ratings: ratingsSnapshot.docs.map(doc => doc.data()),
+                watchHistory: watchHistorySnapshot.docs.map(doc => doc.data())
+            };
+
+            const dataStr = JSON.stringify(exportedData, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `aurastream_export_${userId}_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            Utils.showToast("Data export initiated!", "success");
+
+        } catch (error) {
+            console.error("Error exporting user data:", error);
+            Utils.showToast(`Export failed: ${error.message}`, "danger");
+        }
+    },
+
+    /**
+     * Renders the Recent Watched list specifically for the Profile page.
+     * Uses the horizontal card style including progress bars and resume buttons.
+     * @param {Array} items - Array of watch history items.
+     * @param {HTMLElement} containerElement - #profile-recent-watched-container
+     */
+    _renderProfileRecentWatched: (items, containerElement) => {
+        if (!containerElement) return;
+
+        containerElement.innerHTML = ''; // Clear skeletons
+
+        items.forEach(item => {
+            const title = Utils.escapeHtml(item.title);
+            const imagePath = item.backdrop_path || item.poster_path;
+            const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w780${imagePath}` : null;
+            const progressPercent = item.progressPercent || 0;
+            const durationWatched = item.estimatedDurationWatchedSeconds || 0; 
+            const formattedTime = Utils.formatDurationToTime(durationWatched);
+            
+            let statusMessage = `${formattedTime} watched`;
+            if (progressPercent >= 95) {
+                statusMessage = "Ready for completion";
+            } else if (item.type === 'tv' && item.episodeTitle) {
+                statusMessage = `Resume S${item.seasonNumber} E${item.episodeNumber}`;
+            }
+
+            let cardHref = `#player=${item.type}/${item.id}`;
+            if (item.type === 'tv' && item.seasonNumber && item.episodeNumber) {
+                cardHref += `/${item.seasonNumber}/${item.episodeNumber}`;
+            }
+            
+            const cardLink = document.createElement('a');
+            cardLink.href = cardHref;
+            cardLink.className = 'h-card continue-watching-card'; 
+            cardLink.title = `Resume: ${title}`;
+
+            const imageHtml = imageUrl
+                ? `<img src="${imageUrl}" class="h-card-backdrop" alt="${title}" loading="lazy">`
+                : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-film fs-1 text-muted"></i></div>`;
+            
+            const overlayHtml = `
+                <div class="h-card-overlay">
+                    <h3 class="h-card-title">${title}</h3>
+                    ${item.type === 'tv' && item.episodeTitle ? `<span class="h-card-episode-title">S${item.seasonNumber} E${item.episodeNumber} - ${Utils.escapeHtml(item.episodeTitle)}</span>` : ''}
+                    
+                    <p class="h-card-meta continue-status mt-auto">
+                        ${statusMessage}
+                    </p>
+                    
+                    <div class="progress-bar-container">
+                        <small class="progress-label">${progressPercent}%</small>
+                        <div class="progress-bar-fill" style="width: ${progressPercent}%;" title="${progressPercent}% Watched"></div>
+                    </div>
+                    
+                    <button class="h-card-resume-btn" aria-label="Resume ${title}" title="Resume Watching">
+                        <i class="bi bi-play-circle-fill"></i>
+                    </button>
+                </div>
+            `;
+            
+            cardLink.innerHTML = imageHtml + overlayHtml;
+            containerElement.appendChild(cardLink);
+            
+            cardLink.querySelector('.h-card-resume-btn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.hash = cardHref; 
+            });
+        });
+        
+        // Finalize horizontal scroll buttons after rendering
+        const wrapper = containerElement.closest('.horizontal-scroll-wrapper');
+        const prevBtn = wrapper?.querySelector('.h-scroll-btn.prev');
+        const nextBtn = wrapper?.querySelector('.h-scroll-btn.next');
+
+        if (wrapper && prevBtn && nextBtn) {
+            App.updateHScrollButtons(containerElement, prevBtn, nextBtn);
+        }
+    },
          loadPlayerPageContext: async (type, id, season = null, episode = null) => {
              if (!DOM.playerTitleEl || !DOM.playerSourceBtnsContainer || !DOM.playerIframe || !DOM.playerIframePlaceholder || !DOM.playerEpisodeSelectorContainer) return;
 
@@ -5114,7 +6185,9 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
         }
     },
 
-    /**
+
+  
+/**
      * Renders the fetched network results into the grid and updates the 'Load More' button.
      * @param {Array} results - Array of movie/TV show objects from TMDB.
      * @param {number} currentPage - The current page number that was loaded.
@@ -5210,6 +6283,8 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                 }
             },
 
+            // --- Locate App.renderPersonPage in script-v2.js ---
+
         renderPersonPage: (personData) => {
             if (!DOM.personWrapper) return;
 
@@ -5217,23 +6292,13 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                 id: personId,
                 name, profile_path, biography, birthday, place_of_birth,
                 known_for_department, combined_credits,
-                // --- Add these ---
-                external_ids, // The whole object
-                homepage      // The person's homepage URL
-                // ---------------
-                // gender, deathday // Add if needed later
+                external_ids, 
+                homepage      
             } = personData;
 
-            // --- Extract specific IDs from external_ids (with fallback) ---
-            const {
-                imdb_id,
-                facebook_id,
-                instagram_id,
-                twitter_id,
-                wikidata_id
-            } = external_ids || {}; // Use || {} as fallback if external_ids is null/undefined
-
-            // Profile URLs (no changes needed here)
+            // --- DATA PREPARATION ---
+            
+            // 1. Profile URLs
             const profileUrlLarge = profile_path
                 ? `${config.PROFILE_BASE_URL_LARGE || config.PROFILE_BASE_URL}${profile_path}`
                 : null;
@@ -5241,36 +6306,38 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                 ? `${config.PROFILE_BASE_URL}${profile_path}`
                 : 'https://via.placeholder.com/250x375/1a1d24/808080?text=No+Image';
 
-            // Known Credits (no changes needed here)
+            // 2. Known Credits (Filtered, Sorted, and Sliced)
             const knownCredits = combined_credits?.cast
                 ?.filter(c => c.poster_path && (c.media_type === 'movie' || c.media_type === 'tv'))
                 .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
                 .slice(0, 18) || [];
+            
+            // 3. Filter Data Generation
+            const allRoles = new Set(knownCredits.map(c => c.job || (c.character ? 'Acting' : 'Unknown')));
+            const roleFilterHtml = Array.from(allRoles).map(role => `
+                <button class="btn btn-sm btn-outline-light role-filter-btn" data-filter-role="${Utils.escapeHtml(role).toLowerCase()}">${Utils.escapeHtml(role)}</button>
+            `).join('');
 
-             // --- Update Social Links HTML ---
-             // Now use the extracted imdb_id and homepage variables
-            let socialLinksHtml = '<div class="person-social-links mt-2 mb-3">'; // Start div
+            // 4. Social Links HTML
+            const { imdb_id } = external_ids || {};
+            let socialLinksHtml = '<div class="person-social-links mt-2 mb-3">';
 
             if (imdb_id) {
                 socialLinksHtml += `<a href="https://www.imdb.com/name/${imdb_id}" target="_blank" rel="noopener noreferrer" class="text-white-50 me-3 fs-5" title="IMDb"><i class="bi bi-imdb"></i></a>`;
             } else {
-                 // Optional: Show disabled link if no ID
                 socialLinksHtml += `<a href="#" class="text-white-50 me-3 fs-5 disabled opacity-50" title="IMDb (Not Available)"><i class="bi bi-imdb"></i></a>`;
             }
-
             if (homepage) {
                 socialLinksHtml += `<a href="${homepage}" target="_blank" rel="noopener noreferrer" class="text-white-50 fs-5" title="Homepage"><i class="bi bi-link-45deg"></i></a>`;
             } else {
                 socialLinksHtml += `<a href="#" class="text-white-50 fs-5 disabled opacity-50" title="Homepage (Not Available)"><i class="bi bi-link-45deg"></i></a>`;
             }
+            socialLinksHtml += `<a href="#" class="text-white-50 me-3 fs-5 disabled opacity-50" title="Twitter (Coming Soon)"><i class="bi bi-twitter-x"></i></a>`;
+            socialLinksHtml += `<a href="#" class="text-white-50 me-3 fs-5 disabled opacity-50" title="Instagram (Coming Soon)"><i class="bi bi-instagram"></i></a>`;
+            socialLinksHtml += '</div>';
+            
+            // --- PART 3: HTML INJECTION ---
 
-            // Add placeholders/logic for other social links (Twitter, Instagram etc.) if needed
-             socialLinksHtml += `<a href="#" class="text-white-50 me-3 fs-5 disabled opacity-50" title="Twitter (Coming Soon)"><i class="bi bi-twitter-x"></i></a>`;
-             socialLinksHtml += `<a href="#" class="text-white-50 me-3 fs-5 disabled opacity-50" title="Instagram (Coming Soon)"><i class="bi bi-instagram"></i></a>`;
-            socialLinksHtml += '</div>'; // End div
-
-
-            // --- The rest of your personHtml generation ---
             let personHtml = `
             <div class="row person-header mb-4 mb-md-5">
                 <div class="col-md-4 col-lg-3 person-profile-pic text-center text-md-start mb-4 mb-md-0">
@@ -5284,12 +6351,9 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                         ${known_for_department ? `<p><strong class="text-white-50 custom-color-st">Known For:</strong> ${Utils.escapeHtml(known_for_department)}</p>` : ''}
                         ${birthday ? `<p><strong class="text-white-50 custom-color-st">Born:</strong> ${Utils.formatAirDate(birthday)}</p>` : ''}
                         ${place_of_birth ? `<p><strong class="text-white-50 custom-color-st">Place of Birth:</strong> ${Utils.escapeHtml(place_of_birth)}</p>` : ''}
-                        
                     </div>
 
-                    
                     <div class="details-section mt-4">
-                    
                         <h4 class="text-white fw-semibold custom-color">AI Bio Highlight</h4>
                         <div id="ai-bio-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 60px;">
                              <p class="text-muted small mb-0">Click the button for an AI-generated career highlight.</p>
@@ -5302,7 +6366,6 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                         <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
                     </div>
 
-                    
                     ${biography ? `
                         <h4 class="text-white mt-4 fw-semibold custom-color">Biography</h4>
                         <div class="person-bio" id="person-bio-text">
@@ -5314,33 +6377,57 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
             </div>
             `;
 
-            const connectionButtonHtml = `
-            <div class="mt-4"> 
+            // Connection Explorer Button HTML (Defined outside of personInfo column)
+            const connectionButtonHtmlContent = `
                 <button class="btn btn-outline-info btn-connection-explorer"
                         data-item-id="${personData.id}"
                         data-item-type="person"
                         data-item-title="${Utils.escapeHtml(personData.name || '')}">
                     <i class="bi bi-diagram-3-fill me-1"></i> Show Connections
                 </button>
-            </div>
             `;
 
+
             // Known For Section (Filmography)
-            // ... (rest of your code for known for, setting background, post-render actions) ...
             if (knownCredits.length > 0) {
                     personHtml += `
                         <div class="filmography-section mt-5">
                             <h2 class="filmography-title">Known For</h2>
+                            
+                            <!-- FILTER BAR -->
+                            <div id="filmography-filters" class="mb-4 d-flex flex-wrap gap-2">
+                                <button class="btn btn-sm btn-primary role-filter-btn" data-filter-role="all">All Roles</button>
+                                ${roleFilterHtml}
+                                <button class="btn btn-sm btn-outline-light type-filter-btn" data-filter-type="movie">Movies</button>
+                                <button class="btn btn-sm btn-outline-light type-filter-btn" data-filter-type="tv">TV Shows</button>
+                            </div>
+                            
                             <div id="person-known-for-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
                             </div>
+                            <script id="full-credits-data" type="application/json">${Utils.escapeHtml(JSON.stringify(knownCredits))}</script>
                         </div>
                     `;
                 }
 
             DOM.personWrapper.innerHTML = personHtml;
-            // --- Post-Render Actions ---
 
-            // Set Background Image Effect
+            // --- PART 4: POST-RENDER SETUP (Listeners and Data) ---
+
+            // A. Connection Explorer Button (Append to person-info container for layout)
+            const infoContainer = DOM.personWrapper.querySelector('.person-info');
+            if (infoContainer) {
+                const btnDiv = document.createElement('div');
+                btnDiv.className = 'mt-4';
+                btnDiv.innerHTML = connectionButtonHtmlContent.trim();
+                const connectionButton = btnDiv.querySelector('.btn-connection-explorer');
+                if (connectionButton) {
+                   connectionButton.addEventListener('click', App.handleShowConnectionsClick);
+                   infoContainer.appendChild(connectionButton.closest('div'));
+                }
+            }
+
+
+            // B. Set Background Image Effect
             const headerElement = DOM.personWrapper.querySelector('.person-header');
             if (headerElement && profileUrlLarge) {
                  headerElement.style.setProperty('--person-bg-image', `url(${profileUrlLarge})`);
@@ -5348,15 +6435,17 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                  headerElement.style.removeProperty('--person-bg-image');
             }
 
-            // Render Known For cards
+            // C. Render Known For cards (Initial render using the full list)
             if (knownCredits.length > 0) {
                     const knownForGrid = document.getElementById('person-known-for-grid');
                     if (knownForGrid) {
-                        // RenderTmdbCards clears the container before adding cards
                         App.renderTmdbCards(knownCredits, knownForGrid, null, false);
+                        // --- CRITICAL: ATTACH FILTER LISTENERS ---
+                        App.setupFilmographyFilters(knownCredits);
                     }
             }
-             // Add "Read More" functionality for biography
+            
+            // D. Add "Read More" functionality for biography
              const bioText = document.getElementById('person-bio-text');
              const readMoreBtn = document.getElementById('read-more-bio-btn');
              if (bioText && readMoreBtn) {
@@ -5379,7 +6468,8 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                 }, 150);
              }
 
-            // Add AI Button Listener
+
+            // E. Add AI Button Listener
             DOM.personAiBioBtn = DOM.personWrapper.querySelector('#get-ai-bio-btn');
             DOM.personAiBioContainer = DOM.personWrapper.querySelector('#ai-bio-container');
             if (DOM.personAiBioBtn) {
@@ -5392,17 +6482,10 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                 });
             }
 
-            const infoContainer = DOM.personWrapper.querySelector('.person-info'); // Find container
-            if (infoContainer) {
-                const btnDiv = document.createElement('div');
-                btnDiv.innerHTML = connectionButtonHtml.trim();
-                const connectionButton = btnDiv.firstChild;
-                connectionButton.addEventListener('click', App.handleShowConnectionsClick);
-                infoContainer.appendChild(connectionButton); // Append button to info section
-            }
-
             App.initializeTooltips(DOM.personWrapper);
         },
+
+        
 
         // --- NEW Connection Explorer Methods ---
 
@@ -5455,6 +6538,69 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
     },
 
 
+     /**
+     * Sets up listeners for the filmography filter buttons and executes filtering.
+     * @param {Array} fullCredits - The complete, unfiltered list of credits.
+     */
+    setupFilmographyFilters: (fullCredits) => {
+        const filterContainer = document.getElementById('filmography-filters');
+        const grid = document.getElementById('person-known-for-grid');
+        if (!filterContainer || !grid) return;
+
+        let activeRole = 'all';
+        let activeType = 'all';
+
+        const filterAndRender = () => {
+            let filtered = fullCredits;
+
+            // 1. Filter by Role
+            if (activeRole !== 'all') {
+                filtered = filtered.filter(item => {
+                    const itemRole = (item.job || item.character || 'Unknown').toLowerCase();
+                    // Check if the primary filter matches the item's role
+                    return itemRole.includes(activeRole);
+                });
+            }
+
+            // 2. Filter by Type (Movie/TV)
+            if (activeType !== 'all') {
+                filtered = filtered.filter(item => item.media_type === activeType);
+            }
+
+            // Re-render the cards
+            App.renderTmdbCards(filtered, grid, null, false);
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p class="col-12 py-4 text-center text-muted">No titles found for these filters.</p>';
+            }
+        };
+
+        const updateButtonState = (e, newActive, category) => {
+            // Reset all buttons in the same category
+            filterContainer.querySelectorAll(`[data-filter-${category}]`).forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-light');
+            });
+            // Activate the clicked button
+            e.target.classList.remove('btn-outline-light');
+            e.target.classList.add('btn-primary');
+        };
+
+        filterContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('.role-filter-btn');
+            if (!btn) return;
+
+            if (btn.dataset.filterRole) {
+                activeRole = btn.dataset.filterRole;
+                updateButtonState(e, activeRole, 'role');
+            } else if (btn.dataset.filterType) {
+                activeType = btn.dataset.filterType;
+                updateButtonState(e, activeType, 'type');
+            }
+
+            filterAndRender();
+        });
+    },
     loadAndDisplayConnections: async ({ id, type }) => {
         console.log(`--- loadAndDisplayConnections STARTED for ${type}/${id} ---`);
         const container = DOM.connectionGraphContainer;
@@ -5945,296 +7091,47 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                  `;
              },
 
-             // Renders the details page content
-             /*renderDetailsPage: (itemData) => {
-                 if (!DOM.detailsWrapper) return;
-                 DOM.detailsWrapper.innerHTML = ''; // Clear previous
-
-                 const type = itemData.title ? 'movie' : 'tv';
-                 const displayTitle = Utils.escapeHtml(itemData.title || itemData.name || 'N/A');
-                 const backdropUrl = itemData.backdrop_path ? `${config.BACKDROP_BASE_URL}${itemData.backdrop_path}` : '';
-                 const posterUrl = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : '';
-                 const rating = itemData.vote_average ? itemData.vote_average.toFixed(1) : null;
-                 const year = (itemData.release_date || itemData.first_air_date || '').substring(0, 4);
-                 const formattedRuntime = type === 'movie' && itemData.runtime ? Utils.formatRuntime(itemData.runtime) : null;
-                 const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
-                 const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
-
-                // --- Add Connection Explorer Button near Actions ---
-                const connectionButtonHtml = `
-                    <button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2"
-                       data-item-id="${itemData.id}"
-                       data-item-type="${type}"
-                       data-item-title="${Utils.escapeHtml(itemData.title || itemData.name || '')}">
-                       <i class="bi bi-diagram-3-fill me-1"></i> Show Connections
-                    </button>
-                 `;
-
-                 // Extract credits
-                 const credits = itemData.credits;
-                 const director = credits?.crew?.find(p => p.job === 'Director')?.name;
-                 const creators = type === 'tv' ? credits?.crew?.filter(p => p.department === 'Writing' && (p.job === 'Creator' || p.job === 'Writer')).map(c => Utils.escapeHtml(c.name)).slice(0, 3).join(', ') : ''; // Get up to 3 creators/writers
-                 const castList = credits?.cast?.slice(0, 12) || []; // Top 12 cast members
-
-                 // Similar items
-                 const similarList = itemData.similar?.results?.slice(0, 12) || [];
-
-                
-                // Watch Providers (US Flatrate only)
-                const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
-
-                const actionsContainerSelector = '.details-actions';
-                 let detailsHtml = `
-                     <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
-                     <div class="container details-content-overlay">
-                         <button onclick="Utils.goBackOrHome();" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                         <div class="details-header row mb-5 align-items-center">
-                             <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
-                                 ${posterUrl ? `<img src="${posterUrl}" alt="${displayTitle} Poster" class="img-fluid shadow-lg" style="border-radius: var(--radius-lg); border: 3px solid rgba(255,255,255,0.1);" loading="lazy">` : `<div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center mx-auto" style="width:100%; aspect-ratio:2/3; max-width:280px;">No Poster</div>`}
-                             </div>
-                             <div class="details-info col-lg-9 col-md-8">
-                                 <h1 class="text-white mb-2 custom-color">${displayTitle}</h1>
-                                 <div class="details-meta mb-3 d-flex align-items-center flex-wrap">
-                                     ${rating && parseFloat(rating) > 0 ? `<span class="d-flex align-items-center me-3"><i class="bi bi-star-fill text-warning me-1"></i> ${rating}/10</span>` : ''}
-                                     ${year ? `<span class="d-flex align-items-center me-3"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
-                                     ${formattedRuntime ? `<span class="d-flex align-items-center me-3"><i class="bi bi-clock me-1"></i> ${formattedRuntime}</span>` : ''}
-                                     ${numberOfSeasons ? `<span class="d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${numberOfSeasons} Season${numberOfSeasons > 1 ? 's' : ''}</span>` : ''}
-                                 </div>
-                                 <div class="genres mb-3">
-                                     ${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}
-                                 </div>
-                                 ${displayOverview !== 'No overview available.' ? `<h4 id="text-white" class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
-                                 ${director ? `<p class="small mb-1"><strong class="text-white-50"">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
-                                 ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
-                                <div class="details-section mt-4">
-                                    <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
-                                    <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;">
-                                        <p class="text-muted small mb-0">Click the button to generate AI-powered insights.</p>
-                                    </div>
-                                    <button id="get-ai-insight-btn" class="btn btn-sm btn-outline-info"
-                                        data-item-id="${itemData.id}"
-                                        data-item-type="${type}"
-                                        data-item-title="${displayTitle}"
-                                        data-item-year="${year}">
-                                        <i class="bi bi-magic me-1"></i> Get AI Insight
-                                    </button>
-                                    <small class="d-block text-muted mt-1">Powered by Google Gemini. May contain inaccuracies.</small>
-                                </div>
-                                <div class="user-rating mt-3">
-                                    <label class="text-white me-2">Your Rating:</label>
-                                    <select id="user-rating-select" class="form-select form-select-sm d-inline-block w-auto">
-                                        <option value="">--</option>
-                                        ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}">${n}</option>`).join('')}
-                                    </select>
-                                    <button id="save-rating-btn" class="btn btn-sm btn-outline-warning ms-2">Rate</button>
-                                </div>
-                                 <div class="details-actions mt-4">
-                                     <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
-                                      <!-- Add Trailer Button if videos exist -->
-                                      ${itemData.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ?
-                                          `<button class="btn btn-outline-secondary btn-lg" onclick="App.playTrailer('${itemData.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}')"><i class="bi bi-film me-2"></i> Play Trailer</button>` : ''
-                                      }
-                                 </div>
-                             </div>
-                         </div>
-                 `;
-
-                 // Seasons & Episodes Section (for TV only)
-                 if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
-                     // Filter out "Specials" (season 0) unless it's the only season
-                     const validSeasons = itemData.seasons.filter(s => s.season_number > 0 || itemData.seasons.length === 1);
-                     if (validSeasons.length > 0) {
-                         detailsHtml += App.renderTVSeasonsSection(itemData.id, validSeasons);
-                     }
-                 }
-
-                // Cast Section - UPDATED to use links to #person view
-                if (castList.length > 0) {
-                    detailsHtml += `
-                        <div class="details-section mt-5">
-                            <h2 class="details-section-title">Cast</h2>
-                            <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
-                                ${castList.map(member => {
-                                    const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A'; // Use smaller image for cast grid
-                                    // Wrap in an anchor tag linking to the person view
-                                return `
-                            <div class="col mb-3">
-                                <a href="#person=${member.id}" class="cast-member-link">
-                                    <i class="bi bi-person-circle img-fallback-icon-init d-none"></i>
-                                   <img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy" onerror="this.previousElementSibling.classList.remove('d-none'); this.classList.add('d-none');">
-                                   <div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div>
-                                   <div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div>
-                                </a>
-                                <style>
-                                    .d-none {
-                                        display: none;
-                                    }
-
-                                    .img-fallback-icon-init {
-                                        font-size: 8rem;  
-                                        color: #ccc;  
-                                        display: inline-block;
-                                        width: 120px;  
-                                        height: 180px; 
-                                        text-align: center;
-                                        line-height: 180px; 
-                                    }
-
-                                </style>
-                           </div>
-                        `;
-                           }).join('')}
-                         </div>
-                      </div>
-                    `;
-                }
-
-
-                 // Similar Section
-                 if (similarList.length > 0) {
-                     detailsHtml += `
-                         <div class="details-section mt-5">
-                             <h2 class="details-section-title">You Might Also Like</h2>
-                             <div id="similar-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
-                                 <!-- Similar items rendered after main HTML insertion -->
-                                 ${Utils.getSpinnerHTML("Loading recommendations...")}
-                             </div>
-                         </div>
-                     `;
-                 }
-
-                 // Streaming Providers Section
-                 if (usSubProviders.length > 0) {
-                     detailsHtml += `
-                          <div class="details-section mt-5">
-                              <h2 class="details-section-title">Stream on (US Subscriptions)</h2>
-                              <div class="d-flex flex-wrap gap-3 align-items-center">
-                                  ${usSubProviders.map(p => `
-                                      <a href="#network=${p.provider_id}" title="Browse ${Utils.escapeHtml(p.provider_name)}">
-                                          <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" style="width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover;" loading="lazy">
-                                      </a>`).join('')}
-                              </div>
-                              <small class="d-block mt-2 text-muted">Streaming availability via JustWatch/TMDb.</small>
-                          </div>
-                      `;
-                  }
-
-
-                 detailsHtml += `</div>`; // Close main container
-                 DOM.detailsWrapper.innerHTML = detailsHtml;
-
-                 // --- Post-Render Actions ---
-                 // Render similar cards
-                 if (similarList.length > 0) {
-                     const similarGrid = document.getElementById('similar-grid');
-                     if (similarGrid) {
-                         App.renderTmdbCards(similarList, similarGrid, type, false); // Pass type hint
-                     }
-                 }
-
-                 // Initialize season tabs and load first season if TV
-                 if (type === 'tv' && itemData.seasons?.filter(s => s.season_number > 0 || itemData.seasons.length === 1).length > 0) {
-                     App.addSeasonTabListeners(itemData.id);
-                     // Trigger click on the first non-disabled tab to load its content
-                     const firstTab = DOM.detailsWrapper.querySelector('.nav-pills .nav-link:not(.disabled)');
-                     firstTab?.click();
-                 }
-
-                // Add listener for the connection button *after* rendering
-                const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
-                if (actionsContainer) {
-                   // Create button element and add listener
-                   const btnDiv = document.createElement('div'); // Temporary div
-                   btnDiv.innerHTML = connectionButtonHtml.trim();
-                   const connectionButton = btnDiv.firstChild;
-                   connectionButton.addEventListener('click', App.handleShowConnectionsClick);
-                   actionsContainer.appendChild(connectionButton); // Append the button
-                }
-
-                const ratingSelect = DOM.detailsWrapper.querySelector('#user-rating-select');
-                const saveRatingBtn = DOM.detailsWrapper.querySelector('#save-rating-btn');
-
-                if (ratingSelect && saveRatingBtn) {
-                    saveRatingBtn.addEventListener('click', async () => {
-                    const value = parseInt(ratingSelect.value);
-                    if (!value) {
-                        Utils.showToast("Please select a rating first.", "warning");
-                        return;
-                    }
-
-                    if (!appAuth?.currentUser || !appDb) {
-                        Utils.showToast("You must be logged in to rate.", "info");
-                        return;
-                    }
-
-                    const userId = appAuth.currentUser.uid;
-                    const type = itemData.title ? 'movie' : 'tv';
-                    const docId = `${type}-${itemData.id}`;
-
-                    try {
-                        await appDb.collection("ratings")
-                        .doc(userId)
-                        .collection("userRatings")
-                        .doc(docId)
-                        .set({
-                            type,
-                            tmdbId: itemData.id,
-                            title: itemData.title || itemData.name,
-                            rating: value,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-
-                        Utils.showToast(`Rated ${value}/10 successfully!`, "success");
-                    } catch (err) {
-                        console.error("Error saving rating:", err);
-                        Utils.showToast("Failed to save rating.", "danger");
-                    }
-                });
-            }
-
-
-                // --- NEW: Add AI Button Listener ---
-                DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn');
-                DOM.detailsAiInsightContainer = DOM.detailsWrapper.querySelector('#ai-insight-container');
-                if (DOM.detailsAiInsightBtn) {
-                    DOM.detailsAiInsightBtn.addEventListener('click', (e) => {
-                        const btn = e.currentTarget;
-                        App.handleGetAiInsight(
-                            btn.dataset.itemType,
-                            btn.dataset.itemId,
-                            btn.dataset.itemTitle,
-                            btn.dataset.itemYear
-                        );
-                    });
-                }
-
-                 App.initializeTooltips(DOM.detailsWrapper); // Activate tooltips within details view
-             },*/
-
-      // --- REPLACE your old renderDetailsPage function with this one ---
-  renderDetailsPage: (itemData) => {
+            /**
+             * 
+             *renderDetailsPage: (itemData) => {
     if (!DOM.detailsWrapper) return;
     DOM.detailsWrapper.innerHTML = ''; // Clear previous
 
+    // --- CRITICAL DATA EXTRACTION FOR GAMIFICATION & DISPLAY ---
     const type = itemData.title ? 'movie' : 'tv';
     const displayTitle = Utils.escapeHtml(itemData.title || itemData.name || 'N/A');
     const backdropUrl = itemData.backdrop_path ? `${config.BACKDROP_BASE_URL}${itemData.backdrop_path}` : '';
     const posterUrl = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : '';
     const rating = itemData.vote_average ? itemData.vote_average.toFixed(1) : null;
-    const year = (itemData.release_date || itemData.first_air_date || '').substring(0, 4);
+    
+    const releaseYearStr = itemData.release_date || itemData.first_air_date;
+    const year = releaseYearStr ? releaseYearStr.substring(0, 4) : '';
+    
     const formattedRuntime = type === 'movie' && itemData.runtime ? Utils.formatRuntime(itemData.runtime) : null;
     const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
     const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
-    const connectionButtonHtml = `<button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2" data-item-id="${itemData.id}" data-item-type="${type}" data-item-title="${displayTitle}"><i class="bi bi-diagram-3-fill me-1"></i> Show Connections</button>`;
+    
     const credits = itemData.credits;
-    const director = credits?.crew?.find(p => p.job === 'Director')?.name;
+    const directorObj = credits?.crew?.find(p => p.job === 'Director');
+    const directorName = directorObj ? directorObj.name : null; 
+    
     const creators = type === 'tv' ? credits?.crew?.filter(p => p.department === 'Writing' && (p.job === 'Creator' || p.job === 'Writer')).map(c => Utils.escapeHtml(c.name)).slice(0, 3).join(', ') : '';
     const castList = credits?.cast?.slice(0, 12) || [];
     const similarList = itemData.similar?.results?.slice(0, 12) || [];
     const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
+    // --- NEW: Extract Buy and Rent Providers ---
+    const usBuyProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.buy || [];
+    const usRentProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.rent || [];
     const actionsContainerSelector = '.details-actions';
-
-    // --- PART 1: Build the HTML string, following your original structure ---
+    
+    // Gamification Metadata
+    const decade = releaseYearStr ? `${Math.floor(new Date(releaseYearStr).getFullYear() / 10) * 10}` : null;
+    const directorId = directorObj ? directorObj.id : null;
+    const genreIds = itemData.genres?.map(g => g.id) || [];
+    
+    const connectionButtonHtml = `<button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2" data-item-id="${itemData.id}" data-item-type="${type}" data-item-title="${displayTitle}"><i class="bi bi-diagram-3-fill me-1"></i> Show Connections</button>`;
+    
+    // --- PART 2: BUILD MAIN HTML STRING ---
     let detailsHtml = `
         <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
         <div class="container details-content-overlay">
@@ -6253,11 +7150,11 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                     </div>
                     <div class="genres mb-3">${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}</div>
                     ${displayOverview !== 'No overview available.' ? `<h4 id="text-white" class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
-                    ${director ? `<p class="small mb-1"><strong class="text-white-50">Director:</strong> ${Utils.escapeHtml(director)}</p>` : ''}
+                    ${directorObj ? `<p class="small mb-1"><strong class="text-white-50">Director:</strong> ${Utils.escapeHtml(directorObj.name)}</p>` : ''}
                     ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
                     <div class="details-section mt-4">
                         <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
-                        <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;"><p class="text-muted small mb-0">Click the button to generate AI-powered insights.</p></div>
+                        <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;"><p class="text-muted small mb-0">Click the button for AI-powered insights.</p></div>
                         <button id="get-ai-insight-btn" class="btn btn-sm btn-outline-info" data-item-id="${itemData.id}" data-item-type="${type}" data-item-title="${displayTitle}" data-item-year="${year}"><i class="bi bi-magic me-1"></i> Get AI Insight</button>
                     </div>
                     <div class="user-rating mt-3" id="user-rating-container">
@@ -6273,8 +7170,6 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
             </div>
     `;
 
-
-
     if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
         const validSeasons = itemData.seasons.filter(s => s.season_number > 0 || itemData.seasons.length === 1);
         if (validSeasons.length > 0) {
@@ -6282,7 +7177,7 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
         }
     }
 
-    // --- NEW: REVIEWS SECTION ADDED HERE ---
+    // --- REVIEWS SECTION ---
     detailsHtml += `
         <div class="details-section mt-5">
             <h2 class="details-section-title">Reviews <span id="review-count-badge" class="review-count-badge">...</span></h2>
@@ -6304,7 +7199,23 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
             </div>
         `;
     }
+    
+    // --- SPOTIFY SOUNDTRACK SECTION ---
+    detailsHtml += `
+        <div class="details-section mt-5" id="spotify-soundtrack-section" >
+            <h2 class="details-section-title d-flex align-items-center">
+                <i class="bi bi-spotify me-2" style="color: #1DB954;"></i> Soundtrack on Spotify
+            </h2>
+            <div id="spotify-soundtrack-content" class="d-flex flex-column flex-md-row align-items-start gap-4">
+                <div class="spinner-border text-light spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading soundtrack...</span>
+                </div>
+                <span class="text-muted small">Searching Spotify...</span>
+            </div>
+        </div>
+    `;
 
+    // Similar Section
     if (similarList.length > 0) {
         detailsHtml += `
             <div class="details-section mt-5">
@@ -6316,6 +7227,7 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
         `;
     }
 
+    // Streaming Providers Section
     if (usSubProviders.length > 0) {
         detailsHtml += `
             <div class="details-section mt-5">
@@ -6330,25 +7242,25 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
     detailsHtml += `</div>`; // Close main container
     DOM.detailsWrapper.innerHTML = detailsHtml;
 
-    // --- PART 3: POST-RENDER ACTIONS (Attach listeners and populate dynamic content) ---
+    // --- PART 3: POST-RENDER ACTIONS & LISTENERS ---
     
-    // **Render similar cards**
+    // 1. Render Similar Cards
     if (similarList.length > 0) {
         const similarGrid = document.getElementById('similar-grid');
         if (similarGrid) App.renderTmdbCards(similarList, similarGrid, type, false);
     }
     
-    // **Initialize season tabs**
+    // 2. Initialize Season Tabs (if TV)
     if (type === 'tv' && itemData.seasons?.filter(s => s.season_number > 0 || itemData.seasons.length === 1).length > 0) {
         App.addSeasonTabListeners(itemData.id);
         const firstTab = DOM.detailsWrapper.querySelector('.nav-pills .nav-link:not(.disabled)');
         firstTab?.click();
     }
     
-    // **KICK OFF THE REVIEWS SECTION**
+    // 3. Setup Reviews/Community Section
     App.setupReviewsSection(itemData);
 
-    // **Attach Listeners for Connection Button**
+    // 4. Attach Listeners for Connection Button
     const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
     if (actionsContainer) {
        const btnDiv = document.createElement('div');
@@ -6358,32 +7270,111 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
        actionsContainer.appendChild(connectionButton);
     }
 
-    // **Attach Listeners for RATING**
+    // 5. Attach Listeners for AI Insight Button
+    DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn');
+    if (DOM.detailsAiInsightBtn) {
+        DOM.detailsAiInsightBtn.addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            App.handleGetAiInsight(btn.dataset.itemType, btn.dataset.itemId, btn.dataset.itemTitle, btn.dataset.itemYear);
+        });
+    }
+    
+    // 6. KICK OFF SPOTIFY SEARCH (P2 Improvement)
+    if (type === 'movie' || type === 'tv') { 
+        console.log(`[renderDetailsPage] Calling loadAndRenderSoundtrack for ${displayTitle} (${year})`); 
+        App.loadAndRenderSoundtrack(type, displayTitle, year);
+    }
+
+    // Streaming Providers Section
+                 if (usSubProviders.length > 0 || usBuyProviders.length > 0 || usRentProviders.length > 0) {
+                     detailsHtml += `
+                          <div class="details-section mt-5">
+                              <h2 class="details-section-title">Where to Watch (${config.TARGET_REGION})</h2>
+                              
+                              ${usSubProviders.length > 0 ? `
+                                  <h4 class="text-white-50 mt-3 mb-2 small fw-bold">Subscription</h4>
+                                  <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                                      ${usSubProviders.map(p => `
+                                          <a href="#network=${p.provider_id}" title="${Utils.escapeHtml(p.provider_name)}" data-bs-toggle="tooltip">
+                                              <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" class="provider-logo" loading="lazy">
+                                          </a>`).join('')}
+                                  </div>
+                              ` : ''}
+
+                              ${usBuyProviders.length > 0 ? `
+                                  <h4 class="text-white-50 mt-3 mb-2 small fw-bold">Purchase (Digital)</h4>
+                                  <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                                      ${usBuyProviders.map(p => `
+                                          <a href="#network=${p.provider_id}" title="${Utils.escapeHtml(p.provider_name)} (Buy)" data-bs-toggle="tooltip">
+                                              <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" class="provider-logo" loading="lazy">
+                                          </a>`).join('')}
+                                  </div>
+                              ` : ''}
+                              
+                              ${usRentProviders.length > 0 ? `
+                                  <h4 class="text-white-50 mt-3 mb-2 small fw-bold">Rent (Digital)</h4>
+                                  <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                                      ${usRentProviders.map(p => `
+                                          <a href="#network=${p.provider_id}" title="${Utils.escapeHtml(p.provider_name)} (Rent)" data-bs-toggle="tooltip">
+                                              <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" class="provider-logo" loading="lazy">
+                                          </a>`).join('')}
+                                  </div>
+                              ` : ''}
+
+                              <small class="d-block mt-2 text-muted">Streaming availability via JustWatch/TMDb.</small>
+                          </div>
+                      `;
+                  }
+
+    // 7. **RATING LOGIC (with Gamification Data Capture FIX)**
     const ratingContainer = DOM.detailsWrapper.querySelector('#user-rating-container');
     const ratingSelect = ratingContainer.querySelector('#user-rating-select');
     const saveRatingBtn = ratingContainer.querySelector('#save-rating-btn');
     
     if (appAuth.currentUser && appDb) {
-        // User is logged in
+        // --- LOGGED-IN USER LOGIC ---
         saveRatingBtn.addEventListener('click', async () => {
             const value = parseInt(ratingSelect.value);
             if (!value) { Utils.showToast("Please select a rating first.", "warning"); return; }
+            
+            saveRatingBtn.disabled = true;
+            saveRatingBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+
             const userId = appAuth.currentUser.uid;
             const docId = `${type}-${itemData.id}`;
+            
             try {
+                // --- FIX: Save all Gamification metadata ---
                 await appDb.collection("ratings").doc(userId).collection("userRatings").doc(docId).set({ 
                     type,
                     tmdbId: itemData.id,
                     title: itemData.title || itemData.name,
                     rating: value,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    
+                    // --- GAMIFICATION METADATA ADDED (CRITICAL FIX) ---
+                    genreIds: genreIds,
+                    decade: decade,
+                    directorId: directorId,
+                    // --- END GAMIFICATION METADATA ---
+                    
+                }, { merge: true });
+
                 Utils.showToast(`Rated ${value}/10 successfully!`, "success");
-                Gamification.checkForAchievements('rating_saved', { type, tmdbId: itemData.id });
-            } catch (err) { console.error("Error saving rating:", err); Utils.showToast("Failed to save rating.", "danger"); }
+                
+                // --- ACHIEVEMENT CHECK (P1) ---
+                Gamification.checkForAchievements('rating_saved', itemData);
+
+            } catch (err) { 
+                console.error("Error saving rating:", err); 
+                Utils.showToast("Failed to save rating.", "danger"); 
+            } finally {
+                saveRatingBtn.disabled = false;
+                saveRatingBtn.textContent = 'Rate';
+            }
         });
 
-        // Fetch and display their saved rating
+        // Fetch and display their previously saved rating
         const userId = appAuth.currentUser.uid;
         const docId = `${type}-${itemData.id}`;
         appDb.collection("ratings").doc(userId).collection("userRatings").doc(docId).get()
@@ -6392,8 +7383,9 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
                     ratingSelect.value = doc.data().rating;
                 }
             }).catch(err => console.error("Error fetching user rating:", err));
+
     } else {
-        // User is a guest
+        // --- GUEST USER LOGIC ---
         ratingSelect.disabled = true;
         saveRatingBtn.disabled = true;
         ratingContainer.setAttribute('data-bs-toggle', 'tooltip');
@@ -6401,7 +7393,226 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
         ratingContainer.setAttribute('title', 'You must be logged in to rate titles');
     }
 
-    // **Attach Listeners for AI Insight Button**
+    // 8. Initialize Tooltips
+    App.initializeTooltips(DOM.detailsWrapper);
+},
+             */
+
+
+
+// --- Locate renderDetailsPage (around line 3700 in the full script) ---
+
+renderDetailsPage: (itemData) => {
+    if (!DOM.detailsWrapper) return;
+    DOM.detailsWrapper.innerHTML = ''; // Clear previous
+
+    // --- CRITICAL DATA EXTRACTION FOR GAMIFICATION & DISPLAY ---
+    const type = itemData.title ? 'movie' : 'tv';
+    const displayTitle = Utils.escapeHtml(itemData.title || itemData.name || 'N/A');
+    const backdropUrl = itemData.backdrop_path ? `${config.BACKDROP_BASE_URL}${itemData.backdrop_path}` : '';
+    const posterUrl = itemData.poster_path ? `${config.IMAGE_BASE_URL}${itemData.poster_path}` : '';
+    const rating = itemData.vote_average ? itemData.vote_average.toFixed(1) : null;
+    
+    const releaseYearStr = itemData.release_date || itemData.first_air_date;
+    const year = releaseYearStr ? releaseYearStr.substring(0, 4) : '';
+    
+    const formattedRuntime = type === 'movie' && itemData.runtime ? Utils.formatRuntime(itemData.runtime) : null;
+    const numberOfSeasons = type === 'tv' && itemData.number_of_seasons ? itemData.number_of_seasons : null;
+    const displayOverview = Utils.escapeHtml(itemData.overview || 'No overview available.');
+    
+    const credits = itemData.credits;
+    const directorObj = credits?.crew?.find(p => p.job === 'Director');
+    
+    const creators = type === 'tv' ? credits?.crew?.filter(p => p.department === 'Writing' && (p.job === 'Creator' || p.job === 'Writer')).map(c => Utils.escapeHtml(c.name)).slice(0, 3).join(', ') : '';
+    const castList = credits?.cast?.slice(0, 12) || [];
+    const similarList = itemData.similar?.results?.slice(0, 12) || [];
+    
+    // Watch Providers (Subscription, Buy, Rent)
+    const usSubProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.flatrate || [];
+    const usBuyProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.buy || [];
+    const usRentProviders = itemData['watch/providers']?.results?.[config.TARGET_REGION]?.rent || [];
+    
+    const actionsContainerSelector = '.details-actions';
+    
+    // Gamification Metadata (for Firestore save)
+    const decade = releaseYearStr ? `${Math.floor(new Date(releaseYearStr).getFullYear() / 10) * 10}` : null;
+    const directorId = directorObj ? directorObj.id : null;
+    const genreIds = itemData.genres?.map(g => g.id) || [];
+    
+    const connectionButtonHtml = `<button class="btn btn-outline-info btn-connection-explorer mt-3 mt-lg-0 ms-lg-2" data-item-id="${itemData.id}" data-item-type="${type}" data-item-title="${displayTitle}"><i class="bi bi-diagram-3-fill me-1"></i> Show Connections</button>`;
+    
+    // --- PART 2: BUILD MAIN HTML STRING ---
+    let detailsHtml = `
+        <div class="details-backdrop-container mb-5" style="${backdropUrl ? `background-image: url('${backdropUrl}');` : 'background-color: var(--bg-secondary);'}"></div>
+        <div class="container details-content-overlay">
+            <button onclick="Utils.goBackOrHome();" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+            <div class="details-header row mb-5 align-items-center">
+                <div class="details-poster col-lg-3 col-md-4 text-center text-md-start mb-4 mb-md-0">
+                    ${posterUrl ? `<img src="${posterUrl}" alt="${displayTitle} Poster" class="img-fluid shadow-lg" style="border-radius: var(--radius-lg); border: 3px solid rgba(255,255,255,0.1);" loading="lazy">` : `<div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center mx-auto" style="width:100%; aspect-ratio:2/3; max-width:280px;">No Poster</div>`}
+                </div>
+                <div class="details-info col-lg-9 col-md-8">
+                    <h1 class="text-white mb-2 custom-color">${displayTitle}</h1>
+                    <div class="details-meta mb-3 d-flex align-items-center flex-wrap">
+                        ${rating && parseFloat(rating) > 0 ? `<span class="d-flex align-items-center me-3"><i class="bi bi-star-fill text-warning me-1"></i> ${rating}/10</span>` : ''}
+                        ${year ? `<span class="d-flex align-items-center me-3"><i class="bi bi-calendar3 me-1"></i> ${year}</span>` : ''}
+                        ${formattedRuntime ? `<span class="d-flex align-items-center me-3"><i class="bi bi-clock me-1"></i> ${formattedRuntime}</span>` : ''}
+                        ${numberOfSeasons ? `<span class="d-flex align-items-center"><i class="bi bi-collection-play me-1"></i> ${numberOfSeasons} Season${numberOfSeasons > 1 ? 's' : ''}</span>` : ''}
+                    </div>
+                    <div class="genres mb-3">${itemData.genres?.map(g => `<span class="badge bg-light bg-opacity-10 text-light border border-light border-opacity-25 me-1 mb-1">${Utils.escapeHtml(g.name)}</span>`).join('') || ''}</div>
+                    ${displayOverview !== 'No overview available.' ? `<h4 id="text-white" class="text-white mt-4 fw-semibold custom-color">Overview</h4><p class="details-overview mb-4 opacity-90">${displayOverview}</p>` : ''}
+                    ${directorObj ? `<p class="small mb-1"><strong class="text-white-50">Director:</strong> ${Utils.escapeHtml(directorObj.name)}</p>` : ''}
+                    ${creators ? `<p class="small mb-1"><strong class="text-white-50">Created by:</strong> ${creators}</p>` : ''}
+                    <div class="details-section mt-4">
+                        <h4 class="text-white fw-semibold custom-color">AI Insight</h4>
+                        <div id="ai-insight-container" class="ai-insight-box p-3 rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10 mb-3" style="min-height: 70px;"><p class="text-muted small mb-0">Click the button for AI-powered insights.</p></div>
+                        <button id="get-ai-insight-btn" class="btn btn-sm btn-outline-info" data-item-id="${itemData.id}" data-item-type="${type}" data-item-title="${displayTitle}" data-item-year="${year}"><i class="bi bi-magic me-1"></i> Get AI Insight</button>
+                    </div>
+                    <div class="user-rating mt-3" id="user-rating-container">
+                        <label class="text-white me-2">Your Rating:</label>
+                        <select id="user-rating-select" class="form-select form-select-sm d-inline-block w-auto"><option value="">--</option>${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}">${n}</option>`).join('')}</select>
+                        <button id="save-rating-btn" class="btn btn-sm btn-outline-warning ms-2">Rate</button>
+                    </div>
+                    <div class="details-actions mt-4">
+                        <a href="#player=${type}/${itemData.id}" class="btn btn-primary btn-lg me-2"><i class="bi bi-play-circle-fill me-2"></i> Watch Now</a>
+                        ${itemData.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer') ? `<button class="btn btn-outline-secondary btn-lg" onclick="App.playTrailer('${itemData.videos.results.find(v => v.site === 'YouTube' && v.type === 'Trailer').key}')"><i class="bi bi-film me-2"></i> Play Trailer</button>` : ''}
+                    </div>
+                </div>
+            </div>
+    `;
+
+    // Seasons & Episodes Section (for TV only)
+    if (type === 'tv' && itemData.seasons && itemData.seasons.length > 0) {
+        const validSeasons = itemData.seasons.filter(s => s.season_number > 0 || itemData.seasons.length === 1);
+        if (validSeasons.length > 0) {
+            detailsHtml += App.renderTVSeasonsSection(itemData.id, validSeasons);
+        }
+    }
+
+    // --- REVIEWS SECTION ---
+    detailsHtml += `
+        <div class="details-section mt-5">
+            <h2 class="details-section-title">Reviews <span id="review-count-badge" class="review-count-badge">...</span></h2>
+            <div id="review-form-container" class="mb-4"></div>
+            <div id="reviews-list"></div>
+        </div>
+    `;
+
+    // Cast Section
+    if (castList.length > 0) {
+        detailsHtml += `
+            <div class="details-section mt-5">
+                <h2 class="details-section-title">Cast</h2>
+                <div class="row g-3 row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6">
+                    ${castList.map(member => {
+                        const profileUrl = member.profile_path ? `${config.PROFILE_BASE_URL.replace('h632', 'w185')}${member.profile_path}` : 'https://via.placeholder.com/120x180/1a1d24/808080?text=N/A';
+                        return `<div class="col mb-3"><a href="#person=${member.id}" class="cast-member-link"><i class="bi bi-person-circle img-fallback-icon-init d-none"></i><img src="${profileUrl}" alt="${Utils.escapeHtml(member.name)}" loading="lazy" onerror="this.previousElementSibling.classList.remove('d-none'); this.classList.add('d-none');"><div class="actor-name text-truncate">${Utils.escapeHtml(member.name)}</div><div class="character-name text-truncate">${Utils.escapeHtml(member.character)}</div></a></div>`;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // --- SPOTIFY SOUNDTRACK SECTION ---
+    detailsHtml += `
+        <div class="details-section mt-5" id="spotify-soundtrack-section" >
+            <h2 class="details-section-title d-flex align-items-center">
+                <i class="bi bi-spotify me-2" style="color: #1DB954;"></i> Soundtrack on Spotify
+            </h2>
+            <div id="spotify-soundtrack-content" class="d-flex flex-column flex-md-row align-items-start gap-4">
+                <div class="spinner-border text-light spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading soundtrack...</span>
+                </div>
+                <span class="text-muted small">Searching Spotify...</span>
+            </div>
+        </div>
+    `;
+
+    // Similar Section
+    if (similarList.length > 0) {
+        detailsHtml += `
+            <div class="details-section mt-5">
+                <h2 class="details-section-title">You Might Also Like</h2>
+                <div id="similar-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
+                    ${Utils.getSpinnerHTML("Loading recommendations...")}
+                </div>
+            </div>
+        `;
+    }
+
+    // --- STREAMING PROVIDERS SECTION (FIXED WITH BUY/RENT) ---
+    if (usSubProviders.length > 0 || usBuyProviders.length > 0 || usRentProviders.length > 0) {
+        detailsHtml += `
+            <div class="details-section mt-5">
+                <h2 class="details-section-title">Where to Watch (${config.TARGET_REGION})</h2>
+                
+                ${usSubProviders.length > 0 ? `
+                    <h4 class="text-white-50 mt-3 mb-2 small fw-bold">Subscription</h4>
+                    <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                        ${usSubProviders.map(p => `
+                            <a href="#network=${p.provider_id}" title="${Utils.escapeHtml(p.provider_name)}" data-bs-toggle="tooltip">
+                                <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" class="provider-logo" loading="lazy">
+                            </a>`).join('')}
+                    </div>
+                ` : ''}
+
+                ${usBuyProviders.length > 0 ? `
+                    <h4 class="text-white-50 mt-3 mb-2 small fw-bold">Purchase (Digital)</h4>
+                    <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                        ${usBuyProviders.map(p => `
+                            <a href="#network=${p.provider_id}" title="${Utils.escapeHtml(p.provider_name)} (Buy)" data-bs-toggle="tooltip">
+                                <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" class="provider-logo" loading="lazy">
+                            </a>`).join('')}
+                    </div>
+                ` : ''}
+                
+                ${usRentProviders.length > 0 ? `
+                    <h4 class="text-white-50 mt-3 mb-2 small fw-bold">Rent (Digital)</h4>
+                    <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                        ${usRentProviders.map(p => `
+                            <a href="#network=${p.provider_id}" title="${Utils.escapeHtml(p.provider_name)} (Rent)" data-bs-toggle="tooltip">
+                                <img src="${config.LOGO_BASE_URL}${p.logo_path}" alt="${Utils.escapeHtml(p.provider_name)}" class="provider-logo" loading="lazy">
+                            </a>`).join('')}
+                    </div>
+                ` : ''}
+
+                <small class="d-block mt-2 text-muted">Streaming availability via JustWatch/TMDb.</small>
+            </div>
+        `;
+    }
+
+    detailsHtml += `</div>`; // Close main container
+    DOM.detailsWrapper.innerHTML = detailsHtml;
+
+    // --- PART 3: POST-RENDER ACTIONS & LISTENERS ---
+    
+    // 1. Render Similar Cards
+    if (similarList.length > 0) {
+        const similarGrid = document.getElementById('similar-grid');
+        if (similarGrid) App.renderTmdbCards(similarList, similarGrid, type, false);
+    }
+    
+    // 2. Initialize Season Tabs (if TV)
+    if (type === 'tv' && itemData.seasons?.filter(s => s.season_number > 0 || itemData.seasons.length === 1).length > 0) {
+        App.addSeasonTabListeners(itemData.id);
+        const firstTab = DOM.detailsWrapper.querySelector('.nav-pills .nav-link:not(.disabled)');
+        firstTab?.click();
+    }
+    
+    // 3. Setup Reviews/Community Section
+    App.setupReviewsSection(itemData);
+
+    // 4. Attach Listeners for Connection Button
+    const actionsContainer = DOM.detailsWrapper.querySelector(actionsContainerSelector);
+    if (actionsContainer) {
+       const btnDiv = document.createElement('div');
+       btnDiv.innerHTML = connectionButtonHtml.trim();
+       const connectionButton = btnDiv.firstChild;
+       connectionButton.addEventListener('click', App.handleShowConnectionsClick);
+       // Append to the details-info section, not the actions container (for better layout)
+       DOM.detailsWrapper.querySelector('.details-info')?.appendChild(connectionButton);
+    }
+
+    // 5. Attach Listeners for AI Insight Button
     DOM.detailsAiInsightBtn = DOM.detailsWrapper.querySelector('#get-ai-insight-btn');
     if (DOM.detailsAiInsightBtn) {
         DOM.detailsAiInsightBtn.addEventListener('click', (e) => {
@@ -6409,12 +7620,195 @@ renderHorizontalCards: (items, containerElement, defaultType = null, showTrailer
             App.handleGetAiInsight(btn.dataset.itemType, btn.dataset.itemId, btn.dataset.itemTitle, btn.dataset.itemYear);
         });
     }
+    
+    // 6. KICK OFF SPOTIFY SEARCH
+    if (type === 'movie' || type === 'tv') { 
+        console.log(`[renderDetailsPage] Calling loadAndRenderSoundtrack for ${displayTitle} (${year})`); 
+        App.loadAndRenderSoundtrack(type, displayTitle, year);
+    }
 
+    // 7. **RATING LOGIC (with Gamification Data Capture FIX)**
+    const ratingContainer = DOM.detailsWrapper.querySelector('#user-rating-container');
+    const ratingSelect = ratingContainer.querySelector('#user-rating-select');
+    const saveRatingBtn = ratingContainer.querySelector('#save-rating-btn');
+    
+    if (appAuth.currentUser && appDb) {
+        // --- LOGGED-IN USER LOGIC ---
+        saveRatingBtn.addEventListener('click', async () => {
+            const value = parseInt(ratingSelect.value);
+            if (!value) { Utils.showToast("Please select a rating first.", "warning"); return; }
+            
+            saveRatingBtn.disabled = true;
+            saveRatingBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+
+            const userId = appAuth.currentUser.uid;
+            const docId = `${type}-${itemData.id}`;
+            
+            try {
+                // --- FIX: Save all Gamification metadata ---
+                await appDb.collection("ratings").doc(userId).collection("userRatings").doc(docId).set({ 
+                    type,
+                    tmdbId: itemData.id,
+                    title: itemData.title || itemData.name,
+                    rating: value,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    
+                    // --- GAMIFICATION METADATA ADDED (CRITICAL FIX) ---
+                    genreIds: genreIds,
+                    decade: decade,
+                    directorId: directorId,
+                    // --- END GAMIFICATION METADATA ---
+                    
+                }, { merge: true });
+
+                Utils.showToast(`Rated ${value}/10 successfully!`, "success");
+                
+                // --- ACHIEVEMENT CHECK (P1) ---
+                Gamification.checkForAchievements('rating_saved', itemData);
+
+            } catch (err) { 
+                console.error("Error saving rating:", err); 
+                Utils.showToast("Failed to save rating.", "danger"); 
+            } finally {
+                saveRatingBtn.disabled = false;
+                saveRatingBtn.textContent = 'Rate';
+            }
+        });
+
+        // Fetch and display their previously saved rating
+        const userId = appAuth.currentUser.uid;
+        const docId = `${type}-${itemData.id}`;
+        appDb.collection("ratings").doc(userId).collection("userRatings").doc(docId).get()
+            .then(doc => {
+                if (doc.exists) {
+                    ratingSelect.value = doc.data().rating;
+                }
+            }).catch(err => console.error("Error fetching user rating:", err));
+
+    } else {
+        // --- GUEST USER LOGIC ---
+        ratingSelect.disabled = true;
+        saveRatingBtn.disabled = true;
+        ratingContainer.setAttribute('data-bs-toggle', 'tooltip');
+        ratingContainer.setAttribute('data-bs-placement', 'top');
+        ratingContainer.setAttribute('title', 'You must be logged in to rate titles');
+    }
+
+    // 8. Initialize Tooltips
     App.initializeTooltips(DOM.detailsWrapper);
 },
 
 
+    /**
+     * Searches Spotify for the item's soundtrack and renders the album/playlist.
+     * @param {string} itemType - 'movie' or 'tv'.
+     * @param {string} title - The title of the movie/show.
+     * @param {string} year - The release year.
+     */
+    loadAndRenderSoundtrack: async (itemType, title, year) => {
+        const section = document.getElementById('spotify-soundtrack-section');
+        const container = document.getElementById('spotify-soundtrack-content');
+        if (!section || !container) return;
 
+        // Reset to loading state
+        container.innerHTML = `<div class="spinner-border text-light spinner-border-sm" role="status"><span class="visually-hidden">Loading soundtrack...</span></div><span class="text-muted small">Searching Spotify...</span>`;
+
+        // Determine search query preference
+        let query;
+        if (itemType === 'movie') {
+            query = `soundtrack ${title} ${year}`;
+        } else {
+            // For TV, search for 'OST' or 'Score' as show titles are less unique
+            query = `original score ${title}`;
+        }
+        
+        // Search types: album, playlist (prioritize albums which are often official scores)
+        const searchResults = await API.fetchSpotify(`/search?q=${encodeURIComponent(query)}&type=album,playlist&limit=3`);
+
+        if (!searchResults || (!searchResults.albums?.items.length && !searchResults.playlists?.items.length)) {
+            container.innerHTML = '<span class="text-muted small">No soundtrack found on Spotify for this title.</span>';
+            Utils.setElementVisibility(section, true); // Keep section visible to show "not found"
+            return;
+        }
+
+        const albums = searchResults.albums?.items || [];
+        const playlists = searchResults.playlists?.items || [];
+        
+        // Combine and prioritize relevant results
+        // Simple filter: prefer items where the title matches closely
+        const relevantItems = [...albums, ...playlists].filter(item => {
+            const itemName = item.name.toLowerCase();
+            const lowerTitle = title.toLowerCase();
+            return itemName.includes(lowerTitle) && (itemName.includes('soundtrack') || itemName.includes('score'));
+        }).slice(0, 3); // Take top 3 relevant results
+
+        if (relevantItems.length > 0) {
+            App.renderSpotifySoundtrackResults(relevantItems, container);
+        } else {
+            // If the filter was too aggressive, show the first result found anyway
+            const fallbackItem = albums[0] || playlists[0];
+            if (fallbackItem) {
+                App.renderSpotifySoundtrackResults([fallbackItem], container);
+            } else {
+                container.innerHTML = '<span class="text-muted small">No close match found on Spotify.</span>';
+            }
+        }
+        Utils.setElementVisibility(section, true);
+    },
+
+    /**
+     * Renders Spotify items (albums or playlists) into the details container.
+     */
+    renderSpotifySoundtrackResults: (items, container) => {
+        container.innerHTML = '';
+        const frag = document.createDocumentFragment();
+
+        items.forEach(item => {
+            const isPlaylist = item.type === 'playlist';
+            const embedType = isPlaylist ? 'playlist' : 'album';
+            
+            // Spotify IDs can be extracted from their URL or API response directly
+            const spotifyId = item.id; 
+            
+            // Construct Spotify Embed URL
+            const embedUrl = `https://open.spotify.com/embed/${embedType}/${spotifyId}?utm_source=generator`;
+
+            const itemTitle = Utils.escapeHtml(item.name);
+            const itemDescription = isPlaylist ? `By ${Utils.escapeHtml(item.owner?.display_name || 'Spotify')}` : `Album by ${Utils.escapeHtml(item.artists?.[0]?.name || 'Various Artists')}`;
+            const imageUrl = item.images?.[0]?.url || 'https://via.placeholder.com/100';
+
+            const card = document.createElement('div');
+            card.className = 'spotify-embed-card p-3 rounded-3';
+            card.style.minWidth = '220px';
+            card.style.maxWidth = '300px'; 
+            card.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <img src="${imageUrl}" alt="${itemTitle}" width="40" height="40" class="rounded me-3">
+                    <div>
+                        <h6 class="mb-0 text-light">${itemTitle}</h6>
+                        <small class="text-muted">${itemDescription}</small>
+                    </div>
+                </div>
+                <!-- Embedded Player -->
+                <iframe 
+                    style="border-radius:12px" 
+                    src="${embedUrl}" 
+                    width="100%" 
+                    height="${isPlaylist ? 152 : 80}" 
+                    frameBorder="0" 
+                    allowfullscreen="" 
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                    loading="lazy">
+                </iframe>
+            `;
+            frag.appendChild(card);
+        });
+        
+        container.classList.remove('flex-column');
+        container.classList.add('flex-row', 'flex-wrap', 'gap-4');
+        container.innerHTML = '';
+        container.appendChild(frag);
+    },
 
      setupReviewsSection: (itemData) => {
     const itemType = itemData.title ? 'movie' : 'tv';
@@ -6519,47 +7913,80 @@ renderReviewCard: (reviewId, reviewData, itemType, itemId) => {
     return card;
 },
 
+/**
+ * Handles the submission of the review form. Validates input, saves the review
+ * to Firestore, refreshes the UI, and triggers an achievement check.
+ * @param {Event} event - The form submission event.
+ * @param {string} itemType - 'movie' or 'tv'.
+ * @param {number|string} itemId - The TMDb ID of the item being reviewed.
+ */
 handleSubmitReview: async (event, itemType, itemId) => {
+    // 1. Prevent the default browser form submission (which would reload the page)
     event.preventDefault();
+
+    // 2. Authentication Check: Ensure a user is logged in before proceeding.
     if (!appAuth.currentUser) {
         Utils.showToast("You must be logged in to submit a review.", "warning");
         return;
     }
 
+    // 3. Get DOM elements and user input from the form
     const form = event.target;
     const textarea = form.querySelector('#review-textarea');
     const submitBtn = form.querySelector('button[type="submit"]');
     const text = textarea.value.trim();
 
+    // 4. Input Validation: Check if the review meets the minimum length requirement.
     if (text.length < 10) {
         Utils.showToast("Review must be at least 10 characters long.", "warning");
         return;
     }
 
+    // 5. Update UI to show a loading state and prevent multiple submissions.
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span> Submitting...`;
 
+    // 6. Prepare the review data object for Firestore
     const { uid, displayName, photoURL } = appAuth.currentUser;
     const reviewData = {
         userId: uid,
         username: displayName,
         photoURL: photoURL,
         text: text,
+        // Use a server-side timestamp for accuracy and to prevent client-side manipulation.
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
 
+    // 7. Perform the Firestore write operation inside a try...catch block
     try {
+        // Construct the reference to the specific item's 'reviews' sub-collection
         const reviewsRef = firebase.firestore().collection('item_ratings').doc(`${itemType}_${itemId}`).collection('reviews');
+        
+        // Add the new review document to Firestore
         await reviewsRef.add(reviewData);
 
+        // --- Actions on Successful Submission ---
+
+        // a. Notify the user of success
         Utils.showToast("Your review has been published!", "success");
+
+        // b. Clear the form for the next review
         textarea.value = '';
+        
+        // c. Refresh the list of reviews on the page to show the new one instantly
         App.loadAndRenderReviews(itemType, itemId);
+        
+        // d. Trigger the gamification engine to check if this action unlocked any achievements
         Gamification.checkForAchievements('review_submitted', { type: itemType, tmdbId: itemId });
+
     } catch (error) {
+        // Handle any errors from the Firestore operation
         console.error("Error submitting review:", error);
         Utils.showToast("Failed to submit your review. Please try again.", "danger");
+
     } finally {
+        // 8. This block runs regardless of success or failure.
+        // Restore the submit button to its original state.
         submitBtn.disabled = false;
         submitBtn.innerHTML = `Submit Review`;
     }
@@ -6591,22 +8018,32 @@ handleDeleteReview: async (itemType, itemId, reviewId) => {
 },
 
 renderAchievements: async () => {
-    if (!appAuth.currentUser) return;
+    // This function now assumes it's being called for a logged-in user.
+    // The router should prevent guests from accessing this view.
+    if (!appAuth.currentUser) return; 
+    
     const grid = document.getElementById('achievements-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.warn("[Achievements] Could not find the #achievements-grid container to render into.");
+        return;
+    }
 
+    // Show a skeleton/loading state while fetching
     grid.innerHTML = Utils.getSpinnerHTML("Loading achievements...");
 
     try {
         const unlockedAchievements = await Gamification.getUnlockedAchievements(appAuth.currentUser.uid);
         let html = '';
 
+        // Loop through the master list of all possible achievements
         for (const badgeId in config.ACHIEVEMENTS) {
             const achievement = config.ACHIEVEMENTS[badgeId];
             const isUnlocked = unlockedAchievements.has(badgeId);
             
+            // Generate a card for each achievement, styled based on its unlocked status
             html += `
-                <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}" title="${isUnlocked ? 'Unlocked!' : achievement.description}">
+                <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}" 
+                     title="${isUnlocked ? `Unlocked! - ${achievement.description}` : achievement.description}">
                     <span class="icon">${achievement.icon}</span>
                     <h5 class="title">${achievement.title}</h5>
                     <p class="description">${achievement.description}</p>
@@ -6614,9 +8051,10 @@ renderAchievements: async () => {
             `;
         }
         grid.innerHTML = html;
+
     } catch (error) {
         console.error("Failed to render achievements:", error);
-        grid.innerHTML = Utils.getErrorHTML("Could not load achievements.");
+        grid.innerHTML = Utils.getErrorHTML("Could not load your achievements at this time.");
     }
 },
             // Renders the Season Tabs and Episode Panes structure
@@ -7415,9 +8853,9 @@ renderAchievements: async () => {
 
         // --- Start the Application ---
         //document.addEventListener('DOMContentLoaded', App.init);
-firebaseReadyPromise.then(({ appAuth, appDb }) => {
-    console.log("[Main App] Firebase is ready. Initializing App...");
-    App.init(appAuth, appDb); // Pass the instances to the main app
-}).catch(error => {
-    console.error("[Main App] Could not initialize because Firebase failed.", error);
-});
+        firebaseReadyPromise.then(({ appAuth, appDb }) => {
+           console.log("[Main App] Firebase is ready. Initializing App...");
+           App.init(appAuth, appDb); // Pass the instances to the main app
+        }).catch(error => {
+           console.error("[Main App] Could not initialize because Firebase failed.", error);
+        });
