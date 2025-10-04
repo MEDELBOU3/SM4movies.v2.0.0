@@ -132,11 +132,36 @@ const AuraStreamApp = {
     },
 
     // --- Initialization ---
-    init: function() {
+    /*init: function() {
         document.addEventListener('DOMContentLoaded', () => {
             if (this.state.domReady) return;
             this.utils.log("DOM Loaded. Starting App Initialization.");
             this.state.domReady = true;
+            try {
+                if (!this.initDomElements()) throw new Error("Essential DOM elements missing.");
+                this.validateApiKey();
+                this.checkLibraries();
+                if (!this.initializeFirebase()) {
+                    this.utils.error("Firebase initialization failed, but attempting public data load.");
+                }
+
+                this.initSyncModules();
+                this.initVisualLibraries();
+
+                // Async data loading is now triggered by the Firebase onAuthStateChanged listener.
+                this.utils.log(`AuraStream Initial Sync Setup Complete. API Key Valid: ${this.state.apiKeyValid}`);
+
+            } catch (error) {
+                this.utils.error("CRITICAL ERROR during Initialization:", error);
+                document.body.innerHTML = `<div style="padding: 20px; color: red;"><h1>Init Error</h1><p>Check console (F12).</p><pre>${error.message}</pre></div>`;
+            }
+        });
+    },*/
+
+     init: function() {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (this.state.domReady) return;
+            this.utils.log("DOM Loaded. Starting App Initialization.");
             try {
                 if (!this.initDomElements()) throw new Error("Essential DOM elements missing.");
                 this.validateApiKey();
@@ -231,8 +256,24 @@ const AuraStreamApp = {
             heroInfoContainer: document.getElementById('hero-info-container'),
             heroWatchTrailerBtn: document.getElementById('hero-watch-trailer-btn'),
             heroMoreInfoBtn: document.getElementById('hero-more-info-btn'),
+            expandingGallery: document.getElementById('expanding-gallery'),
+            discoverTabs: document.querySelectorAll('.discover-tab'),
+            discoverContentPanels: document.querySelectorAll('.discover-content'),
+            panelTrending: document.getElementById('panel-trending'),
+            panelUpcoming: document.getElementById('panel-upcoming'),
+            gemFinderStrip: document.getElementById('gem-finder-strip'),
+            gemFinderButton: document.getElementById('gem-finder-button'),
+            gemFinderResult: document.getElementById('gem-finder-result'),
             phoneDemoPlayer: document.getElementById('interactive-demo'),
             youtubePlayer: document.getElementById('youtubePlayer'),
+            aiCanvas: document.getElementById('ai-canvas'),
+            aiHubContainer: document.getElementById('ai-hub-container'),
+            universeExplorerSection: document.getElementById('universe-explorer'),
+            universeBgImage: document.getElementById('universe-bg-image'),
+            universeTitle: document.getElementById('universe-title'),
+            universeOverview: document.getElementById('universe-overview'),
+            universeTimelineContainer: document.getElementById('universe-timeline-container'),
+            creatorsGrid: document.querySelector('.creators-grid'),
             playButtonOverlay: document.getElementById('play-button-demo'),
             trailerFeatureSection: document.getElementById('trailer-feature'),
             trailerFeatureTitle: document.getElementById('trailer-feature-title'),
@@ -272,6 +313,10 @@ const AuraStreamApp = {
             userDisplayName: document.getElementById('user-display-name'),
             logoutButton: document.getElementById('logout-button'),
             signupNameInput: document.getElementById('signup-name'),
+            genreSpotlightSection: document.getElementById('genre-spotlight'),
+            genreFilterButtons: document.querySelectorAll('.genre-filters .btn'),
+            spotlightGridContainer: document.getElementById('spotlight-grid-container'),
+
             signupAgeInput: document.getElementById('signup-age'),
             signupAvatarInput: document.getElementById('signup-avatar'),
             loginEmailInput: document.getElementById('login-email'),
@@ -313,17 +358,19 @@ const AuraStreamApp = {
         }
     },
 
-    runAsyncInits: async function() {
-        this.utils.log("Starting Async Initializations...");
-        const promises = [
-            this.modules.hero.loadBackgroundAndContent(true),
-            this.modules.shelves.loadAllShelves(),
-            this.modules.analyticsDashboard.loadAnalyticsData()
-        ];
-        await Promise.allSettled(promises);
-        this.modules.hero.startBackgroundUpdates();
-        this.utils.log("Async Inits settled.");
-    },
+runAsyncInits: async function() {
+    this.utils.log("Starting Async Initializations...");
+    const promises = [
+        this.modules.hero.loadBackgroundAndContent(true),
+        this.modules.shelves.loadAllShelves(),
+        this.modules.analyticsDashboard.loadAnalyticsData(),
+        this.modules.universeExplorer.loadContent(),
+        this.modules.creatorsCorner.loadContent() // ===== ADD THIS LINE =====
+    ];
+    await Promise.allSettled(promises);
+    this.modules.hero.startBackgroundUpdates();
+    this.utils.log("Async Inits settled.");
+},
 
     // --- Modules ---
     modules: {
@@ -369,6 +416,523 @@ const AuraStreamApp = {
     }
 },
 
+discoverPanel: {
+    name: 'DiscoverPanel',
+    state: {
+        isSpinning: false,
+        gemFinderMovies: []
+    },
+
+    init: function() {
+        const { discoverTabs } = AuraStreamApp.elements;
+        if (!discoverTabs || discoverTabs.length === 0) return;
+
+        discoverTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => this.handleTabClick(e));
+        });
+
+        AuraStreamApp.elements.gemFinderButton?.addEventListener('click', () => this.spinGemFinder());
+
+        // Initial load for the active tab
+        this.loadTrending();
+    },
+
+    handleTabClick: function(e) {
+        const { discoverTabs, discoverContentPanels } = AuraStreamApp.elements;
+        const targetTab = e.currentTarget.dataset.tab;
+
+        discoverTabs.forEach(t => t.classList.remove('active'));
+        discoverContentPanels.forEach(p => p.classList.remove('active'));
+
+        e.currentTarget.classList.add('active');
+        const targetPanel = document.getElementById(`panel-${targetTab}`);
+        if (targetPanel) {
+            targetPanel.classList.add('active');
+        }
+
+        // Load content only if it hasn't been loaded yet
+        if (targetTab === 'upcoming' && !targetPanel.dataset.loaded) {
+            this.loadUpcoming();
+        } else if (targetTab === 'gem-finder' && !targetPanel.dataset.loaded) {
+            this.loadGemFinder();
+        }
+    },
+
+    loadTrending: async function() {
+        const { utils, elements } = AuraStreamApp;
+        const container = elements.panelTrending;
+        try {
+            const data = await utils.fetchTMDB('/trending/movie/week');
+            if (data?.results) {
+                container.innerHTML = this.renderTrendingList(data.results.slice(0, 10));
+                this.attachModalListeners(container);
+                container.dataset.loaded = 'true';
+            } else { throw new Error('No trending data'); }
+        } catch (error) {
+            container.innerHTML = utils.getErrorTextHTML('Could not load trending list.');
+        }
+    },
+
+    renderTrendingList: function(movies) {
+        const { utils } = AuraStreamApp;
+        return `<ul class="trending-list">${movies.map((movie, index) => `
+            <li class="trending-item detail-modal-trigger" data-item-id="${movie.id}" data-item-type="movie">
+                <span class="trending-rank">${index + 1}</span>
+                <img class="trending-poster" src="${AuraStreamApp.config.IMAGE_BASE_URL}w92${movie.poster_path}" alt="${utils.escapeHtml(movie.title)}">
+                <div class="trending-info">
+                    <h5>${utils.escapeHtml(movie.title)}</h5>
+                    <p>${utils.getYear(movie.release_date)}</p>
+                </div>
+                <div class="trending-rating">
+                    <i class="bi bi-star-fill"></i> ${movie.vote_average.toFixed(1)}
+                </div>
+            </li>
+        `).join('')}</ul>`;
+    },
+
+    loadUpcoming: async function() {
+        const { utils, elements } = AuraStreamApp;
+        const container = elements.panelUpcoming;
+        try {
+            const data = await utils.fetchTMDB('/movie/upcoming');
+            if (data?.results) {
+                container.innerHTML = this.renderUpcomingGrid(data.results);
+                this.attachModalListeners(container);
+                container.dataset.loaded = 'true';
+            } else { throw new Error('No upcoming data'); }
+        } catch (error) {
+            container.innerHTML = utils.getErrorTextHTML('Could not load upcoming movies.');
+        }
+    },
+
+    renderUpcomingGrid: function(movies) {
+        const { utils } = AuraStreamApp;
+        return `<div class="upcoming-grid">${movies.map(movie => `
+            <div class="upcoming-item detail-modal-trigger" data-item-id="${movie.id}" data-item-type="movie">
+                <img src="${AuraStreamApp.config.IMAGE_BASE_URL}w342${movie.poster_path}" alt="${utils.escapeHtml(movie.title)}">
+                <div class="upcoming-overlay">
+                    <h6>${utils.escapeHtml(movie.title)}</h6>
+                    <span>${utils.formatDate(movie.release_date)}</span>
+                </div>
+            </div>
+        `).join('')}</div>`;
+    },
+
+    loadGemFinder: async function() {
+        const { utils, elements } = AuraStreamApp;
+        try {
+            // Fetch several pages of highly-rated but not blockbuster movies
+            const promises = [1, 2, 3].map(page => 
+                utils.fetchTMDB('/discover/movie', {
+                    'vote_average.gte': 7.5,
+                    'vote_count.gte': 500,
+                    'vote_count.lte': 5000,
+                    sort_by: 'popularity.desc',
+                    page: page
+                })
+            );
+            const results = await Promise.all(promises);
+            this.state.gemFinderMovies = results.flatMap(res => res.results).filter(m => m.poster_path);
+            this.renderGemFinderStrip();
+            elements.panelGemFinder.dataset.loaded = 'true';
+        } catch (error) {
+            elements.gemFinderStrip.innerHTML = `<p class="text-danger">Could not load gems.</p>`;
+        }
+    },
+    
+    renderGemFinderStrip: function() {
+        const { gemFinderStrip } = AuraStreamApp.elements;
+        if (this.state.gemFinderMovies.length < 20) return;
+        // Shuffle and create a long strip for spinning
+        const shuffled = [...this.state.gemFinderMovies].sort(() => 0.5 - Math.random());
+        this.state.gemFinderMovies = shuffled; // Keep the shuffled order
+        gemFinderStrip.innerHTML = shuffled.map(movie => 
+            `<img src="${AuraStreamApp.config.IMAGE_BASE_URL}w342${movie.poster_path}" alt="">`
+        ).join('');
+    },
+
+    spinGemFinder: function() {
+        if (this.state.isSpinning) return;
+        this.state.isSpinning = true;
+
+        const { gemFinderStrip, gemFinderButton, gemFinderResult } = AuraStreamApp.elements;
+        gemFinderResult.classList.add('d-none'); // Hide previous result
+        gemFinderButton.disabled = true;
+        gemFinderButton.innerHTML = `<i class="bi bi-hourglass-split"></i> Spinning...`;
+
+        // Pick a random movie (not the first few)
+        const randomIndex = Math.floor(Math.random() * (this.state.gemFinderMovies.length - 10)) + 10;
+        const targetMovie = this.state.gemFinderMovies[randomIndex];
+        const targetPosition = randomIndex * 300; // 300px is the height of each poster
+
+        // Add extra spins for effect
+        const extraSpins = 300 * 20; // 20 full spins
+        gemFinderStrip.style.transition = 'transform 5s cubic-bezier(0.25, 1, 0.5, 1)';
+        gemFinderStrip.style.transform = `translateY(-${targetPosition + extraSpins}px)`;
+
+        setTimeout(() => {
+            this.state.isSpinning = false;
+            gemFinderButton.disabled = false;
+            gemFinderButton.innerHTML = `<i class="bi bi-shuffle"></i> Spin Again`;
+            this.showGemFinderResult(targetMovie);
+        }, 5000);
+    },
+    
+    showGemFinderResult: function(movie) {
+        const { gemFinderResult } = AuraStreamApp.elements;
+        gemFinderResult.classList.remove('d-none');
+        gemFinderResult.innerHTML = `
+            <h5>${AuraStreamApp.utils.escapeHtml(movie.title)}</h5>
+            <p>A hidden gem for you to discover!</p>
+            <button class="btn btn-secondary-outline btn-sm detail-modal-trigger" data-item-id="${movie.id}" data-item-type="movie">
+                View Details
+            </button>
+        `;
+        this.attachModalListeners(gemFinderResult);
+    },
+    
+    attachModalListeners: function(container) {
+        container.querySelectorAll('.detail-modal-trigger').forEach(trigger => {
+            trigger.addEventListener('click', e => {
+                const itemId = e.currentTarget.dataset.itemId;
+                const itemType = e.currentTarget.dataset.itemType;
+                AuraStreamApp.modules.modals.openDetailModal(itemId, itemType);
+            });
+        });
+    }
+},
+
+aiEngine: {
+    name: 'AIEngine',
+    state: {
+        // Store user choices
+        keywords: [],
+        // Canvas state
+        ctx: null,
+        particles: [],
+        mouse: { x: null, y: null, radius: 100 },
+        animationFrame: null,
+    },
+
+    init: function() {
+        const canvas = AuraStreamApp.elements.aiCanvas;
+        if (canvas) {
+            this.state.ctx = canvas.getContext('2d');
+            this._setupCanvas();
+            window.addEventListener('resize', AuraStreamApp.utils.debounce(() => this._setupCanvas(), 250));
+        } else {
+            AuraStreamApp.utils.warn("AI Canvas not found, background animation disabled.");
+        }
+        this._attachStepListeners();
+    },
+
+    // --- Canvas Neural Network Animation ---
+    _setupCanvas: function() {
+        const canvas = AuraStreamApp.elements.aiCanvas;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = canvas.offsetWidth * dpr;
+        canvas.height = canvas.offsetHeight * dpr;
+        this.state.ctx.scale(dpr, dpr);
+
+        this.state.particles = [];
+        let numberOfParticles = (canvas.width * canvas.height) / 9000;
+        if (numberOfParticles > 150) numberOfParticles = 150; // Cap particles
+
+        for (let i = 0; i < numberOfParticles; i++) {
+            let size = Math.random() * 1.5 + 0.5;
+            let x = Math.random() * (canvas.offsetWidth - size * 2) + size;
+            let y = Math.random() * (canvas.offsetHeight - size * 2) + size;
+            let directionX = (Math.random() * .4) - .2;
+            let directionY = (Math.random() * .4) - .2;
+            this.state.particles.push({ x, y, directionX, directionY, size });
+        }
+
+        if (this.state.animationFrame) cancelAnimationFrame(this.state.animationFrame);
+        this._animateCanvas();
+        
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            this.state.mouse.x = e.clientX - rect.left;
+            this.state.mouse.y = e.clientY - rect.top;
+        });
+        canvas.addEventListener('mouseleave', () => {
+            this.state.mouse.x = null;
+            this.state.mouse.y = null;
+        });
+    },
+
+    _animateCanvas: function() {
+        const { ctx, particles, mouse } = this.state;
+        const canvas = AuraStreamApp.elements.aiCanvas;
+        ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+
+        particles.forEach(p => {
+            // Movement
+            if (p.x + p.size > canvas.offsetWidth || p.x - p.size < 0) p.directionX = -p.directionX;
+            if (p.y + p.size > canvas.offsetHeight || p.y - p.size < 0) p.directionY = -p.directionY;
+            p.x += p.directionX;
+            p.y += p.directionY;
+
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2, false);
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.5)';
+            ctx.fill();
+        });
+
+        // Draw connections
+        for (let a = 0; a < particles.length; a++) {
+            for (let b = a; b < particles.length; b++) {
+                let distance = Math.sqrt(Math.pow(particles[a].x - particles[b].x, 2) + Math.pow(particles[a].y - particles[b].y, 2));
+                if (distance < 100) {
+                    ctx.strokeStyle = `rgba(168, 85, 247, ${1 - (distance / 100)})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(particles[a].x, particles[b].x);
+                    ctx.lineTo(particles[b].x, particles[b].y);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        this.state.animationFrame = requestAnimationFrame(() => this._animateCanvas());
+    },
+
+    // --- Interactive Step Logic ---
+    _attachStepListeners: function() {
+        const { aiHubContainer } = AuraStreamApp.elements;
+        if (!aiHubContainer) return;
+
+        aiHubContainer.addEventListener('click', (e) => {
+            const optionCard = e.target.closest('.ai-option-card');
+            if (optionCard) {
+                const nextStep = optionCard.dataset.nextStep;
+                const keyword = optionCard.dataset.keyword;
+                this.state.keywords.push(keyword);
+                this.goToStep(nextStep);
+            }
+        });
+    },
+
+    goToStep: function(stepNumber) {
+        const { aiHubContainer } = AuraStreamApp.elements;
+        aiHubContainer.querySelectorAll('.ai-step').forEach(step => step.classList.remove('active'));
+        const nextStepEl = aiHubContainer.querySelector(`.ai-step[data-step="${stepNumber}"]`);
+        if(nextStepEl) nextStepEl.classList.add('active');
+
+        if (stepNumber === "3") { // Analysis step
+            this._runAnalysis();
+        }
+    },
+
+    _runAnalysis: async function() {
+        const { utils } = AuraStreamApp;
+
+        // Display selected keywords
+        const keyword1El = document.getElementById('keyword1');
+        const keyword2El = document.getElementById('keyword2');
+        if(keyword1El) keyword1El.textContent = this.state.keywords[0] || '';
+        if(keyword2El) keyword2El.textContent = this.state.keywords[1] || '';
+
+        // Map user keywords to TMDb genre IDs
+        const genreMap = {
+            adventure: '12', comedy: '35', thriller: '53', drama: '18',
+            space: '878', magic: '14', crime: '80', future: '878' // Using Sci-Fi for space and future
+        };
+
+        const genreIds = this.state.keywords.map(kw => genreMap[kw]).join(',');
+
+        // Wait for the analysis animation (2s) then fetch movie
+        setTimeout(async () => {
+            try {
+                const data = await utils.fetchTMDB('/discover/movie', {
+                    with_genres: genreIds,
+                    sort_by: 'popularity.desc',
+                    'vote_count.gte': 500,
+                    page: 1
+                });
+                
+                if (data?.results?.length > 0) {
+                    const movie = data.results[Math.floor(Math.random() * Math.min(data.results.length, 10))];
+                    this._renderRecommendation(movie);
+                    this.goToStep("4");
+                } else {
+                    throw new Error("No movies found for these criteria.");
+                }
+            } catch(err) {
+                this._renderError();
+                this.goToStep("4");
+            }
+        }, 2200);
+    },
+
+    _renderRecommendation: function(movie) {
+        const { utils, config, modules } = AuraStreamApp;
+        const container = document.querySelector('.ai-recommendation-wrapper');
+        if (!container) return;
+
+        const title = utils.escapeHtml(movie.title);
+        const overview = utils.escapeHtml(movie.overview.substring(0, 150) + '...');
+        const posterUrl = `${config.IMAGE_BASE_URL}${config.POSTER_SIZE}${movie.poster_path}`;
+
+        container.innerHTML = `
+            <div class="rec-card">
+                <img src="${posterUrl}" alt="${title} Poster">
+                <div class="rec-card-overlay"></div>
+            </div>
+            <div class="rec-info">
+                <h3>${title}</h3>
+                <p>${overview}</p>
+                <button class="btn btn-primary-gradient btn-lg detail-modal-trigger" data-item-id="${movie.id}" data-item-type="movie">
+                    <i class="bi bi-info-circle"></i> View Details
+                </button>
+            </div>
+        `;
+        // Re-attach listener for the new button
+        container.querySelector('.detail-modal-trigger').addEventListener('click', (e) => {
+            modules.modals.openDetailModal(e.currentTarget.dataset.itemId, e.currentTarget.dataset.itemType);
+        });
+    },
+
+    _renderError: function() {
+         const container = document.querySelector('.ai-recommendation-wrapper');
+         if (!container) return;
+         container.innerHTML = `<div class="rec-info"><h3 class="text-danger">Analysis Failed</h3><p>AuraLens couldn't find a perfect match. Please try a different combination.</p></div>`;
+    }
+},
+
+// Inside AuraStreamApp.modules = { ... }
+genreSpotlight: {
+    name: 'GenreSpotlight',
+    init: function() {
+        const { genreFilterButtons } = AuraStreamApp.elements;
+        if (!genreFilterButtons || genreFilterButtons.length === 0) {
+            AuraStreamApp.utils.warn("Genre filter buttons not found. Spotlight disabled.");
+            return;
+        }
+
+        genreFilterButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const genreId = e.currentTarget.dataset.genreId;
+                this.loadGenre(genreId, e.currentTarget);
+            });
+        });
+
+        // Load the initial active genre on page load
+        const initialActiveButton = document.querySelector('.genre-filters .btn.active');
+        if (initialActiveButton) {
+            this.loadGenre(initialActiveButton.dataset.genreId, initialActiveButton);
+        }
+    },
+
+    loadGenre: async function(genreId, activeBtnEl) {
+        const { utils, elements } = AuraStreamApp;
+        if (!genreId) return;
+
+        utils.log(`Loading genre spotlight for ID: ${genreId}`);
+
+        // Update active button state
+        elements.genreFilterButtons.forEach(btn => btn.classList.remove('active', 'btn-primary-gradient'));
+        activeBtnEl.classList.add('active', 'btn-primary-gradient');
+
+        const grid = elements.spotlightGridContainer;
+        grid.classList.add('loading');
+        grid.innerHTML = `<div class="loading-placeholder"><div class="loading-spinner"></div><span>Loading ${utils.escapeHtml(activeBtnEl.textContent)}...</span></div>`;
+
+        try {
+            const data = await utils.fetchTMDB('/discover/movie', {
+                with_genres: genreId,
+                sort_by: 'popularity.desc',
+                'vote_count.gte': 200, // Ensure movies are somewhat known
+                page: 1
+            });
+
+            if (data?.results) {
+                this.renderGrid(data.results.slice(0, 14)); // Show a good number of movies
+            } else {
+                throw new Error("No results found.");
+            }
+
+        } catch (error) {
+            utils.error("Failed to load genre spotlight:", error);
+            grid.innerHTML = utils.getErrorTextHTML("Could not load movies for this genre.");
+        } finally {
+            grid.classList.remove('loading');
+        }
+    },
+
+     renderGrid: function(movies) {
+            const { utils, config, elements, modules } = AuraStreamApp;
+            const grid = elements.spotlightGridContainer;
+            grid.innerHTML = ''; // Clear previous content
+
+            const fragment = document.createDocumentFragment();
+
+            movies.forEach((movie, index) => {
+                if (!movie.poster_path) return; // Skip movies without a poster
+
+                const title = utils.escapeHtml(movie.title || 'Untitled');
+                const year = utils.getYear(movie.release_date);
+                const posterUrl = `${config.IMAGE_BASE_URL}${config.POSTER_SIZE}${movie.poster_path}`;
+
+                const item = document.createElement('a');
+                item.href = '#';
+                item.className = 'spotlight-item detail-modal-trigger';
+                item.dataset.itemId = movie.id;
+                item.dataset.itemType = 'movie';
+                item.style.animationDelay = `${index * 50}ms`; // Staggered animation
+                
+                item.innerHTML = `
+                    <img src="${posterUrl}" alt="${title} Poster" loading="lazy">
+                    <div class="spotlight-overlay">
+                        <h4 class="spotlight-title">${title}</h4>
+                        <p class="spotlight-year">${year || ''}</p>
+                    </div>
+                `;
+
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Re-use the existing modal functionality
+                    modules.modals.openDetailModal(movie.id, 'movie');
+                });
+                
+                fragment.appendChild(item);
+            });
+
+            grid.appendChild(fragment);
+
+            // Call the tilt effect function on the newly created items
+            this._attachTiltEffect(grid.querySelectorAll('.spotlight-item'));
+        },
+    // ===== NEW: ADD THIS ENTIRE FUNCTION TO THE MODULE =====
+       _attachTiltEffect: function(items) {
+                items.forEach(item => {
+                    item.addEventListener('mousemove', (e) => {
+                        const rect = item.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        const rotateX = (y - centerY) / centerY * -8; // Max rotation 8 degrees
+                        const rotateY = (x - centerX) / centerX * 8;  // Max rotation 8 degrees
+                        
+                        // Tilt the entire item
+                        item.style.transform = `perspective(1000px) scale(1.05) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+                        // Set CSS Custom Properties for the glare effect
+                        item.style.setProperty('--glare-x', `${x}px`);
+                        item.style.setProperty('--glare-y', `${y}px`);
+                        item.classList.add('is-hovered');
+                    });
+
+                    item.addEventListener('mouseleave', () => {
+                        // Reset transformations smoothly
+                        item.style.transform = 'perspective(1000px) scale(1) rotateX(0deg) rotateY(0deg)';
+                        item.classList.remove('is-hovered');
+                    });
+                });
+            }
+        },
         cursorSpotlight: {
             name: 'CursorSpotlight',
             init: function() {
@@ -571,6 +1135,71 @@ const AuraStreamApp = {
           initResizeListener: function() { window.addEventListener('resize', AuraStreamApp.utils.debounce(() => { AuraStreamApp.state.shelfScrollData.forEach((updateFn, key) => { try { updateFn(); } catch(e){ AuraStreamApp.utils.warn(`Error updating scroll ${key}:`, e); }}); }, AuraStreamApp.config.RESIZE_DEBOUNCE)); }
       },
 
+       expandingGallery: {
+            name: 'ExpandingGallery',
+            init: function() {
+                const { elements, modules } = AuraStreamApp; // Destructure modules here
+                const container = elements.expandingGallery;
+                if (!container) return;
+
+                const items = container.querySelectorAll('.gallery-item');
+
+                container.addEventListener('click', (e) => {
+                    const targetItem = e.target.closest('.gallery-item');
+                    if (!targetItem) return;
+
+                    // --- NEW LOGIC FOR BUTTON CLICKS ---
+                    const learnMoreButton = e.target.closest('.gallery-learn-more');
+                    if (learnMoreButton) {
+                        e.stopPropagation(); // Prevent the card from collapsing if it's already open
+                        const itemId = targetItem.dataset.itemId;
+                        const itemType = targetItem.dataset.itemType;
+                        
+                        if (itemId && itemType) {
+                            AuraStreamApp.utils.log(`Gallery 'Learn More' clicked for item: ${itemId}`);
+                            // Call the existing, powerful modal function
+                            modules.modals.openDetailModal(itemId, itemType);
+                        } else {
+                            // Fallback to conceptual link if data attributes are missing
+                            modules.conceptualLinks.handleClick(learnMoreButton, "Details for this feature would open here.");
+                        }
+                        return; // Stop further execution
+                    }
+
+                    // --- EXISTING LOGIC FOR EXPAND/COLLAPSE ---
+                    const rect = targetItem.getBoundingClientRect();
+                    // A more robust way to detect close clicks
+                    const isCloseClick = e.target.matches('.gallery-item::after') || (e.clientX > rect.right - 48 && e.clientY < rect.top + 48);
+
+                    if (targetItem.classList.contains('active') && isCloseClick) {
+                        targetItem.classList.remove('active');
+                    } else if (!targetItem.classList.contains('active')) {
+                        items.forEach(item => item.classList.remove('active'));
+                        targetItem.classList.add('active');
+                    }
+                });
+
+                // Tilt effect remains the same
+                items.forEach(item => {
+                    item.addEventListener('mousemove', (e) => {
+                        if (item.classList.contains('active')) return;
+                        const rect = item.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        const rotateX = (y - centerY) / centerY * -5;
+                        const rotateY = (x - centerX) / centerX * 5;
+
+                        item.style.transform = `scale(1.02) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                    });
+
+                    item.addEventListener('mouseleave', () => {
+                        item.style.transform = 'scale(1) rotateX(0deg) rotateY(0deg)';
+                    });
+                });
+            }
+        },
     trailerFeature: {
      currentMovie: null, // Holds the data for the currently featured movie
 
@@ -933,6 +1562,8 @@ const AuraStreamApp = {
         this._detailScrollElements = { container: null, prevBtn: null, nextBtn: null };
     },
 
+   
+
     // --- NEW HELPER: Update Detail Scroll Buttons ---
     _updateDetailScrollButtons: function() {
         const els = this._detailScrollElements;
@@ -1207,6 +1838,258 @@ const AuraStreamApp = {
             }
         }
       },
+
+        // ====================================================
+        // ===== NEW: UNIVERSE EXPLORER (HORIZONTAL JOURNEY) =====
+        // ====================================================
+        universeExplorer: {
+            name: 'UniverseExplorer',
+            collectionId: 10, // Star Wars Collection ID
+
+            init: function() {
+                // Main logic is handled by loadContent and event listeners attached after render
+            },
+
+            loadContent: async function() {
+                const { utils, elements } = AuraStreamApp;
+                if (!elements.universeExplorerSection) return;
+                
+                utils.log(`Loading Cinematic Universe for Collection ID: ${this.collectionId}`);
+                try {
+                    const [collectionData, imageData] = await Promise.all([
+                        utils.fetchTMDB(`/collection/${this.collectionId}`),
+                        utils.fetchTMDB(`/collection/${this.collectionId}/images`)
+                    ]);
+                    
+                    if (collectionData?.parts?.length > 0) {
+                        this.render(collectionData, imageData);
+                    } else {
+                        throw new Error("Collection data not found or is empty.");
+                    }
+                } catch (error) {
+                    utils.error("Failed to load Cinematic Universe:", error);
+                    elements.universeTimelineContainer.innerHTML = utils.getErrorTextHTML("Could not assemble this universe.");
+                }
+            },
+
+            render: function(collection, images) {
+                const { utils, config, elements, modules } = AuraStreamApp;
+
+                // Safely decode HTML entities from the overview text
+                const decodeHtmlEntities = (text) => {
+                    if (!text) return '';
+                    const textarea = document.createElement('textarea');
+                    textarea.innerHTML = text;
+                    return textarea.value;
+                };
+                
+                if (images?.backdrops?.length > 0) {
+                    const backdrop = images.backdrops[Math.floor(Math.random() * images.backdrops.length)];
+                    elements.universeBgImage.style.backgroundImage = `url(${config.IMAGE_BASE_URL}original${backdrop.file_path})`;
+                }
+
+                if (images?.logos?.length > 0) {
+                    const logo = images.logos.find(l => l.iso_639_1 === 'en') || images.logos[0];
+                    elements.universeLogoContainer.innerHTML = `<img src="${config.IMAGE_BASE_URL}w500${logo.file_path}" alt="${collection.name} Logo">`;
+                    elements.universeTitle.style.display = 'none';
+                } else {
+                    elements.universeTitle.innerHTML = utils.escapeHtml(collection.name);
+                }
+                elements.universeOverview.textContent = decodeHtmlEntities(collection.overview);
+
+                const sortedMovies = collection.parts.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
+
+                elements.universeTimelineContainer.innerHTML = sortedMovies.map(movie => {
+                    const title = utils.escapeHtml(movie.title);
+                    const year = utils.getYear(movie.release_date);
+                    const overview = movie.overview ? utils.escapeHtml(movie.overview.substring(0, 150) + '...') : 'No overview available.';
+                    const bgUrl = movie.backdrop_path ? `${config.IMAGE_BASE_URL}${config.BACKDROP_SIZE}${movie.backdrop_path}` : '';
+
+                    return `
+                        <div class="timeline-card-wrapper" data-aos="fade-up">
+                            <div class="timeline-card">
+                                <div class="timeline-card__bg" style="background-image: url('${bgUrl}');"></div>
+                                <div class="timeline-card__content">
+                                    <div class="timeline-card__year">${year}</div>
+                                    <h3>${title}</h3>
+                                    <p>${overview}</p>
+                                    <div class="timeline-card__cta">
+                                        <button class="btn btn-secondary-outline btn-sm detail-modal-trigger" data-item-id="${movie.id}" data-item-type="movie">
+                                            <i class="bi bi-info-circle"></i> More Info
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="timeline-card__node"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                this._attachEventListeners();
+            },
+
+            _attachEventListeners: function() {
+                const { elements, modules, utils } = AuraStreamApp;
+                const container = elements.universeTimelineContainer;
+                const trackProgress = document.getElementById('universe-track-progress');
+                const scrollHintLeft = document.querySelector('.scroll-hint.left');
+                const scrollHintRight = document.querySelector('.scroll-hint.right');
+                
+                if (!container) return;
+                
+                // 1. Detail Modal Triggers
+                container.querySelectorAll('.detail-modal-trigger').forEach(trigger => {
+                    trigger.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const itemId = e.currentTarget.dataset.itemId;
+                        modules.modals.openDetailModal(itemId, 'movie');
+                    });
+                });
+
+                // 2. 3D Parallax Tilt Effect on Cards
+                container.querySelectorAll('.timeline-card-wrapper').forEach(wrapper => {
+                    const card = wrapper.querySelector('.timeline-card');
+                    const bg = card.querySelector('.timeline-card__bg');
+
+                    wrapper.addEventListener('mousemove', (e) => {
+                        const rect = wrapper.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        const rotateX = (y - centerY) / centerY * -6; // Reduced rotation
+                        const rotateY = (x - centerX) / centerX * 6;
+
+                        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                        bg.style.transform = `translateX(${-rotateY * 1.5}px) translateY(${-rotateX * 1.5}px) translateZ(-20px) scale(1.1)`;
+                    });
+
+                    wrapper.addEventListener('mouseleave', () => {
+                        card.style.transform = 'rotateX(0deg) rotateY(0deg)';
+                        bg.style.transform = 'translateX(0) translateY(0) translateZ(-20px) scale(1.1)';
+                    });
+                });
+
+                // 3. Timeline Progress and Scroll Hint Handler
+                const handleScroll = () => {
+                    const scrollLeft = container.scrollLeft;
+                    const scrollWidth = container.scrollWidth - container.clientWidth;
+                    if (scrollWidth <= 0) return; // Avoid division by zero
+                    
+                    const progress = (scrollLeft / scrollWidth) * 100;
+                    if (trackProgress) trackProgress.style.width = `${progress}%`;
+                    
+                    // Hide/show scroll hints
+                    if (scrollHintLeft) scrollHintLeft.classList.toggle('hidden', scrollLeft > 50);
+                    if (scrollHintRight) scrollHintRight.classList.toggle('hidden', scrollLeft >= scrollWidth - 50);
+                };
+                
+                container.addEventListener('scroll', utils.debounce(handleScroll, 10), { passive: true });
+                handleScroll(); // Initial check
+            }
+        },
+
+        creatorsCorner: {
+    name: 'CreatorsCorner',
+    init: function() {
+        // The loading is asynchronous, triggered by runAsyncInits
+    },
+
+    loadContent: async function() {
+        const { utils, elements } = AuraStreamApp;
+        if (!elements.creatorsGrid) return;
+        
+        utils.log("Loading Creator's Corner content...");
+        elements.creatorsGrid.innerHTML = `<div class="loading-placeholder py-5"><div class="loading-spinner"></div><span>Finding visionaries...</span></div>`;
+
+        try {
+            const data = await utils.fetchTMDB('/person/popular', { page: 1 });
+            if (data?.results) {
+                // Filter for people who are known for acting/directing and have an image
+                const creators = data.results.filter(person => 
+                    (person.known_for_department === 'Acting' || person.known_for_department === 'Directing') &&
+                    person.profile_path &&
+                    person.known_for.length > 0
+                ).slice(0, 4); // Get the top 4 qualifying creators
+
+                if (creators.length > 0) {
+                    this.renderCreators(creators);
+                } else {
+                    throw new Error("No suitable creators found in API response.");
+                }
+            } else {
+                throw new Error("API did not return results for popular people.");
+            }
+        } catch (error) {
+            utils.error("Failed to load Creator's Corner:", error);
+            elements.creatorsGrid.innerHTML = utils.getErrorTextHTML("Could not load creator profiles.");
+        }
+    },
+
+    renderCreators: function(creators) {
+        const { utils, config, elements, modules } = AuraStreamApp;
+        elements.creatorsGrid.innerHTML = ''; // Clear loading placeholder
+
+        creators.forEach((person, index) => {
+            const card = document.createElement('article');
+            card.className = 'creator-card';
+            card.dataset.aos = "flip-left";
+            card.dataset.aosDelay = `${100 * (index + 1)}`;
+            card.dataset.personId = person.id;
+
+            const name = utils.escapeHtml(person.name);
+            const role = utils.escapeHtml(person.known_for_department);
+            const profileUrl = `${config.IMAGE_BASE_URL}h632${person.profile_path}`;
+            
+            // Find a primary movie they are known for to use as a bio
+            const primaryWork = person.known_for.find(work => work.title || work.name);
+            const bio = primaryWork ? `Star of <em>${utils.escapeHtml(primaryWork.title || primaryWork.name)}</em> and fan favorite.` : 'A prominent figure in the film industry.';
+
+            card.innerHTML = `
+                <div class="creator-card-front">
+                    <div class="creator-photo">
+                        <img src="${profileUrl}" alt="${name} Portrait" loading="lazy">
+                    </div>
+                    <div class="creator-info">
+                        <h4 class="creator-name">${name}</h4>
+                        <span class="creator-role">${role}</span>
+                        <p class="creator-bio">${bio}</p>
+                    </div>
+                </div>
+                <div class="creator-card-back">
+                    <h5 class="known-for-title">Known For</h5>
+                    <div class="known-for-grid">
+                        ${person.known_for.slice(0, 3).map(work => `
+                            <a href="#" class="known-for-item detail-modal-trigger" data-item-id="${work.id}" data-item-type="${work.media_type}">
+                                <img src="${config.IMAGE_BASE_URL}w185${work.poster_path}" alt="${utils.escapeHtml(work.title || work.name)}" loading="lazy">
+                            </a>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-primary-gradient conceptual-link" title="This would open a dedicated page for ${name}"><i class="bi bi-person-video3"></i> Explore Works</button>
+                </div>
+            `;
+            
+            // Attach event listeners for the modal triggers on the back
+            card.querySelectorAll('.detail-modal-trigger').forEach(trigger => {
+                trigger.addEventListener('click', e => {
+                    e.preventDefault();
+                    e.stopPropagation(); // Prevent the card flip from misfiring
+                    const itemId = e.currentTarget.dataset.itemId;
+                    const itemType = e.currentTarget.dataset.itemType;
+                    modules.modals.openDetailModal(itemId, itemType);
+                });
+            });
+            
+            elements.creatorsGrid.appendChild(card);
+        });
+        
+        // Re-initialize AOS if it's used, to catch the new elements
+        if (window.AOS) {
+            AOS.refresh();
+        }
+    }
+},
+ 
  conceptualLinks: { // Using robust version
           init: function() { const utils = AuraStreamApp.utils; document.body.addEventListener('click', (e) => { const link = e.target.closest('.conceptual-link'); if (link && !link.disabled) this.handleClick(link, link.title || 'Conceptual', e); }); utils.log("ConceptualLinks Initialized."); },
           handleClick: function(link, msg = null, e = null) { if(e) e.preventDefault(); alert(msg || "This feature is conceptual."); AuraStreamApp.utils.log(`Conceptual link clicked: ${link.title || link.textContent.trim()}`); }
@@ -1333,8 +2216,8 @@ const AuraStreamApp = {
                 if (networkBarChart) networkBarChart.innerHTML = errorHtml;
             }
         },
-
-        auth: {
+        /**
+         * auth: {
             name: 'Authentication',
             init: function() {
                 const els = AuraStreamApp.elements;
@@ -1439,8 +2322,578 @@ const AuraStreamApp = {
                 return codeMap[error.code] || error.message || 'An unknown error occurred.';
             }
         }
+         */
+
+        auth: {
+    name: 'Authentication',
+    init: function() {
+        const els = AuraStreamApp.elements;
+        // Listeners for Forms
+        els.loginForm?.addEventListener('submit', e => this.handleEmailLogin(e));
+        els.signupForm?.addEventListener('submit', e => this.handleEmailSignup(e));
+        
+        // Listeners for Social Auth
+        els.googleLoginButton?.addEventListener('click', () => this.handleGoogleAuth(false));
+        els.googleSignupButton?.addEventListener('click', () => this.handleGoogleAuth(true));
+        
+        // Listeners for Logout (Legacy and new dropdown)
+        els.logoutButton?.addEventListener('click', () => this.handleLogout());
+        document.getElementById('logout-button-dropdown')?.addEventListener('click', () => this.handleLogout()); 
+
+        // Clear error on tab change
+        document.querySelectorAll('#authTabs button[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', () => this.clearAuthError());
+        });
+    },
+    
+    handleEmailLogin: function(e) {
+        e.preventDefault();
+        const { loginEmailInput, loginPasswordInput } = AuraStreamApp.elements;
+        const email = loginEmailInput.value.trim();
+        const password = loginPasswordInput.value;
+        if (!email || !password) { this.showAuthError("Please enter email and password."); return; }
+        
+        AuraStreamApp.state.firebaseAuth.signInWithEmailAndPassword(email, password)
+            .then(() => {
+                AuraStreamApp.utils.log("Login successful. Redirecting...");
+                window.location.href = AuraStreamApp.config.AUTH_REDIRECT_URL;
+            })
+            .catch(err => this.showAuthError(this.mapFirebaseError(err)));
+    },
+    
+    handleEmailSignup: function(e) {
+        e.preventDefault();
+        const { signupNameInput, signupAgeInput, signupEmailInput, signupPasswordInput, signupAvatarInput } = AuraStreamApp.elements;
+        const name = signupNameInput.value.trim();
+        const age = parseInt(signupAgeInput.value, 10);
+        const email = signupEmailInput.value.trim();
+        const password = signupPasswordInput.value;
+        const avatarFile = signupAvatarInput.files[0];
+
+        // Robust validation for required fields
+        if (!name || name.length < 2 || !email || !password || isNaN(age) || age < 5 || age > 120) { 
+            this.showAuthError("Please enter a valid name, email, age (5-120), and password (min 6 chars)."); 
+            return; 
+        }
+        if (password.length < 6) { this.showAuthError("Password must be at least 6 characters."); return; }
+
+        AuraStreamApp.state.firebaseAuth.createUserWithEmailAndPassword(email, password)
+            .then(userCredential => this.updateProfileAndStoreData(userCredential.user, name, age, avatarFile))
+            .then(() => {
+                AuraStreamApp.utils.log("Signup successful. Redirecting...");
+                window.location.href = AuraStreamApp.config.AUTH_REDIRECT_URL;
+            })
+            .catch(err => this.showAuthError(this.mapFirebaseError(err)));
+    },
+    
+    handleGoogleAuth: function(isSignup = false) {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        AuraStreamApp.state.firebaseAuth.signInWithPopup(provider)
+            .then(result => {
+                if (result.additionalUserInfo?.isNewUser) {
+                    const user = result.user;
+                    // For social signup, we pass null for age (not collected via popup)
+                    return this.updateProfileAndStoreData(user, user.displayName, null, null, user.photoURL);
+                }
+            })
+            .then(() => window.location.href = AuraStreamApp.config.AUTH_REDIRECT_URL)
+            .catch(err => this.showAuthError(this.mapFirebaseError(err)));
+    },
+    
+    handleLogout: function() {
+        AuraStreamApp.state.firebaseAuth.signOut().catch(err => AuraStreamApp.utils.error("Logout failed:", err));
+    },
+    
+    /**
+     * Updates the Firebase Auth profile and stores a detailed record in Firestore.
+     * @param {firebase.User} user - The Firebase User object.
+     * @param {string} name - User's display name.
+     * @param {number|null} age - User's age (can be null for social login).
+     * @param {File|null} avatarFile - Optional avatar file.
+     * @param {string|null} photoURLFromProvider - Optional photo URL from a social provider.
+     */
+    updateProfileAndStoreData: async function(user, name, age, avatarFile = null, photoURLFromProvider = null) {
+        const utils = AuraStreamApp.utils;
+        const { firebaseStorage, firebaseFirestore } = AuraStreamApp.state;
+
+        let photoURL = photoURLFromProvider;
+
+        // 1. Upload Avatar if provided
+        if (avatarFile && firebaseStorage) {
+            utils.log("Uploading avatar to Firebase Storage...");
+            try {
+                const filePath = `profile_images/${user.uid}/${Date.now()}_${avatarFile.name}`;
+                const snapshot = await firebaseStorage.ref(filePath).put(avatarFile);
+                photoURL = await snapshot.ref.getDownloadURL();
+                utils.log("Avatar uploaded successfully.");
+            } catch (e) {
+                utils.error("Avatar upload failed:", e);
+                // Continue even if upload fails
+            }
+        }
+
+        // 2. Update Auth Profile
+        await user.updateProfile({ displayName: name, photoURL: photoURL });
+        utils.log("Firebase Auth profile updated with name and photoURL.");
+
+        // 3. Save ALL detailed info to Firestore (if available)
+        if (firebaseFirestore) {
+            const serverTimestamp = (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) 
+                ? firebase.firestore.FieldValue.serverTimestamp() 
+                : new Date(); 
+
+            const userData = { 
+                uid: user.uid,
+                name: name, 
+                email: user.email, 
+                photoURL: photoURL,
+                lastLogin: serverTimestamp,
+                // Only include age if valid
+                ...(age && !isNaN(age) ? { age: age } : {})
+            };
+
+            // Set creation timestamp
+            if (user.metadata.creationTime) {
+                userData.createdAt = firebase.firestore.Timestamp.fromDate(new Date(user.metadata.creationTime));
+            } else {
+                 userData.createdAt = serverTimestamp;
+            }
+            
+            await firebaseFirestore.collection('users').doc(user.uid).set(userData, { merge: true });
+            utils.log(`User data saved/merged in Firestore for UID: ${user.uid}`);
+        }
+    },
+    
+    updateAuthUI: function() {
+        const { isLoggedIn, currentUser } = AuraStreamApp.state;
+        const { 
+            loginSignupButton, userInfoArea, 
+            userAvatarImage, userAvatarInitials
+        } = AuraStreamApp.elements;
+        
+        // Fetch new dropdown elements dynamically
+        const dropdownUserNameEl = document.getElementById('dropdown-user-name');
+        const dropdownUserEmailEl = document.getElementById('dropdown-user-email');
+
+        if (isLoggedIn && currentUser) {
+            loginSignupButton.classList.add('d-none');
+            userInfoArea.classList.remove('d-none'); 
+
+            // Update dropdown header info
+            if (dropdownUserNameEl) dropdownUserNameEl.textContent = currentUser.displayName || 'User';
+            if (dropdownUserEmailEl) dropdownUserEmailEl.textContent = currentUser.email || '';
+            
+            // Update avatar visuals
+            if (currentUser.photoURL) {
+                userAvatarImage.src = currentUser.photoURL;
+                userAvatarImage.classList.remove('d-none');
+                userAvatarInitials.classList.add('d-none');
+            } else {
+                userAvatarInitials.textContent = AuraStreamApp.utils.getInitials(currentUser.displayName, currentUser.email);
+                userAvatarInitials.classList.remove('d-none');
+                userAvatarImage.classList.add('d-none');
+            }
+            
+            // Legacy logout button cleanup
+            const oldLogoutBtn = document.getElementById('logout-button');
+            if(oldLogoutBtn) oldLogoutBtn.classList.add('d-none');
+
+        } else {
+            loginSignupButton.classList.remove('d-none');
+            userInfoArea.classList.add('d-none');
+        }
+    },
+    
+    showAuthError: function(message) {
+        const el = AuraStreamApp.elements.authErrorMessage;
+        if (el) { el.textContent = message; el.classList.remove('d-none'); }
+    },
+    
+    clearAuthError: function() {
+        const el = AuraStreamApp.elements.authErrorMessage;
+        if (el) { el.textContent = ''; el.classList.add('d-none'); }
+    },
+    
+    mapFirebaseError: function(error) {
+        const codeMap = {
+            'auth/invalid-email': 'Invalid email format.', 
+            'auth/user-not-found': 'No user found with this email.',
+            'auth/wrong-password': 'Incorrect password.', 
+            'auth/email-already-in-use': 'This email is already registered.',
+            'auth/weak-password': 'Password must be at least 6 characters.', 
+            'auth/popup-closed-by-user': 'Sign-in cancelled.',
+        };
+        return codeMap[error.code] || error.message || 'An unknown error occurred.';
+    }
+}
+
+        
     }
 };
+
+/**
+ * Internal Website Search Manager v2.0
+ * - Refined event handling using delegation for better performance.
+ * - Improved robustness against missing DOM elements.
+ * - Cleaner navigation and action handling logic.
+ */
+class InternalSearchManager {
+    constructor() {
+        this.searchData = this.initializeSearchData();
+        this.recentSearches = this.loadRecentSearches();
+        this.maxRecentSearches = 5;
+        this.minSearchLength = 1;
+        
+        // --- Cache DOM elements for performance ---
+        this.desktopSearchInput = document.getElementById('nav-search-input');
+        this.desktopSearchResults = document.getElementById('nav-search-results');
+        this.mobileSearchInput = document.getElementById('mobile-search-input');
+        // Mobile search results container is not defined in the HTML yet, but we can prepare for it.
+        // For now, we will assume it might be added later or just focus on desktop.
+        // Let's create a placeholder for it if it exists
+        this.mobileSearchResults = document.getElementById('mobile-search-results');
+
+        // Check if essential elements exist before proceeding
+        if (!this.desktopSearchInput || !this.desktopSearchResults) {
+            console.warn("AuraStream Search: Desktop search elements not found. Search will be disabled.");
+            return; // Abort initialization
+        }
+        
+        this.init();
+    }
+
+    initializeSearchData() {
+        // This data structure is excellent, no changes needed here.
+        return [
+            { title: "Home", description: "Welcome to AuraStream", type: "section", icon: "bi-house", url: "#hero", keywords: ["home", "main", "welcome"] },
+            { title: "Discover Content", description: "Explore trending movies and shows", type: "section", icon: "bi-compass", url: "#discover-panel", keywords: ["discover", "explore", "find", "movies"] },
+            { title: "Features", description: "Learn about AuraStream's capabilities", type: "section", icon: "bi-stars", url: "#features", keywords: ["features", "capabilities", "functionality"] },
+            { title: "AI Recommendation", description: "Get personalized movie recommendations", type: "section", icon: "bi-robot", url: "#ai-engine", keywords: ["ai", "recommendation", "mood"] },
+            { title: "Genre Spotlight", description: "Dive deep into specific movie genres", type: "section", icon: "bi-collection-play", url: "#genre-spotlight", keywords: ["genre", "categories", "types"] },
+            { title: "Creator's Corner", description: "Meet directors and actors", type: "section", icon: "bi-person-video", url: "#creators-corner", keywords: ["creators", "directors", "actors"] },
+            { title: "Gallery & UI", description: "Explore AuraStream's interface", type: "section", icon: "bi-grid-3x3-gap", url: "#gallery-section", keywords: ["gallery", "ui", "interface", "screenshots"] },
+            { title: "Analytics & Insights", description: "View platform statistics", type: "section", icon: "bi-graph-up", url: "#analytics-dashboard", keywords: ["analytics", "insights", "statistics"] },
+            { title: "FAQ", description: "Find answers to questions", type: "section", icon: "bi-question-circle", url: "#faq", keywords: ["faq", "help", "support", "questions"] },
+            { title: "Unified Discovery", description: "Find content across services", type: "feature", icon: "bi-search", url: "#features", keywords: ["discovery", "search", "unified"] },
+            { title: "Personalized Recommendations", description: "Smart system learns your taste", type: "feature", icon: "bi-heart", url: "#ai-engine", keywords: ["personalized", "recommendations", "suggestions"] },
+            { title: "Watchlist Tracking", description: "Manage your watchlist", type: "feature", icon: "bi-bookmark-check", url: "#features", keywords: ["watchlist", "tracking", "progress"] },
+            { title: "Community Features", description: "Connect with fans and share reviews", type: "feature", icon: "bi-people", url: "#features", keywords: ["community", "social", "reviews"] },
+            { title: "Release Notifications", description: "Never miss new episodes or movies", type: "feature", icon: "bi-bell", url: "#features", keywords: ["notifications", "releases", "alerts"] },
+            { title: "Cross-Device Sync", description: "Your data stays synced everywhere", type: "feature", icon: "bi-phone", url: "#features", keywords: ["sync", "cross-device", "cloud"] },
+            { title: "What is AuraStream?", description: "Learn about our platform", type: "faq", icon: "bi-info-circle", url: "#faq", keywords: ["what is", "about", "platform"] },
+            { title: "Is AuraStream free?", description: "Information about pricing", type: "faq", icon: "bi-currency-dollar", url: "#faq", keywords: ["free", "pricing", "cost"] },
+            { title: "Platform Availability", description: "Where to access AuraStream", type: "faq", icon: "bi-devices", url: "#available-everywhere", keywords: ["platforms", "devices", "mobile"] },
+            { title: "Launch App", description: "Open the AuraStream application", type: "action", icon: "bi-rocket-takeoff", action: "launchApp", keywords: ["launch", "open app", "start"] },
+            { title: "Contact Support", description: "Get help from our team", type: "action", icon: "bi-headset", action: "contactSupport", keywords: ["contact", "support", "help"] },
+            { title: "View GitHub", description: "Check out the project source code", type: "action", icon: "bi-github", url: "https://github.com/MEDELBOU3/AuraStream-Concept", keywords: ["github", "source code", "repository"] }
+        ];
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.setupKeyboardShortcuts();
+    }
+
+    setupEventListeners() {
+        // --- Desktop Search ---
+        this.desktopSearchInput.addEventListener('input', (e) => this.handleSearch(e.target.value, this.desktopSearchResults));
+        this.desktopSearchInput.addEventListener('focus', () => this.showRecentSearches(this.desktopSearchResults));
+        // Use event delegation for result clicks
+        this.desktopSearchResults.addEventListener('click', (e) => this.handleResultClick(e.target.closest('.search-result-item')));
+        
+        // --- Mobile Search (if it exists) ---
+        if (this.mobileSearchInput && this.mobileSearchResults) {
+            this.mobileSearchInput.addEventListener('input', (e) => this.handleSearch(e.target.value, this.mobileSearchResults));
+            this.mobileSearchInput.addEventListener('focus', () => this.showRecentSearches(this.mobileSearchResults));
+            this.mobileSearchResults.addEventListener('click', (e) => this.handleResultClick(e.target.closest('.search-result-item')));
+        }
+
+        // --- Global listener to close dropdowns ---
+        document.addEventListener('click', (e) => {
+            const searchBar = e.target.closest('.search-bar');
+            if (!searchBar) {
+                this.closeAllResults();
+            }
+        });
+    }
+
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                this.focusSearch();
+            }
+            if (e.key === '/' && !this.isInputFocused()) {
+                e.preventDefault();
+                this.focusSearch();
+            }
+            if (e.key === 'Escape') {
+                this.closeAllResults();
+            }
+        });
+    }
+
+    isInputFocused() {
+        const activeElement = document.activeElement;
+        return activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA');
+    }
+
+    focusSearch() {
+        this.desktopSearchInput.focus();
+        this.desktopSearchInput.select();
+    }
+
+    handleSearch(query, resultsContainer) {
+        const trimmedQuery = query.trim();
+        
+        if (trimmedQuery.length < this.minSearchLength) {
+            this.showRecentSearches(resultsContainer);
+            return;
+        }
+
+        const results = this.search(trimmedQuery);
+        this.displayResults(results, resultsContainer, trimmedQuery);
+    }
+
+    search(query) {
+        // The scoring logic is excellent, no changes needed.
+        const lowerQuery = query.toLowerCase();
+        const scoredResults = [];
+
+        this.searchData.forEach(item => {
+            let score = 0;
+            if (item.title.toLowerCase().includes(lowerQuery)) score += 100;
+            if (item.description.toLowerCase().includes(lowerQuery)) score += 50;
+            const keywordMatches = item.keywords.filter(k => k.toLowerCase().includes(lowerQuery)).length;
+            score += keywordMatches * 25;
+            if (item.title.toLowerCase() === lowerQuery) score += 200;
+            
+            if (score > 0) {
+                scoredResults.push({ ...item, score });
+            }
+        });
+
+        return scoredResults.sort((a, b) => b.score - a.score).slice(0, 10);
+    }
+
+    displayResults(results, container, query) {
+        if (!container) return;
+        if (results.length === 0) {
+            container.innerHTML = this.getNoResultsHTML(query);
+        } else {
+            const groupedResults = this.groupResultsByType(results);
+            container.innerHTML = this.buildResultsHTML(groupedResults);
+        }
+        container.classList.add('active');
+    }
+
+    groupResultsByType(results) {
+        // Grouping logic is perfect.
+        return results.reduce((groups, result) => {
+            (groups[result.type] = groups[result.type] || []).push(result);
+            return groups;
+        }, {});
+    }
+
+    buildResultsHTML(groupedResults) {
+        let html = '';
+        const groupOrder = ['section', 'feature', 'faq', 'action']; // Define render order
+        
+        groupOrder.forEach(groupKey => {
+            if (groupedResults[groupKey] && groupedResults[groupKey].length > 0) {
+                const headerText = {
+                    section: 'Sections',
+                    feature: 'Features',
+                    faq: 'Help & Support',
+                    action: 'Actions'
+                }[groupKey];
+                
+                html += `<div class="search-section-header">${headerText}</div>`;
+                html += groupedResults[groupKey].map(item => this.buildResultItemHTML(item)).join('');
+            }
+        });
+        
+        return html;
+    }
+
+    buildResultItemHTML(item) {
+        return `
+            <button class="search-result-item" data-type="${item.type}" data-url="${item.url || ''}" data-action="${item.action || ''}">
+                <div class="search-result-icon ${item.type}">
+                    <i class="bi ${item.icon}"></i>
+                </div>
+                <div class="search-result-info">
+                    <div class="search-result-title">
+                        ${item.title}
+                        <span class="search-result-type">${item.type}</span>
+                    </div>
+                    <div class="search-result-description">${item.description}</div>
+                </div>
+            </button>
+        `;
+    }
+
+    getNoResultsHTML(query) {
+        // This is well-designed.
+        return `
+            <div class="search-no-results">
+                <i class="bi bi-search"></i>
+                <div>No results for "<strong>${this.escapeHtml(query)}</strong>"</div>
+                <div style="font-size: 0.8rem; margin-top: 8px; opacity: 0.7;">
+                    Try searching for sections, features, or help topics.
+                </div>
+            </div>
+        `;
+    }
+
+    showRecentSearches(container) {
+        if (!container) return;
+        if (this.recentSearches.length === 0) {
+            container.innerHTML = `
+                <div class="search-no-results">
+                    <i class="bi bi-compass"></i>
+                    <div>Search for sections, features, and more.</div>
+                </div>
+            `;
+        } else {
+            let html = '<div class="search-section-header">Recent Searches</div>';
+            html += this.recentSearches.map(term => `
+                <button class="search-result-item" data-recent-search="${this.escapeHtml(term)}">
+                    <div class="search-result-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div class="search-result-info">
+                        <div class="search-result-title">${this.escapeHtml(term)}</div>
+                    </div>
+                </button>
+            `).join('');
+            container.innerHTML = html;
+        }
+        container.classList.add('active');
+    }
+
+    handleResultClick(item) {
+        if (!item) return; // Exit if the click was not on an item
+        
+        const url = item.dataset.url;
+        const action = item.dataset.action;
+        const recentSearch = item.dataset.recentSearch;
+        
+        if (recentSearch) {
+            this.desktopSearchInput.value = recentSearch;
+            this.handleSearch(recentSearch, this.desktopSearchResults);
+            // Do not close or clear, let the user see the new results
+            return;
+        }
+        
+        // Add to recent searches if it was a direct result click
+        const query = this.desktopSearchInput.value.trim();
+        if(query) this.addToRecentSearches(query);
+        
+        this.closeAllResults();
+        this.clearSearchInputs();
+        
+        if (action) {
+            this.handleAction(action);
+        } else if (url) {
+            this.navigateTo(url);
+        }
+    }
+
+    handleAction(action) {
+        switch (action) {
+            case 'launchApp':
+                // Safely trigger the modal
+                const modalEl = document.getElementById('launchAppModal');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                }
+                break;
+            case 'contactSupport':
+                alert("Contact support is a conceptual feature.");
+                break;
+        }
+    }
+
+    navigateTo(url) {
+        if (url.startsWith('#')) {
+            const target = document.querySelector(url);
+            if (target) {
+                // Temporarily highlight the section for user feedback
+                target.style.transition = 'box-shadow 0.3s ease-in-out';
+                target.style.boxShadow = '0 0 0 3px rgba(var(--primary-accent-rgb), 0.5)';
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => {
+                    target.style.boxShadow = '';
+                }, 1500);
+            }
+        } else if (url.startsWith('http')) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+    }
+
+    addToRecentSearches(term) {
+        const normalizedTerm = term.trim().toLowerCase();
+        if (!normalizedTerm) return;
+        
+        this.recentSearches = this.recentSearches.filter(t => t !== normalizedTerm);
+        this.recentSearches.unshift(normalizedTerm);
+        this.recentSearches = this.recentSearches.slice(0, this.maxRecentSearches);
+        
+        this.saveRecentSearches();
+    }
+
+    loadRecentSearches() {
+        try {
+            const stored = localStorage.getItem('auraStreamRecentSearches');
+            return stored ? JSON.parse(stored) : [];
+        } catch {
+            return [];
+        }
+    }
+
+    saveRecentSearches() {
+        try {
+            localStorage.setItem('auraStreamRecentSearches', JSON.stringify(this.recentSearches));
+        } catch (error) {
+            console.warn('Could not save recent searches:', error);
+        }
+    }
+
+    clearSearchInputs() {
+        if (this.desktopSearchInput) this.desktopSearchInput.value = '';
+        if (this.mobileSearchInput) this.mobileSearchInput.value = '';
+    }
+
+    closeAllResults() {
+        if (this.desktopSearchResults) this.desktopSearchResults.classList.remove('active');
+        if (this.mobileSearchResults) this.mobileSearchResults.classList.remove('active');
+    }
+    
+    // Simple HTML escaper
+    escapeHtml(unsafe) {
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+}
+
+// Initialize the search manager when the app is ready
+// This should be integrated into your main app's initialization flow.
+// For example, within AuraStreamApp.init():
+// this.internalSearch = new InternalSearchManager();
+// For now, we'll keep the DOMContentLoaded listener for standalone testing.
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.AuraStreamApp) { // Prevents re-initialization if already part of a larger app object
+        window.internalSearch = new InternalSearchManager();
+    }
+});
+
+
 
 // --- Start the Main Application ---
 AuraStreamApp.init();
