@@ -65,8 +65,10 @@
             </div>
             <div class="nav-actions d-none d-lg-flex align-items-center">
                 <div class="search-bar">
-                   <i class="bi bi-search"></i>
-                   <input type="text" placeholder="Search..." id="nav-search-input">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Search website..." id="nav-search-input">
+                    <div class="search-shortcut-hint">/</div>
+                    <div class="search-results" id="nav-search-results"></div>
                 </div>
                 <div id="auth-button-area">
                      <!-- Logged OUT View -->
@@ -117,10 +119,10 @@
         <div class="offcanvas-overlay" id="offcanvas-overlay"></div>
     </header>
 
+
     <!-- Main Content Wrapper -->
     <div class="landing-wrapper">
         <main>
-
             <!-- Hero Section -->
             <section id="hero" class="section">
                  <div class="hero-background"><div class="hero-background-image" id="hero-bg-image"></div></div>
@@ -129,7 +131,7 @@
                          <div class="col-lg-7 col-md-9">
                              <div class="hero-content" data-aos="fade-right" data-aos-delay="200">
                                  <h1 id="hero-title">Loading Universe...</h1>
-                                 <p class="lead" id="hero-overview">Discover, track, and discuss your favorite movies and TV shows like never before.</p>
+                                 <p class="lead" id="hero-overview" style="font-size: 1.0rem;">Discover, track, and discuss your favorite movies and TV shows like never before.</p>
                                  <div class="hero-movie-info mb-4" id="hero-info-container">
                                     <div class="hero-info-item skeleton-item" style="width: 90px;"></div>
                                     <div class="hero-info-item skeleton-item" style="width: 70px;"></div>
@@ -147,6 +149,69 @@
                          </div>
                      </div>
                  </div>
+            </section>
+
+            
+             <section id="discover-panel" class="section section-angled-top section-angled-bottom">
+                 <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                 <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                
+                 <div class="container position-relative" style="z-index: 10;">
+                    <div class="section-heading text-center mb-5" data-aos="fade-up">
+                        <h2>Discover <span class="text-gradient">More</span></h2>
+                        <p class="lead">Explore what's trending, what's next, or let fate find your next favorite film.</p>
+                    </div>
+
+                    <div class="discover-panel-container" data-aos="fade-up" data-aos-delay="200">
+                        <!-- Tab Navigation -->
+                        <div class="discover-tabs">
+                            <button class="discover-tab active" data-tab="trending"><i class="bi bi-graph-up-arrow"></i> Top of the Week</button>
+                            <button class="discover-tab" data-tab="upcoming"><i class="bi bi-calendar2-event"></i> Coming Soon</button>
+                            <button class="discover-tab" data-tab="gem-finder"><i class="bi bi-gem"></i> Find a Gem</button>
+                        </div>
+
+                        <!-- Tab Content -->
+                        <div class="discover-content-wrapper">
+                            <!-- Trending Panel -->
+                            <div class="discover-content active" id="panel-trending">
+                                <div class="loading-placeholder-inline">
+                                    <div class="loading-spinner"></div><span>Loading weekly chart...</span>
+                                </div>
+                                <!-- JS populates the list here -->
+                            </div>
+
+                            <!-- Upcoming Panel -->
+                            <div class="discover-content" id="panel-upcoming">
+                                <div class="loading-placeholder-inline">
+                                    <div class="loading-spinner"></div><span>Scanning the horizon...</span>
+                                </div>
+                                <!-- JS populates the grid here -->
+                            </div>
+
+                            <!-- Gem Finder Panel -->
+                            <div class="discover-content" id="panel-gem-finder">
+                                <div class="gem-finder-machine">
+                                    <div class="gem-finder-reel">
+                                        <div class="gem-finder-poster-strip" id="gem-finder-strip">
+                                            <!-- JS populates posters here -->
+                                        </div>
+                                    </div>
+                                    <div class="gem-finder-overlay"></div>
+                                    <div class="gem-finder-pointer"></div>
+                                    <div class="gem-finder-ui">
+                                        <p>Feeling lucky?</p>
+                                        <button class="btn btn-primary-gradient" id="gem-finder-button">
+                                            <i class="bi bi-shuffle"></i> Spin
+                                        </button>
+                                    </div>
+                                    <div class="gem-finder-result d-none" id="gem-finder-result">
+                                        <!-- JS populates the result here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
              
             <!-- Content Showcase Section -->
@@ -187,6 +252,79 @@
                  </div>
             </section>
 
+            <!-- ============================================= -->
+<!-- ===== NEW: CREATOR’S CORNER SECTION ======== -->
+<!-- ============================================= -->
+<section id="creators-corner" class="section section-angled-top section-angled-bottom">
+    <!-- Decorative Dividers -->
+    <div class="container position-relative" style="z-index: 10;">
+        <!-- Section Heading -->
+        <div class="section-heading text-center mb-5" data-aos="fade-up">
+            <h2>Creator’s <span class="text-gradient">Corner</span></h2>
+            <p class="lead">Step behind the curtain. Meet the visionaries shaping your favorite stories.</p>
+        </div>
+
+        <!-- Interactive Creator Grid -->
+        <div class="creators-grid">
+            <!-- Creator Card 1: RESTRUCTURED FOR 3D FLIP -->
+            <article class="creator-card" data-aos="flip-left" data-aos-delay="100">
+                <div class="creator-card-front">
+                    <div class="creator-photo">
+                        <img src="images/director.jpg" alt="Director Portrait" loading="lazy">
+                    </div>
+                    <div class="creator-info">
+                        <h4 class="creator-name">Denis Villeneuve</h4>
+                        <span class="creator-role">Director</span>
+                        <p class="creator-bio">Known for breathtaking visuals in <em>Dune</em> & <em>Blade Runner 2049</em>.</p>
+                    </div>
+                    <!-- The overlay button here is now redundant/moved to the back, but keeping it if JS handles click -->
+                    <!-- <div class="creator-overlay">
+                        <button class="btn btn-primary-gradient"><i class="bi bi-film"></i> Explore Works</button>
+                    </div> -->
+                </div>
+                <!-- NEW BACK SIDE -->
+                <div class="creator-card-back">
+                    <h4 class="known-for-title">Top Rated Works</h4>
+                    <div class="known-for-grid">
+                        <div class="known-for-item" title="Dune"><img src="images/known_for_1.jpg" alt="Dune poster" loading="lazy"></div>
+                        <div class="known-for-item" title="Arrival"><img src="images/known_for_2.jpg" alt="Arrival poster" loading="lazy"></div>
+                        <div class="known-for-item" title="Sicario"><img src="images/known_for_3.jpg" alt="Sicario poster" loading="lazy"></div>
+                    </div>
+                     <button class="btn btn-primary-gradient"><i class="bi bi-film"></i> Explore Fullography</button>
+                </div>
+            </article>
+
+            <!-- Creator Card 2: RESTRUCTURED FOR 3D FLIP -->
+            <article class="creator-card" data-aos="flip-left" data-aos-delay="200">
+                <div class="creator-card-front">
+                    <div class="creator-photo">
+                        <img src="images/actor.jpg" alt="Actor Portrait" loading="lazy">
+                    </div>
+                    <div class="creator-info">
+                        <h4 class="creator-name">Zendaya</h4>
+                        <span class="creator-role">Actress</span>
+                        <p class="creator-bio">Star of <em>Euphoria</em>, <em>Dune</em>, and cultural icon of a new era.</p>
+                    </div>
+                </div>
+                <!-- NEW BACK SIDE -->
+                 <div class="creator-card-back">
+                    <h4 class="known-for-title">Top Rated Works</h4>
+                    <div class="known-for-grid">
+                        <div class="known-for-item" title="Euphoria"><img src="images/known_for_4.jpg" alt="Euphoria poster" loading="lazy"></div>
+                        <div class="known-for-item" title="Spider-Man"><img src="images/known_for_5.jpg" alt="Spider-Man poster" loading="lazy"></div>
+                        <div class="known-for-item" title="Challengers"><img src="images/known_for_6.jpg" alt="Challengers poster" loading="lazy"></div>
+                    </div>
+                     <button class="btn btn-secondary-outline"><i class="bi bi-person-video3"></i> View Fullography</button>
+                </div>
+            </article>
+
+            <!-- Add More Creator Cards Here -->
+        </div>
+    </div>
+</section>
+
+
+
             <!-- Features Section -->
             <section id="features" class="section section-angled-top section-angled-bottom">
                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
@@ -203,6 +341,103 @@
                           <article class="feature-item" data-aos="fade-up" data-aos-delay="700"> <i class="bi bi-phone-fill feature-icon"></i> <h4>Cross-Device Sync</h4> <p>Your watchlist, progress, and recommendations stay synced across all platforms.</p> </article>
                      </div>
                  </div>
+            </section>
+
+                        <!-- ================================================= -->
+            <!-- ===== NEW: AI RECOMMENDATION ENGINE (AuraLens) ===== -->
+            <!-- ================================================= -->
+            <section id="ai-engine" class="section">
+                <!-- AI Neural Network Background -->
+                <div class="ai-bg">
+                    <canvas id="ai-canvas"></canvas>
+                </div>
+                <div class="ai-vignette"></div>
+
+                <div class="container position-relative" style="z-index: 10;">
+                    <div class="section-heading text-center mb-5" data-aos="fade-up">
+                        <h2>Meet <span class="text-gradient">AuraStream AI</span></h2>
+                        <p class="lead">Let our AI find the perfect movie for your current mood. Let's begin.</p>
+                    </div>
+
+                    <!-- AI Interaction Hub -->
+                    <div class="ai-hub" id="ai-hub-container">
+                        
+                        <!-- Step 1: Mood (Initial State) -->
+                        <div class="ai-step active" data-step="1">
+                            <div class="ai-prompt" data-aos="fade-up" data-aos-delay="200">
+                                <div class="ai-avatar"><i class="bi bi-robot"></i></div>
+                                <p class="ai-question">How are you feeling tonight?</p>
+                            </div>
+                            <div class="ai-options-grid" data-aos="fade-up" data-aos-delay="400">
+                                <button class="ai-option-card" data-next-step="2" data-keyword="adventure">
+                                    <i class="bi bi-compass"></i>
+                                    <span>Adventurous</span>
+                                </button>
+                                <button class="ai-option-card" data-next-step="2" data-keyword="comedy">
+                                    <i class="bi bi-emoji-laughing"></i>
+                                    <span>Lighthearted</span>
+                                </button>
+                                <button class="ai-option-card" data-next-step="2" data-keyword="thriller">
+                                    <i class="bi bi-lightning"></i>
+                                    <span>On Edge</span>
+                                </button>
+                                <button class="ai-option-card" data-next-step="2" data-keyword="drama">
+                                    <i class="bi bi-heart"></i>
+                                    <span>Thoughtful</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Theme (Hidden by default) -->
+                        <div class="ai-step" data-step="2">
+                             <div class="ai-prompt">
+                                <div class="ai-avatar"><i class="bi bi-robot"></i></div>
+                                <p class="ai-question">Excellent. Now, pick a theme to explore.</p>
+                            </div>
+                            <div class="ai-options-grid">
+                                <button class="ai-option-card" data-next-step="3" data-keyword="space">
+                                    <i class="bi bi-stars"></i>
+                                    <span>Cosmic & Grand</span>
+                                </button>
+                                <button class="ai-option-card" data-next-step="3" data-keyword="magic">
+                                    <i class="bi bi-magic"></i>
+                                    <span>Mystical & Fantastic</span>
+                                </button>
+                                <button class="ai-option-card" data-next-step="3" data-keyword="crime">
+                                    <i class="bi bi-fingerprint"></i>
+                                    <span>Gritty & Real</span>
+                                </button>
+                                <button class="ai-option-card" data-next-step="3" data-keyword="future">
+                                    <i class="bi bi-clock-history"></i>
+                                    <span>Past or Future</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Analysis (Hidden by default) -->
+                        <div class="ai-step" data-step="3">
+                            <div class="ai-analysis-container">
+                                <div class="ai-avatar"><i class="bi bi-robot"></i></div>
+                                <p class="ai-question">Analyzing your preferences...</p>
+                                <div class="analysis-bar-container">
+                                    <div class="analysis-bar"></div>
+                                </div>
+                                <div class="analysis-keywords">
+                                    <span id="keyword1"></span>
+                                    <span id="keyword2"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Recommendation Result (Hidden by default) -->
+                        <div class="ai-step" data-step="4">
+                            <div class="ai-recommendation-wrapper">
+                                <!-- JS will populate this -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             </section>
             
             <!-- Interactive Demo Section -->
@@ -226,6 +461,76 @@
                                         <div class="play-button-overlay" id="play-button-demo"><div class="play-button-icon"></div></div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================================== -->
+            <!-- ===== NEW: GENRE SPOTLIGHT SECTION ===== -->
+            <!-- ==================================== -->
+            <section id="genre-spotlight" class="section section-angled-top section-angled-bottom">
+                <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
+                <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+                
+                <div class="container position-relative" style="z-index: 10;">
+                    <h2 class="text-center mb-4" data-aos="fade-up">Genre <span class="text-gradient">Spotlight</span></h2>
+                    <p class="lead text-center mb-5" data-aos="fade-up" data-aos-delay="100">
+                        Dive deep into a world of cinema. Select a genre to begin your next adventure.
+                    </p>
+
+                    <!-- Interactive Filter Buttons -->
+                    <div class="genre-filters" data-aos="fade-up" data-aos-delay="200">
+                        <!-- Genre IDs from TMDb API -->
+                        <button class="btn btn-secondary-outline active" data-genre-id="878">Sci-Fi</button>
+                        <button class="btn btn-secondary-outline" data-genre-id="28">Action</button>
+                        <button class="btn btn-secondary-outline" data-genre-id="27">Horror</button>
+                        <button class="btn btn-secondary-outline" data-genre-id="35">Comedy</button>
+                        <button class="btn btn-secondary-outline" data-genre-id="10749">Romance</button>
+                    </div>
+
+                    <!-- Masonry Grid for Posters -->
+                    <div class="spotlight-grid" id="spotlight-grid-container">
+                        <!-- JS will populate this -->
+                        <div class="loading-placeholder">
+                            <div class="loading-spinner"></div>
+                            <span>Loading Sci-Fi classics...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- ========================================================== -->
+            <!-- ===== REDEVELOPED: CINEMATIC UNIVERSE (GLASS PARALLAX) ===== -->
+            <!-- ========================================================== -->
+            <section id="universe-explorer" class="section">
+                <div class="universe-bg" id="universe-bg-image"></div>
+                <div class="universe-vignette"></div>
+
+                <div class="container position-relative" style="z-index: 10;">
+                    <div class="section-heading text-center" data-aos="fade-up">
+                        <div id="universe-logo-container" class="mb-4"></div>
+                        <h2 id="universe-title" class="d-none"></h2>
+                        <div class="glow-line"></div>
+                        <p class="lead" id="universe-overview"></p>
+                    </div>
+
+                    <div class="universe-journey-wrapper">
+                        <!-- Scroll Hint Chevrons -->
+                        <div class="scroll-hint left"><i class="bi bi-chevron-left"></i></div>
+                        <div class="scroll-hint right"><i class="bi bi-chevron-right"></i></div>
+                        
+                        <!-- The Timeline Track -->
+                        <div class="universe-timeline-track">
+                            <div class="universe-timeline-track-progress" id="universe-track-progress"></div>
+                        </div>
+
+                        <!-- Horizontal Scrolling Container -->
+                        <div class="horizontal-scroll-container universe-journey" id="universe-timeline-container">
+                            <!-- JS will populate this with timeline cards -->
+                            <div class="loading-placeholder py-5">
+                                <div class="loading-spinner"></div>
+                                <span>Assembling the universe...</span>
                             </div>
                         </div>
                     </div>
@@ -257,30 +562,73 @@
                 <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
                 <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
                 <div class="galaxy-bg"></div>
-                <div class="container">
-                    <div class="section-heading" data-aos="fade-up">
+
+                <div class="container" data-aos="fade-up">
+                    <div class="section-heading text-center">
                         <h2>Experience <span class="text-gradient">AuraStream</span> UI</h2>
                         <div class="glow-line"></div>
                         <p class="lead">Explore our futuristic interface with immersive visuals and seamless integration across all your content.</p>
                     </div>
-                    <div class="gallery-3d-container" data-aos="fade-up" data-aos-delay="200">
-                        <div class="gallery-3d-stage" id="galleryStage">
-                            <div class="gallery-card" data-index="0" data-name="Home Interface"><div class="card-front"><img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/interface.png?raw=true" alt="AuraStream Home Interface" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">Dashboard</span><h3 class="card-title">Home Interface</h3><p class="card-description">Your personalized hub for discovering content.</p></div></div></div>
-                            <div class="gallery-card" data-index="1" data-name="Smart Recommendations"><div class="card-front"><img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/ai-powered.png?raw=true" alt="AuraStream Recommendations" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">AI Powered</span><h3 class="card-title">Smart Suggestions</h3><p class="card-description">AI algorithms suggest perfect content matches.</p></div></div></div>
-                            <div class="gallery-card" data-index="2" data-name="Watchlist Feature"><div class="card-front"><img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/watchlist.png?raw=true" alt="AuraStream Watchlist" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">Organization</span><h3 class="card-title">Watchlist</h3><p class="card-description">Keep track of everything you want to watch easily.</p></div></div></div>
-                            <div class="gallery-card" data-index="3" data-name="Detailed View"><div class="card-front"><img src="https://github.com/MEDELBOU3/SM4movies.v2.0.0/blob/main/images/details.png?raw=true" alt="AuraStream Detail View" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">Info</span><h3 class="card-title">Detailed View</h3><p class="card-description">Get all the info, cast, crew, and streaming options.</p></div></div></div>
-                            <div class="gallery-card" data-index="4" data-name="Community Hub"><div class="card-front"><img src="https://raw.githubusercontent.com/MEDELBOU3/SM4movies.v2.0.0/bfa85dcc23eb2e81f159934bfe7ee1f993d05889/images/community.svg" alt="AuraStream Community Hub" class="card-image" loading="lazy"><div class="card-overlay"></div><div class="card-content"><span class="card-tag">Connect</span><h3 class="card-title">Community Hub</h3><p class="card-description">Connect with fans, share reviews, and discuss.</p></div></div></div>
+
+                      <div class="expanding-gallery-container" id="expanding-gallery">
+                        <!-- Card 1 -->
+                        <div class="gallery-item" style="--bg-image: url('images/interface.png')" data-item-id="299534" data-item-type="movie">
+                            <div class="item-content">
+                                <span class="item-tag">Dashboard</span>
+                                <h3 class="item-title">Home Interface</h3>
+                                <div class="item-details">
+                                    <p>Your personalized hub for discovering new and trending content, tailored just for you.</p>
+                                    <!-- ADDED gallery-learn-more class -->
+                                    <button class="btn btn-secondary-outline btn-sm gallery-learn-more">Learn More</button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="gallery-nav" data-aos="fade-up" data-aos-delay="300">
-                        <button class="nav-btn prev-btn" id="prevBtn" aria-label="Previous Gallery Item"><i class="bi bi-chevron-left"></i></button>
-                        <div class="gallery-dots" id="galleryDots">
-                            <button class="dot active" data-index="0" aria-label="Go to slide 1"></button><button class="dot" data-index="1" aria-label="Go to slide 2"></button><button class="dot" data-index="2" aria-label="Go to slide 3"></button><button class="dot" data-index="3" aria-label="Go to slide 4"></button><button class="dot" data-index="4" aria-label="Go to slide 5"></button>
+                        <!-- Card 2 -->
+                        <div class="gallery-item" style="--bg-image: url('images/recommendations.png')" data-item-id="634649" data-item-type="movie">
+                            <div class="item-content">
+                                <span class="item-tag">AI Powered</span>
+                                <h3 class="item-title">Smart Suggestions</h3>
+                                <div class="item-details">
+                                    <p>Our AuraLens AI analyzes your taste to suggest perfect content matches and hidden gems.</p>
+                                    <button class="btn btn-secondary-outline btn-sm gallery-learn-more">Learn More</button>
+                                </div>
+                            </div>
                         </div>
-                        <button class="nav-btn next-btn" id="nextBtn" aria-label="Next Gallery Item"><i class="bi bi-chevron-right"></i></button>
+                        <!-- Card 3 -->
+                        <div class="gallery-item" style="--bg-image: url('images/watchlist.png')" data-item-id="507086" data-item-type="movie">
+                            <div class="item-content">
+                                <span class="item-tag">Organization</span>
+                                <h3 class="item-title">Seamless Watchlist</h3>
+                                <div class="item-details">
+                                    <p>Keep track of everything you want to watch across all services in one unified list.</p>
+                                    <button class="btn btn-secondary-outline btn-sm gallery-learn-more">Learn More</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 4 -->
+                        <div class="gallery-item" style="--bg-image: url('images/details.png')" data-item-id="568124" data-item-type="movie">
+                            <div class="item-content">
+                                <span class="item-tag">Deep Dive</span>
+                                <h3 class="item-title">Detailed Views</h3>
+                                <div class="item-details">
+                                    <p>Get all the info you need: cast, crew, ratings, and where to stream, all in one place.</p>
+                                    <button class="btn btn-secondary-outline btn-sm gallery-learn-more">Learn More</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 5 -->
+                        <div class="gallery-item" style="--bg-image: url('images/community.svg')" data-item-id="438631" data-item-type="movie">
+                            <div class="item-content">
+                                <span class="item-tag">Connect</span>
+                                <h3 class="item-title">Community Hub</h3>
+                                <div class="item-details">
+                                    <p>Connect with other fans, share reviews, build curated lists, and join the discussion.</p>
+                                    <button class="btn btn-secondary-outline btn-sm gallery-learn-more">Learn More</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="fullscreen-modal" id="fullscreenModal"><div class="modal-content"><button class="modal-close" id="modalClose" aria-label="Close fullscreen image"><i class="bi bi-x"></i></button><div class="modal-image-container"><img src="" alt="Gallery Image Fullscreen" class="modal-image" id="modalImageFs"></div><div class="modal-caption" id="modalCaptionFs">Image Caption</div></div></div>
             </section>
             
             <!-- Analytics Dashboard Section -->
@@ -325,7 +673,7 @@
             </section>
 
             <!-- Available Everywhere Section -->
-            <section id="available-everywhere" class="section section-angled-top section-angled-bottom">
+                  <section id="available-everywhere" class="section section-angled-top section-angled-bottom">
                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
                  <div class="section-divider divider-bottom"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
                  <div class="container position-relative" style="z-index: 10;">
@@ -348,7 +696,6 @@
                      </div>
                  </div>
             </section>
-
             <!-- FAQ Section -->
             <section id="faq" class="section section-angled-top section-angled-bottom">
                  <div class="section-divider divider-top"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.39-16.72-168.19-17.73-250.45-.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.83C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path></svg></div>
@@ -467,6 +814,5 @@
 
     <!-- Main Application Script -->
     <script src="app.js"></script>
-    <script src="js/phone.js"></script>
 </body>
 </html>
