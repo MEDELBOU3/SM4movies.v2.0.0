@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraStream - Person View Build</title>
-
+    <title data-i18n-key="page_title">AuraStream - Person View Build</title>
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,84 +11,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
-    <!-- Usercentrics CMP -->
-<script
-  id="usercentrics-cmp"
-  src="https://app.usercentrics.eu/browser-ui/latest/loader.js"
-  data-settings-id="Hkm3iE64W1okHM"
-  async
-></script>
-
-<!-- Google Analytics - GA4 (Consent controlled) -->
-<script type="text/plain" data-usercentrics="Google Analytics" async src="https://www.googletagmanager.com/gtag/js?id=G-690RSNJ2Q2"></script>
-<script type="text/plain" data-usercentrics="Google Analytics">
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-690RSNJ2Q2');
-</script>
-
+    
     <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="css/backup-app.css">
 </head>
 <body>
 
-
     <!-- Navbar -->
     <header class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#home">AuraStream</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" data-i18n-aria-label-key="nav_toggle_navigation" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                           <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-i18n-key="nav_explore">
                                Explore
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><a class="dropdown-item" href="#home">Home</a></li>
-                                <li><a class="dropdown-item" href="#watchlist">Watchlist</a></li>
-                                <li><a class="dropdown-item" href="#music">Music</a></li>
+                                <li><a class="dropdown-item" href="#home" data-i18n-key="nav_home">Home</a></li>
+                                <li><a class="dropdown-item" href="#watchlist" data-i18n-key="nav_watchlist">Watchlist</a></li>
+                                <li><a class="dropdown-item" href="#music" data-i18n-key="nav_music">Music</a></li>
                            </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-i18n-key="nav_community">
                                 Community
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark">
-                               <li><a class="dropdown-item" href="#community">Community</a></li>
-                               <li><a class="dropdown-item" href="#livesports">Live Events</a></li>
+                               <li><a class="dropdown-item" href="#community" data-i18n-key="nav_community_dropdown">Community</a></li>
+                               <li><a class="dropdown-item" href="#livesports" data-i18n-key="nav_live_events">Live Events</a></li>
                             </ul>
                         </li>
-
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-i18n-key="nav_tools_insights">
                                 Tools & Insights
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark">
-                               <li><a class="dropdown-item" href="#analytics">Analytics</a></li>
-                               <li><a class="dropdown-item" href="#settings">Settings</a></li>
+                               <li><a class="dropdown-item" href="#analytics" data-i18n-key="nav_analytics">Analytics</a></li>
+                               <li><a class="dropdown-item" href="#settings" data-i18n-key="nav_settings">Settings</a></li>
                            </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="genreDropdownLink" role="button" data-bs-toggle="dropdown" aria-expanded="false"> Movies/TV Genres </a>
+                            <a class="nav-link dropdown-toggle" href="#" id="genreDropdownLink" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-i18n-key="nav_genres"> Movies/TV Genres </a>
                             <ul class="dropdown-menu dropdown-menu-dark" id="genre-dropdown-menu" aria-labelledby="genreDropdownLink">
-                                <li><span class="dropdown-item disabled">Loading...</span></li>
+                                <li><span class="dropdown-item disabled" data-i18n-key="loading_text">Loading...</span></li>
                             </ul>
                         </li>
                     </ul>
 
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
                         <li class="nav-item dropdown">
-                           <a class="nav-link dropdown-toggle" href="#" id="themeDropdownLink" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Change Theme">
-                               <i class="bi bi-palette-fill"></i> <span class="d-lg-none ms-1">Theme</span>
+                           <a class="nav-link dropdown-toggle" href="#" id="themeDropdownLink" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-i18n-title-key="tooltip_change_theme" title="Change Theme">
+                               <i class="bi bi-palette-fill"></i> <span class="d-lg-none ms-1" data-i18n-key="nav_theme">Theme</span>
                            </a>
                             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="themeDropdownLink" id="theme-selector-menu">
                                <li><button class="dropdown-item theme-select-btn" data-theme="default"><i class="bi bi-circle-fill me-2" style="color:#a855f7;"></i> Aura (Default)</button></li>
@@ -102,23 +83,37 @@
                                <li><button class="dropdown-item theme-select-btn" data-theme="solarized"><i class="bi bi-circle-fill me-2" style="color:#b58900;"></i> Solarized</button></li>
                                <li><button class="dropdown-item theme-select-btn" data-theme="solarflare"><i class="bi bi-circle-fill me-2" style="color:#f97316;"></i> Solarflare</button></li>
                                <li><button class="dropdown-item theme-select-btn" data-theme="cyberpunk"><i class="bi bi-circle-fill me-2" style="color:#f72585;"></i> Cyberpunk</button></li>
-
                                <li><hr class="dropdown-divider"></li>
-                               <li><button class="dropdown-item theme-select-btn" data-theme="light"><i class="bi bi-circle-fill me-2" style="color:#ffffff;"></i>  Light Mode</button></li> 
+                               <li><button class="dropdown-item theme-select-btn" data-theme="light"><i class="bi bi-circle-fill me-2" style="color:#ffffff;"></i> <span data-i18n-key="theme_light_mode">Light Mode</span></button></li> 
+                            </ul>
+                       </li>
+                       <li class="nav-item dropdown">
+                           <a class="nav-link dropdown-toggle" href="#" id="languageSelectorDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-i18n-title-key="tooltip_change_language" title="Change Language">
+                               <i class="bi bi-translate"></i> <span class="d-lg-none ms-1" data-i18n-key="nav_language">Language</span>
+                           </a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="languageSelectorDropdown" id="language-selector-menu" style="max-height: 400px; overflow-y: auto;">
+                               <li><span class="dropdown-item disabled" data-i18n-key="loading_languages">Loading Languages...</span></li>
                             </ul>
                        </li>
                    </ul>
                     <!-- TMDB Search -->
                     <form class="d-flex me-lg-3 my-2 my-lg-0" role="search" id="tmdb-search-form">
-                        <input class="form-control me-2" type="search" id="tmdb-search-input" placeholder="Search Movies & TV..." aria-label="Search TMDB">
-                        <button class="btn btn-outline-light btn-icon flex-shrink-0" type="submit" title="Search Movies/TV"><i class="bi bi-search"></i></button>
+                        <input class="form-control me-2" type="search" id="tmdb-search-input" placeholder="Search Movies & TV..." data-i18n-placeholder-key="search_placeholder" aria-label="Search TMDB">
+                        <button class="btn btn-outline-light btn-icon flex-shrink-0" type="submit" data-i18n-title-key="tooltip_search_movies_tv" title="Search Movies/TV"><i class="bi bi-search"></i></button>
                     </form>
+                    <!-- Family Filter Warning Alert -->
+                    <div id="family-filter-warning" class="alert alert-danger alert-dismissible fade d-none position-absolute top-100 start-50 translate-middle-x mt-2" role="alert" style="z-index: 1050; min-width: 300px;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>⚠️ Search Blocked!</strong>
+                        <p class="mb-0 small mt-1" id="warning-message">This search contains inappropriate content. This is a family-friendly platform.</p>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                     <!-- Separator -->
                     <div class="d-none d-lg-flex align-items-center mx-2" style="border-left: 1px solid var(--border-color); height: 30px;"></div>
                     <!-- Spotify Status -->
                     <div id="spotify-status-nav" class="d-flex align-items-center my-2 my-lg-0 text-muted small">
                        <i class="bi bi-spotify me-2" style="color: var(--spotify-green); font-size: 1.2rem;"></i>
-                       <span id="spotify-auth-nav-message" style="font-size: small;">Checking Spotify...</span>
+                       <span id="spotify-auth-nav-message" style="font-size: small;" data-i18n-key="spotify_checking">Checking Spotify...</span>
                     </div>
                     <div id="app-login-prompt" class="ms-2">
                         <a href="index.html" class="btn btn-primary ">
@@ -130,7 +125,7 @@
 
                  
                      <div class="nav-link dropdown-toggle" id="app-user-info-area">
-                        <a href="#" class="nav-link d-flex align-items-center text-white text-decoration-none dropdown-toggle p-0" id="userProfileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="User Menu"> 
+                        <a href="#" class="nav-link d-flex align-items-center text-white text-decoration-none dropdown-toggle p-0" id="userProfileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-i18n-title-key="tooltip_user_menu" title="User Menu"> 
                              <div id="app-user-avatar" class="user-avatar ms-2 ms-lg-0 me-lg-2"> 
                                   <span id="app-user-avatar-initials"></span>
                                   <img id="app-user-avatar-image" src="" alt="Profile" class="d-none" />
@@ -143,21 +138,20 @@
                                            <span id="dropdown-user-avatar-initials-large"></span>
                                            <img id="dropdown-user-avatar-image-large" src="" alt="Profile" class="d-none" />
                                       </div>
-                                      <div id="dropdown-user-name" class="fw-bold text-light mb-1">User Name</div>
+                                      <div id="dropdown-user-name" class="fw-bold text-light mb-1" data-i18n-key="user_name_placeholder">User Name</div>
                                       <span id="app-user-display-name" class="d-none d-lg-inline fw-medium"></span> 
                                       <div id="dropdown-user-email" class="small text-muted">user@example.com</div>
                                  </div>
                              </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#profile"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
-                            <li><a class="dropdown-item" href="#account-settings"><i class="bi bi-gear-fill me-2"></i>Account Settings</a></li>
+                            <li><a class="dropdown-item" href="#profile"><i class="bi bi-person-circle me-2"></i><span data-i18n-key="user_menu_my_profile">My Profile</span></a></li>
+                            <li><a class="dropdown-item" href="#account-settings"><i class="bi bi-gear-fill me-2"></i><span data-i18n-key="user_menu_account_settings">Account Settings</span></a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#notifications"><i class="bi bi-bell-fill me-2"></i>My Notifications</a></li> <!-- NEW LINE -->
+                            <li><a class="dropdown-item" href="#notifications"><i class="bi bi-bell-fill me-2"></i><span data-i18n-key="user_menu_my_notifications">My Notifications</span></a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <button type="button" class="dropdown-item text-danger fw-medium" id="app-logout-button-dropdown">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    <i class="bi bi-box-arrow-right me-2"></i><span data-i18n-key="user_menu_logout">Logout</span>
                                 </button>
                             </li>
                          </ul>
@@ -174,55 +168,48 @@
 
             <!-- HERO VIEW -->
             <section id="hero-view" class="view active">
-                <!-- Video Background Container -->
-                <div id="hero-video-container">
-                    <div id="hero-video-player"></div> <!-- YouTube API inserts iframe here -->
-                </div>
-                <!-- Static Image Fallback (Initially hidden or shown if no video) -->
+                <div id="hero-video-container"><div id="hero-video-player"></div></div>
                 <img id="hero-backdrop-fallback" src="" class="hero-backdrop d-none" alt="Hero backdrop">
-                <!-- Overlay and Content (Must be above the video container) -->
                 <div class="hero-overlay"></div>
                 <div id="hero-content-container" class="container hero-content">
-                    <!-- Hero content loaded dynamically here -->
                      <div class="loading-spinner"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
                 </div>
             </section>
+            
             <!-- DISCOVER VIEW (Home Content) -->
             <section id="discover-view" class="view content-wrapper">
                 <div class="container">
-                    <!-- Search Results (Initially Hidden) -->
+                    <!-- Content Warning Alert -->
+                    <div id="search-filter-warning" class="alert alert-warning alert-dismissible fade d-none mb-4" role="alert">
+                        <i class="bi bi-shield-exclamation me-2"></i>
+                        <strong>🛡️ Family Filter Active:</strong>
+                        <span id="content-warning-message"> Some results have been filtered out to maintain family-friendly content. Only appropriate movies and shows are displayed.</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                     <section id="tmdb-search-results-container" class="content-section d-none">
                          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                            <h2 id="tmdb-search-results-title" class="section-title mb-2 mb-sm-0 me-3">Results</h2>
-                            <button id="clear-tmdb-search-results" class="btn btn-sm btn-outline-light back-button"><i class="bi bi-x-lg me-1"></i> Clear</button>
+                            <h2 id="tmdb-search-results-title" class="section-title mb-2 mb-sm-0 me-3" data-i18n-key="search_results_title">Results</h2>
+                            <button id="clear-tmdb-search-results" class="btn btn-sm btn-outline-light back-button"><i class="bi bi-x-lg me-1"></i> <span data-i18n-key="button_clear">Clear</span></button>
                          </div>
                          <div id="tmdb-search-results-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
-                            <!-- Search results loaded here -->
                             <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
                          </div>
                     </section>
 
-                    <!-- Home Content Sections Wrapper (Visible when not searching) -->
                     <div id="home-content-wrapper">
-                        <!-- Browse by Network Section with Buttons -->
                         <section id="browse-by-network-section" class="mb-5">
-                             <h2 class="section-title">Browse by Network</h2>
+                             <h2 class="section-title" data-i18n-key="section_title_browse_network">Browse by Network</h2>
                              <div class="network-carousel-wrapper position-relative">
-                                 <button id="network-prev-btn" class="btn btn-sm btn-outline-light btn-icon network-scroll-btn prev disabled" aria-label="Previous Networks">
-                                     <i class="bi bi-chevron-left"></i>
-                                 </button>
+                                 <button id="network-prev-btn" class="btn btn-sm btn-outline-light btn-icon network-scroll-btn prev disabled" data-i18n-aria-label-key="previous_networks" aria-label="Previous Networks"><i class="bi bi-chevron-left"></i></button>
                                  <div id="network-logos-container" class="network-logos-container">
-                                     <!-- Logos loaded here -->
                                      <div class="loading-spinner p-0"><div class="spinner-border text-secondary" role="status"></div></div>
                                  </div>
-                                 <button id="network-next-btn" class="btn btn-sm btn-outline-light btn-icon network-scroll-btn next disabled" aria-label="Next Networks">
-                                     <i class="bi bi-chevron-right"></i>
-                                 </button>
+                                 <button id="network-next-btn" class="btn btn-sm btn-outline-light btn-icon network-scroll-btn next disabled" data-i18n-aria-label-key="next_networks" aria-label="Next Networks"><i class="bi bi-chevron-right"></i></button>
                              </div>
                         </section>
 
                          <section id="continue-watching-section" class="content-section mb-5">
-                            <h2 class="section-title">Continue Watching</h2>
+                            <h2 class="section-title" data-i18n-key="section_title_continue_watching">Continue Watching</h2>
                             <div class="horizontal-scroll-wrapper">
                                 <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
                                 <div class="horizontal-card-container continue-watching-container"></div>
@@ -230,39 +217,31 @@
                             </div>
                         </section>
 
-                        <section id="most-viewed-section" class="content-section mb-5"> <!-- Start hidden -->
-                            <h2 class="section-title">Popular on AuraStream</h2>
+                        <section id="most-viewed-section" class="content-section mb-5">
+                            <h2 class="section-title" data-i18n-key="section_title_popular_aurastream">Popular on AuraStream</h2>
                             <div class="horizontal-scroll-wrapper">
                                 <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
-                                <!-- Container where JS will add cards or skeletons -->
                                 <div class="horizontal-card-container most-viewed-container">
-                                    <!-- JS will add content here -->
-                                    <div class="initial-placeholder p-3 text-muted small">(Loading popular items...)</div> <!-- Optional placeholder -->
+                                    <div class="initial-placeholder p-3 text-muted small" data-i18n-key="loading_popular_items">(Loading popular items...)</div>
                                 </div>
                                 <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
                             </div>
                         </section>
 
-                        <!-- NEW: Advanced Upcoming Section -->
                         <section id="upcoming-section" class="content-section mb-5 d-none">
                             <div class="upcoming-section-header">
-                               <h2 class="section-title">Highly Anticipated & Upcoming</h2>
+                               <h2 class="section-title" data-i18n-key="section_title_upcoming">Highly Anticipated & Upcoming</h2>
                             </div>
                             <div class="horizontal-scroll-wrapper">
                                 <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
                                 <div id="upcoming-container" class="horizontal-card-container">
-                                    <!-- Skeletons or initial message will go here -->
-                                    <div class="loading-spinner">
-                                        <div class="spinner-border text-primary" role="status"></div>
-                                    </div>
+                                    <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
                                 </div>
-
                                 <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
                             </div>
                         </section>
-                        <!-- Existing Home Sections (Trending, Popular etc.) -->
+                        
                         <div id="home-content-sections">
-                             <!-- Home sections loaded here -->
                             <div class="loading-spinner"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
                         </div>
                     </div>
@@ -272,7 +251,6 @@
             <!-- DETAILS VIEW (TMDB) -->
             <section id="details-view" class="view">
                 <div id="details-content-wrapper">
-                    <!-- Details loaded here -->
                     <div class="loading-spinner vh-100"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
                 </div>
             </section>
@@ -280,145 +258,111 @@
             <!-- GENRE RESULTS VIEW -->
             <section id="genre-results-view" class="view content-wrapper">
                 <div class="container">
-                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> <span data-i18n-key="button_back">Back</span></button>
                      <div id="genre-header-section" class="genre-page-header">
-                        <!-- Title will be dynamically placed here by JS -->
                         <h1 class="genre-title-overlay" id="genre-results-title-dynamic"></h1>
-                        <!-- Initial skeleton placeholder for the header -->
                         <div class="skeleton-genre-header" style="position: absolute; inset: 0;">
                            <div class="skeleton skeleton-title-placeholder"></div>
                         </div>
                     </div>
                     <div id="genre-results-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
-                        <!-- Genre results loaded here -->
                         <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
                     </div>
                     <div class="text-center mt-5">
-                        <button id="load-more-genre-btn" class="btn btn-primary btn-lg d-none" data-page="1">Load More</button>
+                        <button id="load-more-genre-btn" class="btn btn-primary btn-lg d-none" data-page="1" data-i18n-key="button_load_more">Load More</button>
                         <div id="genre-loading-more-spinner" class="spinner-border text-primary d-none" role="status"></div>
                     </div>
                 </div>
             </section>
-
           
-
             <!-- PROFILE VIEW -->
             <section id="profile-view" class="view content-wrapper">
                 <div class="container">
-                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
-
-                    <h1 class="display-5 mb-4 text-white">My Profile</h1>
-
-        <div id="profile-content" class="row g-4">
-            <!-- User Info & Account Management (Left Column) -->
-            <div class="col-lg-4 col-md-5">
-                <div class="card bg-secondary h-100 p-3">
-                    <div class="card-body text-center">
-                        <!-- User Avatar (Large) -->
-                        <div id="profile-user-avatar" class="user-avatar user-avatar-lg mx-auto mb-3">
-                            <span id="profile-user-avatar-initials"></span>
-                            <img id="profile-user-avatar-image" src="" alt="Profile" class="d-none" />
-                        </div>
-                        <h4 id="profile-display-name" class="text-white mb-1">Loading Name...</h4>
-                        <p id="profile-email" class="text-muted small mb-3">Loading Email...</p>
-
-                        <!-- Update Name Form -->
-                        <form id="update-profile-form" class="mb-4">
-                            <div class="input-group mb-3">
-                                <input type="text" id="profile-name-input" class="form-control" placeholder="New Display Name" aria-label="New Display Name">
-                                <button class="btn btn-primary" type="submit" id="update-name-btn">Update</button>
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> <span data-i18n-key="button_back">Back</span></button>
+                    <h1 class="display-5 mb-4 text-white" data-i18n-key="profile_title_main">My Profile</h1>
+                    <div id="profile-content" class="row g-4">
+                        <div class="col-lg-4 col-md-5">
+                            <div class="card bg-secondary h-100 p-3">
+                                <div class="card-body text-center">
+                                    <div id="profile-user-avatar" class="user-avatar user-avatar-lg mx-auto mb-3">
+                                        <span id="profile-user-avatar-initials"></span>
+                                        <img id="profile-user-avatar-image" src="" alt="Profile" class="d-none" />
+                                    </div>
+                                    <h4 id="profile-display-name" class="text-white mb-1" data-i18n-key="loading_name">Loading Name...</h4>
+                                    <p id="profile-email" class="text-muted small mb-3" data-i18n-key="loading_email">Loading Email...</p>
+                                    <form id="update-profile-form" class="mb-4">
+                                        <div class="input-group mb-3">
+                                            <input type="text" id="profile-name-input" class="form-control" placeholder="New Display Name" data-i18n-placeholder-key="placeholder_new_display_name" aria-label="New Display Name">
+                                            <button class="btn btn-primary" type="submit" id="update-name-btn" data-i18n-key="button_update">Update</button>
+                                        </div>
+                                    </form>
+                                    <hr class="border-secondary my-4">
+                                    <h5 class="text-white mb-3" data-i18n-key="profile_account_actions">Account Actions</h5>
+                                    <button id="reset-password-btn" class="btn btn-outline-info w-100 mb-2"><i class="bi bi-key-fill me-2"></i> <span data-i18n-key="profile_reset_password">Reset Password</span></button>
+                                    <button id="delete-account-btn" class="btn btn-outline-danger w-100"><i class="bi bi-person-x-fill me-2"></i> <span data-i18n-key="profile_delete_account">Delete Account</span></button>
+                                </div>
                             </div>
-                        </form>
-
-                        <hr class="border-secondary my-4">
-
-                        <!-- Account Actions -->
-                        <h5 class="text-white mb-3">Account Actions</h5>
-                        <button id="reset-password-btn" class="btn btn-outline-info w-100 mb-2"><i class="bi bi-key-fill me-2"></i> Reset Password</button>
-                        <button id="delete-account-btn" class="btn btn-outline-danger w-100"><i class="bi bi-person-x-fill me-2"></i> Delete Account</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Activity & Data Sections (Right Column) -->
-            <div class="col-lg-8 col-md-7">
-                <div class="row g-4">
-                    <!-- Recently Watched (Horizontal Scroll) -->
-                    <div class="col-12">
-                        <h3 class="text-white mb-3">Recently Watched</h3>
-                        <div id="profile-recent-watched-wrapper" class="horizontal-scroll-wrapper" style="min-height: 200px;">
-                            <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
-                            <div id="profile-recent-watched-container" class="horizontal-card-container">
-                                <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+                        </div>
+                        <div class="col-lg-8 col-md-7">
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <h3 class="text-white mb-3" data-i18n-key="profile_recently_watched">Recently Watched</h3>
+                                    <div id="profile-recent-watched-wrapper" class="horizontal-scroll-wrapper" style="min-height: 200px;">
+                                        <button class="btn h-scroll-btn prev disabled" aria-label="Scroll Previous"><i class="bi bi-chevron-left"></i></button>
+                                        <div id="profile-recent-watched-container" class="horizontal-card-container">
+                                            <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
+                                        </div>
+                                        <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <h3 class="text-white mb-3" data-i18n-key="profile_my_watchlist">My Watchlist</h3>
+                                    <div id="profile-watchlist-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4">
+                                        <div class="col-12 text-muted text-center py-4" data-i18n-key="loading_watchlist">(Loading Watchlist...)</div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <a href="#watchlist" class="btn btn-outline-light btn-sm"><span data-i18n-key="profile_view_all_watchlist">View All Watchlist</span> <i class="bi bi-arrow-right"></i></a>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <h3 class="text-white mb-3" data-i18n-key="profile_my_favorites">My Favorites</h3>
+                                    <div id="profile-favorites-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4">
+                                        <div class="col-12 text-muted text-center py-4" data-i18n-key="loading_favorites">(Loading Favorites...)</div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <a href="#analytics" class="btn btn-outline-light btn-sm"><span data-i18n-key="profile_view_analytics">View Analytics</span> <i class="bi bi-bar-chart-fill ms-2"></i></a>
+                                    </div>
+                                </div>
                             </div>
-                            <button class="btn h-scroll-btn next disabled" aria-label="Scroll Next"><i class="bi bi-chevron-right"></i></button>
-                        </div>
-                    </div>
-
-                    <!-- Watchlist Summary (Small Grid) -->
-                    <div class="col-12">
-                        <h3 class="text-white mb-3">My Watchlist</h3>
-                        <div id="profile-watchlist-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4">
-                            <div class="col-12 text-muted text-center py-4">(Loading Watchlist...)</div>
-                        </div>
-                        <div class="text-center mt-3">
-                            <a href="#watchlist" class="btn btn-outline-light btn-sm">View All Watchlist <i class="bi bi-arrow-right"></i></a>
-                        </div>
-                    </div>
-
-                    <!-- Favorites Summary (Small Grid) -->
-                    <div class="col-12">
-                        <h3 class="text-white mb-3">My Favorites</h3>
-                        <div id="profile-favorites-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4">
-                            <div class="col-12 text-muted text-center py-4">(Loading Favorites...)</div>
-                        </div>
-                        <div class="text-center mt-3">
-                            <a href="#analytics" class="btn btn-outline-light btn-sm">View Analytics <i class="bi bi-bar-chart-fill ms-2"></i></a>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</section>
+            </section>
 
               <!-- ACCOUNT SETTINGS VIEW -->
             <section id="account-settings-view" class="view content-wrapper">
-    <div class="container">
-        <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
-        <h1 class="display-5 mb-4 text-white">Account Settings</h1>
-        
-        <!-- Spinner is visible initially -->
-        <div id="settings-loading-spinner" class="loading-spinner vh-50">
-            <div class="spinner-border text-primary spinner-border-lg" role="status"></div>
-        </div>
-
-        <!-- CONTENT WRAPPER: Remove the redundant inline style="display: none;" -->
-        <div id="settings-content-wrapper" class="row g-4 d-none">
-            <!-- Settings content loaded dynamically by JS -->
-        </div>
-    </div>
+                <div class="container">
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> <span data-i18n-key="button_back">Back</span></button>
+                    <h1 class="display-5 mb-4 text-white" data-i18n-key="settings_title_main">Account Settings</h1>
+                    <div id="settings-loading-spinner" class="loading-spinner vh-50"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
+                    <div id="settings-content-wrapper" class="row g-4 d-none"></div>
+                </div>
             </section>
-
 
             <!-- Notifications View -->
             <section id="notifications-view" class="view content-wrapper">
                 <div class="container">
-                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                    <h1 class="display-5 mb-4 text-white">My Notifications</h1>
-
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> <span data-i18n-key="button_back">Back</span></button>
+                    <h1 class="display-5 mb-4 text-white" data-i18n-key="notifications_title_main">My Notifications</h1>
                     <div class="alert alert-info small" role="alert">
-                        <i class="bi bi-info-circle-fill me-2"></i> This page lists your active notification subscriptions. Actual push notifications rely on browser settings and a backend service.
+                        <i class="bi bi-info-circle-fill me-2"></i> <span data-i18n-key="notifications_alert_text">This page lists your active notification subscriptions. Actual push notifications rely on browser settings and a backend service.</span>
                     </div>
-
                     <div id="notification-subscriptions-list" class="mt-4">
-                        <!-- Notification items will be loaded here -->
                         <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
                     </div>
-
                     <div class="text-center mt-5">
-                        <button id="request-notification-permission-btn" class="btn btn-primary btn-lg"><i class="bi bi-bell-fill me-2"></i> Enable Browser Notifications</button>
-                        <p id="notification-permission-status" class="text-muted small mt-2">Checking permission...</p>
+                        <button id="request-notification-permission-btn" class="btn btn-primary btn-lg"><i class="bi bi-bell-fill me-2"></i> <span data-i18n-key="notifications_enable_button">Enable Browser Notifications</span></button>
+                        <p id="notification-permission-status" class="text-muted small mt-2" data-i18n-key="notifications_permission_status">Checking permission...</p>
                     </div>
                 </div>
             </section>
@@ -426,14 +370,13 @@
             <!-- NETWORK RESULTS VIEW -->
             <section id="network-results-view" class="view content-wrapper">
                  <div class="container">
-                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> <span data-i18n-key="button_back">Back</span></button>
                     <h1 id="network-results-title" class="mb-4 display-5">Network Content</h1>
                     <div id="network-results-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
-                         <!-- Network results loaded here -->
                         <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
                     </div>
                     <div class="text-center mt-5">
-                        <button id="load-more-network-btn" class="btn btn-primary btn-lg d-none" data-page="1">Load More</button>
+                        <button id="load-more-network-btn" class="btn btn-primary btn-lg d-none" data-page="1" data-i18n-key="button_load_more">Load More</button>
                         <div id="network-loading-more-spinner" class="spinner-border text-primary d-none" role="status"></div>
                     </div>
                 </div>
@@ -442,14 +385,12 @@
             <section id="watchlist-view" class="view content-wrapper">
                 <div class="container">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                         <h1 id="text-white" class="display-5 mb-0">My Watchlist</h1>
+                         <h1 id="text-white" class="display-5 mb-0" data-i18n-key="watchlist_title_main">My Watchlist</h1>
                          <button id="clear-watchlist-btn" class="btn btn-sm btn-outline-danger d-none">
-                            <i class="bi bi-trash3 me-1"></i> Clear All
+                            <i class="bi bi-trash3 me-1"></i> <span data-i18n-key="watchlist_clear_all">Clear All</span>
                          </button>
                     </div>
-
                     <div id="watchlist-grid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6">
-                        <!-- Watchlist items loaded here -->
                         <div class="loading-spinner"><div class="spinner-border text-primary" role="status"></div></div>
                     </div>
                 </div>
@@ -458,9 +399,8 @@
             <!-- PERSON (ACTOR/CREW) VIEW -->
             <section id="person-view" class="view content-wrapper">
                 <div class="container">
-                     <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                     <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> <span data-i18n-key="button_back">Back</span></button>
                      <div id="person-content-wrapper">
-                         <!-- Person details loaded here -->
                         <div class="loading-spinner vh-50"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
                     </div>
                 </div>
@@ -469,29 +409,20 @@
             <!-- MOVIE/TV PLAYER VIEW -->
             <section id="player-view" class="view content-wrapper">
                  <div class="container">
-                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                    <h1 id="player-title" class="mb-4 display-6">Loading Player...</h1>
-
-                    <!-- Episode Selector for TV Shows -->
-                    <div id="episode-selector-container" class="mb-4 d-none">
-                        </div>
-
-                    <!-- Streaming Source Buttons -->
+                    <button onclick="Utils.goBackOrHome()" class="btn btn-outline-light btn-sm mb-4 back-button"><i class="bi bi-arrow-left me-1"></i> <span data-i18n-key="button_back">Back</span></button>
+                    <h1 id="player-title" class="mb-4 display-6" data-i18n-key="player_loading">Loading Player...</h1>
+                    <div id="episode-selector-container" class="mb-4 d-none"></div>
                     <div id="stream-source-buttons" class="mb-3">
-                        <p class="text-muted small">Select streaming source:</p>
-                        <!-- Source buttons loaded here -->
+                        <p class="text-muted small" data-i18n-key="player_select_source">Select streaming source:</p>
                     </div>
-
-                    <!-- Iframe Container -->
                     <div class="ratio ratio-16x9 mb-4">
                         <div id="iframe-placeholder" class="d-flex align-items-center justify-content-center">
-                            <span class="text-muted">Select a source to start streaming</span>
+                            <span class="text-muted" data-i18n-key="player_iframe_placeholder">Select a source to start streaming</span>
                         </div>
                         <iframe id="streaming-iframe" class="d-none" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
                     </div>
-
                     <div class="alert alert-warning small" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Streaming sources are provided by external sites. We do not host any content. Use at your own discretion. Ad blockers recommended.
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> <span data-i18n-key="player_disclaimer_text">Streaming sources are provided by external sites. We do not host any content. Use at your own discretion. Ad blockers recommended.</span>
                     </div>
                 </div>
             </section>
@@ -499,41 +430,31 @@
             <!-- MUSIC VIEW (Spotify) -->
             <section id="music-view" class="view content-wrapper">
                 <div class="container">
-                     <h1 id="text-white"  class="display-5 mb-4">Music & Soundtracks</h1>
-
-                    <!-- Spotify Auth Status -->
+                     <h1 id="text-white" class="display-5 mb-4" data-i18n-key="music_title_main">Music & Soundtracks</h1>
                     <div id="spotify-status-area" class="alert alert-info d-flex align-items-center" role="alert">
                         <div class="spinner-border spinner-border-sm me-2" role="status" id="spotify-status-spinner"></div>
-                        <div id="spotify-status-text" style="color: var(--spotify-green);">Checking Spotify authorization...</div>
+                        <div id="spotify-status-text" style="color: var(--spotify-green);" data-i18n-key="spotify_checking_auth">Checking Spotify authorization...</div>
                     </div>
-
-                    <!-- Spotify Search -->
                     <div id="spotify-search-area">
-                        <h3 id="text-white" class="mb-3">Search Spotify Tracks</h3>
+                        <h3 id="text-white" class="mb-3" data-i18n-key="music_search_tracks">Search Spotify Tracks</h3>
                         <form id="spotify-search-form" class="mb-4">
                              <div class="input-group">
-                                <input type="search" id="spotify-search-input" class="form-control form-control-lg" placeholder="Search for tracks, artists, albums..." required>
+                                <input type="search" id="spotify-search-input" class="form-control form-control-lg" placeholder="Search for tracks, artists, albums..." data-i18n-placeholder-key="music_search_placeholder" required>
                                 <button type="submit" class="btn btn-primary btn-lg" id="spotify-search-button">
-                                    <i class="bi bi-search me-1"></i> Search
+                                    <i class="bi bi-search me-1"></i> <span data-i18n-key="button_search">Search</span>
                                 </button>
                             </div>
                         </form>
-                        <div id="spotify-search-loading" class="loading-spinner d-none">
-                            <div class="spinner-border text-primary" role="status"></div>
-                        </div>
-                        <div id="spotify-search-results" class="list-group list-group-flush">
-                            <!-- Search results will appear here -->
-                        </div>
+                        <div id="spotify-search-loading" class="loading-spinner d-none"><div class="spinner-border text-primary" role="status"></div></div>
+                        <div id="spotify-search-results" class="list-group list-group-flush"></div>
                     </div>
-
-                     <!-- Music Visualizer -->
-                    <div id="music-visualizer-container">
-                        <h3 class="section-title">Audio Visualizer</h3>
+                     <div id="music-visualizer-container">
+                        <h3 class="section-title" data-i18n-key="music_visualizer_title">Audio Visualizer</h3>
                         <canvas id="music-visualizer-canvas"></canvas>
                          <div id="visualizer-demo-controls" class="mt-3">
-                            <p class="text-muted small mb-2">Play sample audio to test visualizer:</p>
+                            <p class="text-muted small mb-2" data-i18n-key="music_visualizer_prompt">Play sample audio to test visualizer:</p>
                             <audio id="demo-audio" controls src="https://cdn.pixabay.com/download/audio/2022/11/17/audio_7064c14067.mp3?filename=abstract-technology-126873.mp3"></audio>
-                            <button id="start-visualizer-button" class="btn btn-sm btn-outline-secondary mt-2 ms-2">Start Visualizer with Demo</button>
+                            <button id="start-visualizer-button" class="btn btn-sm btn-outline-secondary mt-2 ms-2" data-i18n-key="music_visualizer_start_button">Start Visualizer with Demo</button>
                         </div>
                     </div>
                 </div>
@@ -541,15 +462,11 @@
 
             <section id="livesports-view" class="view content-wrapper">
                 <div class="container">
-                    <h1 id="text-white" class="display-5 mb-4">Live Sports Scores</h1>
-                    <!-- MODIFY THIS TEXT -->
-                    <p class="text-muted mb-4 small">
+                    <h1 id="text-white" class="display-5 mb-4" data-i18n-key="livesports_title_main">Live Sports Scores</h1>
+                    <p class="text-muted mb-4 small" data-i18n-key="livesports_disclaimer">
                         Live score data provided via SportMonks API. This site does not offer streaming. Search links perform external web searches.
                     </p>
-                    <!-- END MODIFICATION -->
-
                     <div id="livesports-grid" class="row g-4">
-                        <!-- Live sports cards loaded here -->
                         <div class="loading-spinner"><div class="spinner-border text-primary spinner-border-lg" role="status"></div></div>
                     </div>
                 </div>
@@ -557,110 +474,78 @@
 
             <section>
                 <div id="analytics-view" class="view container py-5" style="display: none;">
-                    <h1 class="mb-4 text-gradient">Your Favorites Analytics</h1>
+                    <h1 class="mb-4 text-gradient" data-i18n-key="analytics_title_main">Your Favorites Analytics</h1>
                     <div id="analytics-content" class="row g-4">
-                        <!-- Content Loaded by JS -->
                         <div class="col-12 text-center py-5">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading Analytics...</span>
+                                <span class="visually-hidden" data-i18n-key="analytics_loading">Loading Analytics...</span>
                             </div>
                         </div>
                     </div>
                      <section class="details-section mt-5">
-                        <h2 class="details-section-title">Your Achievements</h2>
-                        <div id="achievements-grid" class="achievements-grid">
-                            <!-- Achievements will be rendered here by JS -->
-                        </div>
+                        <h2 class="details-section-title" data-i18n-key="analytics_achievements_title">Your Achievements</h2>
+                        <div id="achievements-grid" class="achievements-grid"></div>
                     </section>
                 </div>
             </section>
-             <!-- ====================================================== -->
-<!-- COMMUNITY VIEW (THREAD LIST) -->
-<!-- ====================================================== -->
-<section id="community-view" class="view content-wrapper"> <!-- MODIFIED: class changed -->
-    <div class="container">
-        <div id="community-header" class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <h1 class="text-white mb-0">AuraStream Community</h1>
-            <!-- User actions (like "Create Thread" button) will be added here by JS -->
-            <div id="community-user-actions"></div>
-        </div>
-        
-        <!-- List of threads will be rendered here -->
-        <div id="community-threads-list" class="d-flex flex-column gap-3">
-            <!-- Skeletons will be shown here while loading -->
-        </div>
-
-        <!-- MODAL for creating a new thread -->
-        <div class="modal fade" id="createThreadModal" tabindex="-1" aria-labelledby="createThreadModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content bg-secondary text-light border-secondary">
-                    <div class="modal-header border-bottom border-secondary">
-                        <h5 class="modal-title" id="createThreadModalLabel">Create New Discussion</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            
+            <section id="community-view" class="view content-wrapper">
+                <div class="container">
+                    <div id="community-header" class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <h1 class="text-white mb-0" data-i18n-key="community_title_main">AuraStream Community</h1>
+                        <div id="community-user-actions"></div>
                     </div>
-                    <div class="modal-body">
-                        <!-- Form for creating a thread -->
-                        <form id="create-thread-form">
-                            <div class="mb-3">
-                                <label for="threadTitle" class="form-label">Title</label>
-                                <input type="text" class="form-control" id="threadTitle" required maxlength="150" placeholder="A captivating title for your discussion...">
+                    <div id="community-threads-list" class="d-flex flex-column gap-3"></div>
+                    <div class="modal fade" id="createThreadModal" tabindex="-1" aria-labelledby="createThreadModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content bg-secondary text-light border-secondary">
+                                <div class="modal-header border-bottom border-secondary">
+                                    <h5 class="modal-title" id="createThreadModalLabel" data-i18n-key="community_modal_create_title">Create New Discussion</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="create-thread-form">
+                                        <div class="mb-3">
+                                            <label for="threadTitle" class="form-label" data-i18n-key="community_modal_form_title">Title</label>
+                                            <input type="text" class="form-control" id="threadTitle" required maxlength="150" placeholder="A captivating title for your discussion..." data-i18n-placeholder-key="community_modal_form_title_placeholder">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="threadFirstPost" class="form-label" data-i18n-key="community_modal_form_post">Your Post</label>
+                                            <textarea class="form-control" id="threadFirstPost" rows="5" required maxlength="5000" placeholder="Share your thoughts..." data-i18n-placeholder-key="community_modal_form_post_placeholder"></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="threadLinkMovieId" class="form-label" data-i18n-key="community_modal_form_link">Link to a Movie (Optional)</label>
+                                            <input type="text" class="form-control" id="threadLinkMovieId" placeholder="Enter a TMDB Movie ID (e.g., 157336 for Interstellar)" data-i18n-placeholder-key="community_modal_form_link_placeholder">
+                                            <div class="form-text" data-i18n-key="community_modal_form_link_help">This will add a badge to your thread.</div>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i><span data-i18n-key="community_modal_form_submit">Create Thread</span></button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="threadFirstPost" class="form-label">Your Post</label>
-                                <textarea class="form-control" id="threadFirstPost" rows="5" required maxlength="5000" placeholder="Share your thoughts..."></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="threadLinkMovieId" class="form-label">Link to a Movie (Optional)</label>
-                                <input type="text" class="form-control" id="threadLinkMovieId" placeholder="Enter a TMDB Movie ID (e.g., 157336 for Interstellar)">
-                                <div class="form-text">This will add a badge to your thread.</div>
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>Create Thread</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <section id="community-thread-detail-view" class="view content-wrapper">
+                <div class="container">
+                    <button class="btn btn-outline-light btn-sm mb-4 back-button" onclick="Utils.goBackOrHome()"><i class="bi bi-arrow-left me-1"></i> <span data-i18n-key="community_thread_back">Back to Community</span></button>
+                    <div id="thread-detail-content" class="mb-5"></div>
+                    <h3 class="text-white mb-3" data-i18n-key="community_thread_replies">Replies</h3>
+                    <div id="thread-posts-list" class="d-flex flex-column gap-3"></div>
+                    <form id="add-post-form" class="mt-5 d-none">
+                        <h4 class="text-white" data-i18n-key="community_thread_add_reply">Add Your Reply</h4>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="newPostContent" rows="4" required placeholder="Write your reply..." data-i18n-placeholder-key="community_thread_reply_placeholder"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-send-fill me-2"></i><span data-i18n-key="community_thread_post_reply">Post Reply</span></button>
+                    </form>
+                </div>
+            </section>
+
         </div>
-    </div>
-</section>
-
-<!-- ====================================================== -->
-<!-- COMMUNITY THREAD DETAIL VIEW -->
-<!-- ====================================================== -->
-<section id="community-thread-detail-view" class="view content-wrapper"> <!-- MODIFIED: class changed -->
-    <div class="container">
-        <button class="btn btn-outline-light btn-sm mb-4 back-button" onclick="Utils.goBackOrHome()"><i class="bi bi-arrow-left me-1"></i> Back to Community</button>
-        
-        <!-- Main thread content will be rendered here -->
-        <div id="thread-detail-content" class="mb-5">
-            <!-- Skeleton for the main post -->
-        </div>
-
-        <h3 class="text-white mb-3">Replies</h3>
-        <!-- List of replies will be rendered here -->
-        <div id="thread-posts-list" class="d-flex flex-column gap-3">
-            <!-- Skeletons for replies -->
-        </div>
-
-        <!-- Form for adding a new reply -->
-        <form id="add-post-form" class="mt-5 d-none">
-            <h4 class="text-white">Add Your Reply</h4>
-            <div class="mb-3">
-                <textarea class="form-control" id="newPostContent" rows="4" required placeholder="Write your reply..."></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-send-fill me-2"></i>Post Reply</button>
-        </form>
-    </div>
-</section>
-
-
-        
-
-     
-    </div>
-</section>
-        </div> <!-- End View Container -->
     </main>
 
     <!-- Trailer Modal -->
@@ -682,60 +567,44 @@
         <div class="modal-dialog modal-xl modal-fullscreen-lg-down modal-dialog-scrollable">
             <div class="modal-content bg-secondary text-light">
                 <div class="modal-header border-bottom border-secondary">
-                    <h5 class="modal-title" id="connectionExplorerModalLabel">Connection Explorer</h5>
+                    <h5 class="modal-title" id="connectionExplorerModalLabel" data-i18n-key="connections_modal_title">Connection Explorer</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0">
                     <div id="connection-graph-loading" class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading graph...</span>
+                            <span class="visually-hidden" data-i18n-key="connections_modal_loading">Loading graph...</span>
                         </div>
                     </div>
-                    <div id="connection-graph-container" style="width: 100%; height: 75vh; display: none;">
-                        <!-- vis.js network will render here -->
-                    </div>
-                    <div id="connection-graph-error" class="p-4 text-center text-warning" style="display: none;">
+                    <div id="connection-graph-container" style="width: 100%; height: 75vh; display: none;"></div>
+                    <div id="connection-graph-error" class="p-4 text-center text-warning" style="display: none;" data-i18n-key="connections_modal_error">
                         Could not load connection data.
                     </div>
                 </div>
                 <div class="modal-footer border-top border-secondary">
-                     <small class="text-muted me-auto">Powered by vis.js & TMDB</small>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                     <small class="text-muted me-auto" data-i18n-key="connections_modal_powered_by">Powered by vis.js & TMDB</small>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n-key="button_close">Close</button>
                 </div>
             </div>
         </div>
     </div>
 
-   
-
     <!-- Footer -->
     <footer class="py-5 mt-5 border-top border-secondary border-opacity-25">
         <div class="container text-center text-muted small">
-            <p>&copy;  <span id="copy-year"></span>  AuraStream Concept. All rights reserved . All movie/TV data from <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDb</a>. Music data from <a href="https://spotify.com" target="_blank" rel="noopener noreferrer">Spotify</a>.</p>
-            <p> This site uses APIs from TMDb and Spotify for data display only.<br>
-                AuraStream does not host or stream any audio/video content. Streaming links are placeholders or redirect to third-party services.<br>
-                AuraStream is not affiliated with TMDb, Spotify, or any other content provider.
-            </p>
+            <p data-i18n-key="footer_copyright">&copy; 2025 AuraStream Concept. All rights reserved. All movie/TV data from <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDb</a>. Music data from <a href="https://spotify.com" target="_blank" rel="noopener noreferrer">Spotify</a>.</p>
+            <p data-i18n-key="footer_disclaimer_1">This site uses APIs from TMDb and Spotify for data display only.</p>
+            <p data-i18n-key="footer_disclaimer_2">AuraStream does not host or stream any audio/video content. Streaming links are placeholders or redirect to third-party services.</p>
+            <p data-i18n-key="footer_disclaimer_3">AuraStream is not affiliated with TMDb, Spotify, or any other content provider.</p>
         </div>
      </footer>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const yearEl = document.getElementById("copy-year");
-            if (yearEl) yearEl.textContent = new Date().getFullYear();
-        });
-    </script>
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <!-- vis.js Network CSS -->
     <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" type="text/css" />
-    
-      <!-- IMPORTANT: Load firebase-app-compat.js FIRST! -->
-      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-      <!-- Then load the modules for the services you use (Auth and Firestore) -->
-      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
-  
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <script src="js/script-v2.js"></script>
     <script  defer  src="js/firebase-backup.js"></script>
