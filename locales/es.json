@@ -1,0 +1,19 @@
+{
+  "nav_explore": "Explorar",
+  "nav_community": "Comunidad",
+  "nav_tools_insights": "Herramientas",
+  "nav_genres": "Géneros de Películas/TV",
+  "nav_home": "Inicio",
+  "nav_watchlist": "Mi Lista",
+  "nav_music": "Música",
+  "nav_live_events": "Eventos en Vivo",
+  "nav_analytics": "Analíticas",
+  "nav_settings": "Configuración",
+  "search_placeholder": "Buscar Películas y TV...",
+  "section_title_continue_watching": "Continuar Viendo",
+  "section_title_popular_aurastream": "Popular en AuraStream",
+  "section_title_upcoming": "Próximos y Anticipados",
+  "profile_title": "Mi Perfil",
+  "watchlist_title": "Mi Lista de Seguimiento",
+  "back_button": "Atrás"
+}
